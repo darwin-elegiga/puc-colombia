@@ -1,0 +1,4777 @@
+{
+  "fuente": "Decreto 2650 de 1993 y modificaciones — Plan Único de Cuentas para comerciantes (Colombia)",
+  "nota": "Catálogo de referencia con fines didácticos. Las 9 clases, los 52 grupos y las 344 cuentas de 4 dígitos están contrastadas una a una con el catálogo publicado en puc.com.co; las subcuentas incluidas son un núcleo verificado de las de mayor uso. Amplíalo desde la aplicación o importando un CSV.",
+  "generado": "scripts/build-seed.mjs",
+  "cuentas": [
+    {
+      "codigo": "1",
+      "nombre": "ACTIVO",
+      "nivel": "clase",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que representan los bienes y derechos tangibles e intangibles de propiedad del ente económico, que en la medida de su utilización son fuente potencial de beneficios presentes o futuros.",
+      "dinamica": {
+        "debita": [
+          "La adquisición de bienes y derechos.",
+          "El aumento del valor de los activos por ajustes o avalúos.",
+          "El traslado desde otras cuentas de activo."
+        ],
+        "acredita": [
+          "La venta, retiro o baja de los bienes y derechos.",
+          "El recaudo de las cuentas por cobrar.",
+          "La disminución del valor de los activos."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "11",
+      "nombre": "DISPONIBLE",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Recursos de liquidez inmediata con que cuenta el ente económico y que puede utilizar para fines generales o específicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1105",
+      "nombre": "CAJA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Efectivo y cheques de propiedad del ente económico disponibles de forma inmediata, tanto en moneda nacional como extranjera.",
+      "dinamica": {
+        "debita": [
+          "El valor de los ingresos en efectivo y cheques recibidos.",
+          "Los sobrantes de caja al efectuar arqueos."
+        ],
+        "acredita": [
+          "El valor de las consignaciones diarias en cuentas bancarias.",
+          "Los pagos efectuados en efectivo.",
+          "Los faltantes de caja al efectuar arqueos."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "110505",
+      "nombre": "CAJA GENERAL",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Efectivo recaudado en la caja principal del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "110510",
+      "nombre": "CAJAS MENORES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Fondos fijos establecidos para atender pagos de menor cuantía.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "110515",
+      "nombre": "MONEDA EXTRANJERA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Efectivo en divisas mantenido en caja.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1110",
+      "nombre": "BANCOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Depósitos constituidos por el ente económico en moneda nacional y extranjera en bancos del país y del exterior.",
+      "dinamica": {
+        "debita": [
+          "El valor de las consignaciones y notas crédito del banco.",
+          "Los traslados recibidos de otras cuentas."
+        ],
+        "acredita": [
+          "El valor de los cheques girados.",
+          "Las notas débito y comisiones cobradas por el banco."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "111005",
+      "nombre": "MONEDA NACIONAL",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Depósitos en cuentas corrientes bancarias en pesos colombianos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "111010",
+      "nombre": "MONEDA EXTRANJERA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Depósitos en cuentas corrientes bancarias en divisas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1115",
+      "nombre": "REMESAS EN TRÁNSITO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los cheques y demás documentos girados sobre plazas distintas a la del domicilio, pendientes de abono en cuenta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1120",
+      "nombre": "CUENTAS DE AHORRO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Depósitos en cuentas de ahorro constituidos en bancos, corporaciones y demás entidades financieras.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "112005",
+      "nombre": "BANCOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Depósitos en cuentas de ahorro constituidos en bancos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "112010",
+      "nombre": "CORPORACIONES DE AHORRO Y VIVIENDA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Depósitos en cuentas de ahorro en corporaciones de ahorro y vivienda.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1125",
+      "nombre": "FONDOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Recursos destinados a fines específicos como fondos rotatorios, de amortización o especiales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "112505",
+      "nombre": "ROTATORIOS MONEDA NACIONAL",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Fondos en pesos destinados a atender gastos recurrentes de operación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "112515",
+      "nombre": "ESPECIALES MONEDA NACIONAL",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Fondos en pesos constituidos para destinaciones específicas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "12",
+      "nombre": "INVERSIONES",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Títulos valores y demás documentos a cargo de otros entes, conservados con el fin de obtener rentas fijas o variables, controlar otros entes o asegurar el mantenimiento de relaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1205",
+      "nombre": "ACCIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en títulos de participación adquiridos en sociedades por acciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1210",
+      "nombre": "CUOTAS O PARTES DE INTERÉS SOCIAL",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en sociedades de personas representadas en cuotas o partes de interés social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1215",
+      "nombre": "BONOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en títulos de deuda emitidos por entidades públicas o privadas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1220",
+      "nombre": "CÉDULAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en cédulas hipotecarias o de capitalización.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1225",
+      "nombre": "CERTIFICADOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en certificados de depósito a término, de cambio, de ahorro y similares.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1230",
+      "nombre": "PAPELES COMERCIALES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en títulos de deuda de corto plazo emitidos por sociedades.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1235",
+      "nombre": "TÍTULOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en títulos de tesorería, de participación y demás títulos del mercado de valores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1240",
+      "nombre": "ACEPTACIONES BANCARIAS O FINANCIERAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en letras aceptadas por entidades bancarias o financieras.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1245",
+      "nombre": "DERECHOS FIDUCIARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos derivados de la entrega de bienes o recursos a sociedades fiduciarias.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1250",
+      "nombre": "DERECHOS DE RECOMPRA DE INVERSIONES NEGOCIADAS (REPOS)",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las inversiones negociadas con pacto de recompra (operaciones repo).",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1255",
+      "nombre": "OBLIGATORIAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones que el ente económico está obligado a mantener por disposición legal.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1260",
+      "nombre": "CUENTAS EN PARTICIPACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes entregados en desarrollo de contratos de cuentas en participación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1295",
+      "nombre": "OTRAS INVERSIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1299",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "13",
+      "nombre": "DEUDORES",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las deudas a cargo de terceros y a favor del ente económico, incluidas las comerciales y no comerciales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1305",
+      "nombre": "CLIENTES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las deudas a cargo de terceros y a favor del ente económico originadas en la venta de bienes y servicios del giro ordinario.",
+      "dinamica": {
+        "debita": [
+          "El valor de las ventas de bienes y servicios a crédito.",
+          "Los intereses y ajustes causados a cargo del cliente."
+        ],
+        "acredita": [
+          "Los pagos recibidos del cliente.",
+          "Las devoluciones, rebajas y descuentos concedidos.",
+          "El castigo de cartera contra la provisión."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "130505",
+      "nombre": "NACIONALES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Deudas a cargo de clientes domiciliados en el país.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "130510",
+      "nombre": "DEL EXTERIOR",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Deudas a cargo de clientes domiciliados en el exterior.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "130515",
+      "nombre": "DEUDORES DEL SISTEMA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Cartera de clientes administrada mediante sistemas de financiación específicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1310",
+      "nombre": "CUENTAS CORRIENTES COMERCIALES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Saldos a favor originados en relaciones comerciales de cuenta corriente con terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1315",
+      "nombre": "CUENTAS POR COBRAR A CASA MATRIZ",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos a favor del ente económico y a cargo de su casa matriz.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1320",
+      "nombre": "CUENTAS POR COBRAR A VINCULADOS ECONÓMICOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos a cargo de filiales, subsidiarias y demás vinculados económicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1323",
+      "nombre": "CUENTAS POR COBRAR A DIRECTORES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos a cargo de directores, administradores y demás miembros de los órganos de dirección.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1325",
+      "nombre": "CUENTAS POR COBRAR A SOCIOS Y ACCIONISTAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos a cargo de los socios o accionistas por conceptos distintos a aportes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1328",
+      "nombre": "APORTES POR COBRAR",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los aportes suscritos por socios o accionistas pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1330",
+      "nombre": "ANTICIPOS Y AVANCES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas entregadas anticipadamente a proveedores, contratistas y trabajadores, pendientes de legalizar.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "133005",
+      "nombre": "A PROVEEDORES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas entregadas anticipadamente a proveedores de bienes y servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "133010",
+      "nombre": "A CONTRATISTAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas entregadas anticipadamente a contratistas de obra.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "133015",
+      "nombre": "A TRABAJADORES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Anticipos de salarios y avances entregados a los trabajadores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "133020",
+      "nombre": "A AGENTES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas entregadas a agentes, por ejemplo de aduana, para adelantar trámites.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "133025",
+      "nombre": "A CONCESIONARIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Anticipos entregados a concesionarios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "133030",
+      "nombre": "DE ADJUDICACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Anticipos entregados por adjudicaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1332",
+      "nombre": "CUENTAS DE OPERACIÓN CONJUNTA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos derivados de contratos de operación conjunta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1335",
+      "nombre": "DEPÓSITOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valores entregados en depósito o garantía a terceros para respaldar operaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1340",
+      "nombre": "PROMESAS DE COMPRA VENTA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas entregadas en virtud de promesas de compraventa de bienes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1345",
+      "nombre": "INGRESOS POR COBRAR",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos causados y pendientes de cobro como intereses, arrendamientos y dividendos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1350",
+      "nombre": "RETENCIÓN SOBRE CONTRATOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valores retenidos por los contratantes como garantía del cumplimiento de contratos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1355",
+      "nombre": "ANTICIPO DE IMPUESTOS Y CONTRIBUCIONES O SALDOS A FAVOR",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Anticipos, retenciones practicadas al ente económico y saldos a favor en impuestos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "135505",
+      "nombre": "ANTICIPO DE IMPUESTOS DE RENTA Y COMPLEMENTARIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Anticipo del impuesto de renta liquidado para el periodo gravable siguiente.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "135510",
+      "nombre": "ANTICIPO DE IMPUESTOS DE INDUSTRIA Y COMERCIO",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Anticipo liquidado por concepto de industria y comercio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "135515",
+      "nombre": "RETENCIÓN EN LA FUENTE",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Retenciones de renta practicadas al ente económico por sus clientes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "135517",
+      "nombre": "IMPUESTO A LAS VENTAS RETENIDO",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "IVA retenido al ente económico por agentes de retención (reteiva a favor).",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "135518",
+      "nombre": "IMPUESTO DE INDUSTRIA Y COMERCIO RETENIDO",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Reteica practicado al ente económico por sus clientes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "135520",
+      "nombre": "SOBRANTES EN LIQUIDACIÓN PRIVADA DE IMPUESTOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Saldos a favor determinados en las declaraciones tributarias.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "135525",
+      "nombre": "CONTRIBUCIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Anticipos de contribuciones a favor del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1360",
+      "nombre": "RECLAMACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las reclamaciones presentadas a compañías aseguradoras, transportadores y otros terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1365",
+      "nombre": "CUENTAS POR COBRAR A TRABAJADORES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Préstamos y demás derechos a cargo de los trabajadores del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "136505",
+      "nombre": "VIVIENDA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Préstamos concedidos a los trabajadores con destino a vivienda.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "136510",
+      "nombre": "VEHÍCULOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Préstamos concedidos a los trabajadores para adquisición de vehículo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "136515",
+      "nombre": "EDUCACIÓN",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Préstamos concedidos a los trabajadores con destino a educación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "136520",
+      "nombre": "MÉDICOS, ODONTOLÓGICOS Y SIMILARES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Préstamos concedidos a los trabajadores para gastos de salud.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "136525",
+      "nombre": "CALAMIDAD DOMÉSTICA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Préstamos concedidos a los trabajadores por calamidad doméstica.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1370",
+      "nombre": "PRÉSTAMOS A PARTICULARES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Préstamos concedidos a personas naturales o jurídicas ajenas al giro del negocio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1380",
+      "nombre": "DEUDORES VARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos a favor del ente económico no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1385",
+      "nombre": "DERECHOS DE RECOMPRA DE CARTERA NEGOCIADA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de la cartera negociada con pacto de recompra.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1390",
+      "nombre": "DEUDAS DE DIFÍCIL COBRO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Cuentas por cobrar vencidas cuya recuperación se considera dudosa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1399",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "139905",
+      "nombre": "CLIENTES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Provisión constituida sobre la cartera de clientes (deterioro).",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "139910",
+      "nombre": "CUENTAS CORRIENTES COMERCIALES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Provisión constituida sobre cuentas corrientes comerciales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "14",
+      "nombre": "INVENTARIOS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Bienes corporales destinados a la venta en el curso normal de los negocios, los que se hallen en proceso de producción o los que se utilizarán en la producción o prestación de servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1405",
+      "nombre": "MATERIAS PRIMAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los materiales adquiridos para ser transformados en el proceso productivo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1410",
+      "nombre": "PRODUCTOS EN PROCESO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo acumulado de los productos que se encuentran en proceso de transformación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1415",
+      "nombre": "OBRAS DE CONSTRUCCIÓN EN CURSO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos acumulados en obras de construcción que se adelantan para la venta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1417",
+      "nombre": "OBRAS DE URBANISMO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos incurridos en obras de urbanismo de terrenos destinados a la venta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1420",
+      "nombre": "CONTRATOS EN EJECUCIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos acumulados en contratos de obra o servicio en ejecución.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1425",
+      "nombre": "CULTIVOS EN DESARROLLO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos acumulados en cultivos que aún no se encuentran en etapa productiva.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1428",
+      "nombre": "PLANTACIONES AGRÍCOLAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las plantaciones agrícolas destinadas a la venta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1430",
+      "nombre": "PRODUCTOS TERMINADOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los artículos fabricados por el ente económico y disponibles para la venta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1435",
+      "nombre": "MERCANCÍAS NO FABRICADAS POR LA EMPRESA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las mercancías adquiridas para ser vendidas sin someterlas a transformación.",
+      "dinamica": {
+        "debita": [
+          "El costo de las mercancías compradas.",
+          "El valor de las devoluciones de clientes que reingresan al inventario.",
+          "Los sobrantes establecidos en la toma física."
+        ],
+        "acredita": [
+          "El costo de las mercancías vendidas.",
+          "Las devoluciones a proveedores.",
+          "Los faltantes establecidos en la toma física."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1440",
+      "nombre": "BIENES RAÍCES PARA LA VENTA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los inmuebles adquiridos o construidos con destino a la venta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1445",
+      "nombre": "SEMOVIENTES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los animales destinados a la venta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1450",
+      "nombre": "TERRENOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los terrenos adquiridos con el propósito de venderlos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1455",
+      "nombre": "MATERIALES, REPUESTOS Y ACCESORIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los elementos destinados al mantenimiento y consumo, no incorporados directamente al producto.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1460",
+      "nombre": "ENVASES Y EMPAQUES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los envases y empaques adquiridos para la comercialización de los productos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1465",
+      "nombre": "INVENTARIOS EN TRÁNSITO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los inventarios adquiridos que se encuentran en tránsito hacia la bodega.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1499",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "15",
+      "nombre": "PROPIEDADES, PLANTA Y EQUIPO",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Activos tangibles adquiridos, construidos o en proceso, con la intención de emplearlos en forma permanente para la producción o suministro de bienes y servicios, y cuya vida útil excede de un año.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1504",
+      "nombre": "TERRENOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los terrenos adquiridos con el propósito de venderlos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1506",
+      "nombre": "MATERIALES PROYECTOS PETROLEROS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los materiales destinados a proyectos de exploración y explotación petrolera.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1508",
+      "nombre": "CONSTRUCCIONES EN CURSO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo acumulado de las obras en proceso de construcción para uso del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1512",
+      "nombre": "MAQUINARIA Y EQUIPOS EN MONTAJE",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de la maquinaria y equipos en proceso de instalación o montaje.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1516",
+      "nombre": "CONSTRUCCIONES Y EDIFICACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las edificaciones destinadas al uso del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1520",
+      "nombre": "MAQUINARIA Y EQUIPO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de la maquinaria y equipo empleados en la producción de bienes y servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1524",
+      "nombre": "EQUIPO DE OFICINA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los muebles, enseres y equipos utilizados en las áreas administrativas y operativas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "152405",
+      "nombre": "MUEBLES Y ENSERES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los muebles y enseres del área administrativa y operativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "152410",
+      "nombre": "EQUIPOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los equipos de oficina distintos de muebles y enseres.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1528",
+      "nombre": "EQUIPO DE COMPUTACIÓN Y COMUNICACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los equipos de procesamiento de datos y de comunicaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "152805",
+      "nombre": "EQUIPOS DE PROCESAMIENTO DE DATOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de computadores, servidores y periféricos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "152810",
+      "nombre": "EQUIPOS DE TELECOMUNICACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los equipos de comunicaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1532",
+      "nombre": "EQUIPO MÉDICO-CIENTÍFICO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los equipos destinados a actividades médicas, odontológicas y científicas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1536",
+      "nombre": "EQUIPO DE HOTELES Y RESTAURANTES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los equipos destinados a la prestación de servicios de hotelería y restaurante.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1540",
+      "nombre": "FLOTA Y EQUIPO DE TRANSPORTE",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los vehículos utilizados en el transporte de bienes, personal o productos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "154005",
+      "nombre": "AUTOS, CAMIONETAS Y CAMPEROS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los vehículos livianos de propiedad del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "154008",
+      "nombre": "CAMIONES, VOLQUETAS Y FURGONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los vehículos de carga de propiedad del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1544",
+      "nombre": "FLOTA Y EQUIPO FLUVIAL Y/O MARÍTIMO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las embarcaciones destinadas al transporte fluvial o marítimo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1548",
+      "nombre": "FLOTA Y EQUIPO AÉREO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las aeronaves destinadas al transporte aéreo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1552",
+      "nombre": "FLOTA Y EQUIPO FÉRREO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo del equipo destinado al transporte férreo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1556",
+      "nombre": "ACUEDUCTOS, PLANTAS Y REDES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las plantas, redes y líneas destinadas a la prestación de servicios públicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1560",
+      "nombre": "ARMAMENTO DE VIGILANCIA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo del armamento destinado a la vigilancia y seguridad.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1562",
+      "nombre": "ENVASES Y EMPAQUES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los envases y empaques adquiridos para la comercialización de los productos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1564",
+      "nombre": "PLANTACIONES AGRÍCOLAS Y FORESTALES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las plantaciones destinadas a la explotación permanente.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1568",
+      "nombre": "VÍAS DE COMUNICACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las vías construidas para uso del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1572",
+      "nombre": "MINAS Y CANTERAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las minas y canteras objeto de explotación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1576",
+      "nombre": "POZOS ARTESIANOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los pozos construidos para el abastecimiento de agua.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1580",
+      "nombre": "YACIMIENTOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los yacimientos de recursos naturales no renovables.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1584",
+      "nombre": "SEMOVIENTES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los animales destinados a la venta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1588",
+      "nombre": "PROPIEDADES, PLANTA Y EQUIPO EN TRÁNSITO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los bienes adquiridos que se encuentran en tránsito.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1592",
+      "nombre": "DEPRECIACIÓN ACUMULADA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto acumulado de la distribución sistemática del costo de los activos depreciables durante su vida útil.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "159205",
+      "nombre": "CONSTRUCCIONES Y EDIFICACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Depreciación acumulada de construcciones y edificaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "159210",
+      "nombre": "MAQUINARIA Y EQUIPO",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Depreciación acumulada de la maquinaria y equipo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "159215",
+      "nombre": "EQUIPO DE OFICINA",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Depreciación acumulada del equipo de oficina.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "159220",
+      "nombre": "EQUIPO DE COMPUTACION Y COMUNICACIÓN",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Depreciación acumulada del equipo de cómputo y comunicaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "159235",
+      "nombre": "FLOTA Y EQUIPO DE TRANSPORTE",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Depreciación acumulada de la flota y equipo de transporte.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1596",
+      "nombre": "DEPRECIACIÓN DIFERIDA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Diferencia entre la depreciación contable y la solicitada fiscalmente por sistemas de reconocido valor técnico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1597",
+      "nombre": "AMORTIZACIÓN ACUMULADA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto acumulado de la amortización de bienes de propiedad, planta y equipo sujetos a este sistema.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1598",
+      "nombre": "AGOTAMIENTO ACUMULADO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto acumulado del agotamiento de los recursos naturales explotados.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1599",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "16",
+      "nombre": "INTANGIBLES",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Recursos obtenidos por un ente económico que, careciendo de naturaleza material, implican un derecho o privilegio oponible a terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1605",
+      "nombre": "CRÉDITO MERCANTIL",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor adicional pagado en la compra de un ente económico sobre el valor en libros de su patrimonio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1610",
+      "nombre": "MARCAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de adquisición o desarrollo de los signos distintivos de los productos o servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1615",
+      "nombre": "PATENTES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los derechos de explotación exclusiva sobre invenciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1620",
+      "nombre": "CONCESIONES Y FRANQUICIAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los derechos otorgados por el Estado o por particulares para explotar bienes o marcas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1625",
+      "nombre": "DERECHOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los derechos adquiridos sobre bienes o contratos, incluidos los de arrendamiento financiero.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1630",
+      "nombre": "KNOW HOW",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del conocimiento técnico o experiencia acumulada adquirido por el ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1635",
+      "nombre": "LICENCIAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las licencias de uso de programas de computador y otros derechos similares.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1698",
+      "nombre": "DEPRECIACIÓN Y/O AMORTIZACIÓN ACUMULADA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto acumulado de la amortización de los activos intangibles.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1699",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "17",
+      "nombre": "DIFERIDOS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos pagados por anticipado y cargos diferidos que representan bienes o servicios recibidos, de los cuales se espera obtener beneficios económicos en periodos futuros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1705",
+      "nombre": "GASTOS PAGADOS POR ANTICIPADO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los gastos pagados por anticipado como seguros, arrendamientos e intereses.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "170505",
+      "nombre": "INTERESES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Intereses pagados por anticipado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "170520",
+      "nombre": "SEGUROS Y FIANZAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Primas de seguros y fianzas pagadas por anticipado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "170525",
+      "nombre": "ARRENDAMIENTOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Cánones de arrendamiento pagados por anticipado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1710",
+      "nombre": "CARGOS DIFERIDOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos y gastos que benefician periodos futuros, como organización, preoperativos y mejoras a propiedades ajenas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "171004",
+      "nombre": "ORGANIZACIÓN Y PREOPERATIVOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos incurridos en la organización y puesta en marcha del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "171016",
+      "nombre": "PROGRAMAS PARA COMPUTADOR (SOFTWARE)",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los programas de computador tratados como cargo diferido.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "171020",
+      "nombre": "ÚTILES Y PAPELERÍA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los útiles y papelería pendientes de consumo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "171024",
+      "nombre": "MEJORAS A PROPIEDADES AJENAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de las mejoras efectuadas en bienes tomados en arrendamiento.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1715",
+      "nombre": "COSTOS DE EXPLORACIÓN POR AMORTIZAR",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos incurridos en actividades de exploración pendientes de amortizar.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1720",
+      "nombre": "COSTOS DE EXPLOTACIÓN Y DESARROLLO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos incurridos en la explotación y desarrollo de recursos naturales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1730",
+      "nombre": "CARGOS POR CORRECCIÓN MONETARIA DIFERIDA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ajustes por inflación diferidos originados en obras en construcción y cargos similares.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1798",
+      "nombre": "AMORTIZACIÓN ACUMULADA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto acumulado de la amortización de bienes de propiedad, planta y equipo sujetos a este sistema.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "18",
+      "nombre": "OTROS ACTIVOS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Bienes y derechos que por su naturaleza no son clasificables en los demás grupos del activo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1805",
+      "nombre": "BIENES DE ARTE Y CULTURA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de obras de arte, biblioteca y demás bienes de valor cultural.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1895",
+      "nombre": "DIVERSOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Otros activos no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1899",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "19",
+      "nombre": "VALORIZACIONES",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor de determinados activos frente a su costo neto en libros, establecido mediante avalúos técnicos o comparación con el valor intrínseco o de mercado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1905",
+      "nombre": "DE INVERSIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor de las inversiones frente a su costo ajustado en libros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1910",
+      "nombre": "DE PROPIEDADES, PLANTA Y EQUIPO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor de la propiedad, planta y equipo determinado mediante avalúo técnico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "1995",
+      "nombre": "DE OTROS ACTIVOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor de otros activos frente a su costo en libros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2",
+      "nombre": "PASIVO",
+      "nivel": "clase",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que representan las obligaciones contraídas por el ente económico pagaderas en dinero, bienes o servicios, como resultado de transacciones pasadas.",
+      "dinamica": {
+        "debita": [
+          "El pago total o parcial de la obligación.",
+          "La reversión o cancelación de la obligación.",
+          "Las notas crédito recibidas de los acreedores."
+        ],
+        "acredita": [
+          "El nacimiento de la obligación a cargo del ente económico.",
+          "La causación de intereses, ajustes y mayores valores de la deuda."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "21",
+      "nombre": "OBLIGACIONES FINANCIERAS",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas por el ente económico con establecimientos de crédito u otras instituciones financieras del país o del exterior.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2105",
+      "nombre": "BANCOS NACIONALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas con bancos del país por préstamos, sobregiros y demás modalidades de crédito.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "210505",
+      "nombre": "SOBREGIROS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Saldos rojos en cuentas corrientes bancarias.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "210510",
+      "nombre": "PAGARES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones respaldadas en pagarés suscritos con bancos nacionales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "210515",
+      "nombre": "CARTAS DE CRÉDITO",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones derivadas de cartas de crédito.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2110",
+      "nombre": "BANCOS DEL EXTERIOR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas con bancos del exterior.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2115",
+      "nombre": "CORPORACIONES FINANCIERAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas con corporaciones financieras del país.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2120",
+      "nombre": "COMPAÑÍAS DE FINANCIAMIENTO COMERCIAL",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas con compañías de financiamiento comercial, incluidos los contratos de leasing.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2125",
+      "nombre": "CORPORACIONES DE AHORRO Y VIVIENDA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas con corporaciones de ahorro y vivienda.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2130",
+      "nombre": "ENTIDADES FINANCIERAS DEL EXTERIOR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas con entidades financieras domiciliadas en el exterior.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2135",
+      "nombre": "COMPROMISOS DE RECOMPRA DE INVERSIONES NEGOCIADAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligación de recomprar inversiones negociadas con pacto de recompra.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2140",
+      "nombre": "COMPROMISOS DE RECOMPRA DE CARTERA NEGOCIADA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligación de recomprar cartera negociada con pacto de recompra.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2145",
+      "nombre": "OBLIGACIONES GUBERNAMENTALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones contraídas con entidades gubernamentales de fomento y desarrollo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2195",
+      "nombre": "OTRAS OBLIGACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones financieras no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "22",
+      "nombre": "PROVEEDORES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a cargo del ente económico por la adquisición de bienes y servicios para la fabricación o comercialización de productos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2205",
+      "nombre": "NACIONALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de proveedores del país por la adquisición de bienes y servicios del giro del negocio.",
+      "dinamica": {
+        "debita": [
+          "Los pagos efectuados al proveedor.",
+          "Las devoluciones de mercancía y los descuentos obtenidos."
+        ],
+        "acredita": [
+          "El valor de las compras de bienes y servicios a crédito.",
+          "Los ajustes y mayores valores facturados por el proveedor."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2210",
+      "nombre": "DEL EXTERIOR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de proveedores domiciliados en el exterior.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2215",
+      "nombre": "CUENTAS CORRIENTES COMERCIALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Saldos a favor originados en relaciones comerciales de cuenta corriente con terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2220",
+      "nombre": "CASA MATRIZ",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de la casa matriz por adquisición de bienes y servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2225",
+      "nombre": "COMPAÑÍAS VINCULADAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de filiales, subsidiarias y demás vinculados económicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "23",
+      "nombre": "CUENTAS POR PAGAR",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a cargo del ente económico originadas en operaciones distintas a la compra de bienes o servicios propios del giro del negocio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2305",
+      "nombre": "CUENTAS CORRIENTES COMERCIALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Saldos a favor originados en relaciones comerciales de cuenta corriente con terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2310",
+      "nombre": "A CASA MATRIZ",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de la casa matriz por conceptos distintos a proveedores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2315",
+      "nombre": "A COMPAÑÍAS VINCULADAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de compañías vinculadas por conceptos distintos a proveedores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2320",
+      "nombre": "A CONTRATISTAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de contratistas por obras y servicios ejecutados.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2330",
+      "nombre": "ÓRDENES DE COMPRA POR UTILIZAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las órdenes de compra pendientes de utilizar.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2335",
+      "nombre": "COSTOS Y GASTOS POR PAGAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos y gastos causados pendientes de pago, como honorarios, servicios y arrendamientos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "233525",
+      "nombre": "HONORARIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Honorarios causados y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "233530",
+      "nombre": "SERVICIOS TÉCNICOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Servicios técnicos causados y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "233535",
+      "nombre": "SERVICIOS DE MANTENIMIENTO",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Servicios de mantenimiento causados y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "233540",
+      "nombre": "ARRENDAMIENTOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Cánones de arrendamiento causados y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "233550",
+      "nombre": "SERVICIOS PÚBLICOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Servicios públicos causados y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2340",
+      "nombre": "INSTALAMENTOS POR PAGAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Cuotas pendientes de pago por adquisición de bienes a plazos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2345",
+      "nombre": "ACREEDORES OFICIALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de entidades oficiales por conceptos distintos a impuestos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2350",
+      "nombre": "REGALÍAS POR PAGAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones por concepto de regalías causadas y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2355",
+      "nombre": "DEUDAS CON ACCIONISTAS O SOCIOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de los socios o accionistas por conceptos distintos a dividendos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2357",
+      "nombre": "DEUDAS CON DIRECTORES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de los directores y administradores del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2360",
+      "nombre": "DIVIDENDOS O PARTICIPACIONES POR PAGAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Dividendos o participaciones decretados en efectivo y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2365",
+      "nombre": "RETENCIÓN EN LA FUENTE",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las retenciones practicadas por el ente económico como agente retenedor del impuesto de renta.",
+      "dinamica": {
+        "debita": [
+          "El pago de las retenciones a la DIAN mediante la declaración mensual.",
+          "Los ajustes o correcciones que disminuyen la retención."
+        ],
+        "acredita": [
+          "El valor de las retenciones practicadas a terceros al efectuar el pago o abono en cuenta."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236505",
+      "nombre": "SALARIOS Y PAGOS LABORALES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada sobre pagos laborales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236510",
+      "nombre": "DIVIDENDOS Y/O PARTICIPACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada sobre dividendos y participaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236515",
+      "nombre": "HONORARIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada por concepto de honorarios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236520",
+      "nombre": "COMISIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada por concepto de comisiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236525",
+      "nombre": "SERVICIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada por concepto de servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236530",
+      "nombre": "ARRENDAMIENTOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada por concepto de arrendamientos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236535",
+      "nombre": "RENDIMIENTOS FINANCIEROS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada sobre rendimientos financieros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236540",
+      "nombre": "COMPRAS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente practicada por concepto de compras.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "236570",
+      "nombre": "OTRAS RETENCIONES Y PATRIMONIO",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retenciones practicadas por otros conceptos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2367",
+      "nombre": "IMPUESTO A LAS VENTAS RETENIDO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del IVA retenido por el ente económico en calidad de agente de retención (reteiva).",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2368",
+      "nombre": "IMPUESTO DE INDUSTRIA Y COMERCIO RETENIDO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del impuesto de industria y comercio retenido por el ente económico (reteica).",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2370",
+      "nombre": "RETENCIONES Y APORTES DE NÓMINA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los descuentos de nómina y aportes al sistema de seguridad social y parafiscales pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "237005",
+      "nombre": "APORTES A ENTIDADES PROMOTORAS DE SALUD",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a EPS descontados y a cargo del empleador, pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "237006",
+      "nombre": "APORTES A ADMINISTRADORAS DE RIESGOS PROFESIONALES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a ARL pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "237010",
+      "nombre": "APORTES AL ICBF, SENA Y CAJAS DE COMPENSACIÓN",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes parafiscales pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "237025",
+      "nombre": "EMBARGOS JUDICIALES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Descuentos de nómina por embargos judiciales pendientes de consignar.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "237030",
+      "nombre": "LIBRANZAS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Descuentos de nómina por libranzas pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2375",
+      "nombre": "CUOTAS POR DEVOLVER",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las cuotas o aportes pendientes de devolver a terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2380",
+      "nombre": "ACREEDORES VARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor de terceros no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "24",
+      "nombre": "IMPUESTOS, GRAVÁMENES Y TASAS",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a favor del fisco nacional, departamental o municipal por concepto de impuestos, gravámenes y tasas de carácter obligatorio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2404",
+      "nombre": "DE RENTA Y COMPLEMENTARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Saldo por pagar del impuesto de renta y complementarios del ejercicio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2408",
+      "nombre": "IMPUESTO SOBRE LAS VENTAS POR PAGAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Saldo a favor del fisco por concepto del IVA generado menos el IVA descontable del periodo.",
+      "dinamica": {
+        "debita": [
+          "El valor del IVA descontable en las compras.",
+          "El pago del saldo a cargo en la declaración bimestral o cuatrimestral.",
+          "El IVA de las devoluciones en ventas."
+        ],
+        "acredita": [
+          "El valor del IVA generado en las ventas de bienes y servicios gravados.",
+          "El IVA de las devoluciones en compras."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2412",
+      "nombre": "DE INDUSTRIA Y COMERCIO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuesto de industria y comercio, avisos y tableros por pagar a los municipios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2416",
+      "nombre": "A LA PROPIEDAD RAÍZ",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuesto predial y complementarios causados y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2420",
+      "nombre": "DERECHOS SOBRE INSTRUMENTOS PÚBLICOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos causados por el registro de instrumentos públicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2424",
+      "nombre": "DE VALORIZACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Contribución de valorización causada y pendiente de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2428",
+      "nombre": "DE TURISMO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Contribución parafiscal para la promoción del turismo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2432",
+      "nombre": "TASA POR UTILIZACIÓN DE PUERTOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Tasas causadas por el uso de instalaciones portuarias.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2436",
+      "nombre": "DE VEHÍCULOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuesto sobre vehículos automotores causado y pendiente de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2440",
+      "nombre": "DE ESPECTÁCULOS PÚBLICOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuesto sobre espectáculos públicos causado y pendiente de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2444",
+      "nombre": "DE HIDROCARBUROS Y MINAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos causados por la explotación de hidrocarburos y minas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2448",
+      "nombre": "REGALÍAS E IMPUESTOS A LA PEQUEÑA Y MEDIANA MINERÍA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Regalías e impuestos causados por la actividad de la pequeña y mediana minería.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2452",
+      "nombre": "A LAS EXPORTACIONES CAFETERAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos causados sobre las exportaciones de café.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2456",
+      "nombre": "A LAS IMPORTACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Gravámenes arancelarios causados en las importaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2460",
+      "nombre": "CUOTAS DE FOMENTO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Contribuciones parafiscales de fomento sectorial.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2464",
+      "nombre": "DE LICORES, CERVEZAS Y CIGARRILLOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos al consumo de licores, cervezas y cigarrillos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2468",
+      "nombre": "AL SACRIFICIO DE GANADO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuesto causado por el sacrificio de ganado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2472",
+      "nombre": "AL AZAR Y JUEGOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos causados sobre juegos de azar, rifas y apuestas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2476",
+      "nombre": "GRAVÁMENES Y REGALÍAS POR UTILIZACIÓN DEL SUELO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Gravámenes y regalías causados por la utilización del suelo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2495",
+      "nombre": "OTROS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos, gravámenes y tasas no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "25",
+      "nombre": "OBLIGACIONES LABORALES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a cargo del ente económico y a favor de los trabajadores originadas en la relación laboral vigente o en disposiciones legales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2505",
+      "nombre": "SALARIOS POR PAGAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los salarios causados y pendientes de pago a los trabajadores.",
+      "dinamica": {
+        "debita": [
+          "El pago de la nómina a los trabajadores.",
+          "Los descuentos de nómina trasladados a las cuentas por pagar."
+        ],
+        "acredita": [
+          "El valor de los salarios y demás pagos laborales causados en el periodo."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2510",
+      "nombre": "CESANTÍAS CONSOLIDADAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las cesantías causadas a favor de los trabajadores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "251005",
+      "nombre": "LEY LABORAL ANTERIOR",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Cesantías consolidadas bajo el régimen retroactivo, anterior a la Ley 50.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "251010",
+      "nombre": "LEY 50 DE 1990 Y NORMAS POSTERIORES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Cesantías consolidadas bajo el régimen anualizado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2515",
+      "nombre": "INTERESES SOBRE CESANTÍAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los intereses sobre cesantías causados a favor de los trabajadores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2520",
+      "nombre": "PRIMA DE SERVICIOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de la prima legal de servicios causada y pendiente de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2525",
+      "nombre": "VACACIONES CONSOLIDADAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las vacaciones causadas a favor de los trabajadores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2530",
+      "nombre": "PRESTACIONES EXTRALEGALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las prestaciones pactadas convencional o voluntariamente.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2532",
+      "nombre": "PENSIONES POR PAGAR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Mesadas pensionales causadas y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2535",
+      "nombre": "CUOTAS PARTES PENSIONES DE JUBILACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las cuotas partes pensionales a cargo del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2540",
+      "nombre": "INDEMNIZACIONES LABORALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las indemnizaciones causadas a favor de los trabajadores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "26",
+      "nombre": "PASIVOS ESTIMADOS Y PROVISIONES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a cargo del ente económico cuyo monto exacto o fecha de exigibilidad no se conoce con certeza, pero cuyo pago es probable.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2605",
+      "nombre": "PARA COSTOS Y GASTOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Estimación de costos y gastos causados pendientes de determinación exacta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2610",
+      "nombre": "PARA OBLIGACIONES LABORALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Estimación de obligaciones laborales pendientes de liquidación definitiva.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2615",
+      "nombre": "PARA OBLIGACIONES FISCALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Estimación de las obligaciones fiscales a cargo del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2620",
+      "nombre": "PENSIONES DE JUBILACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del cálculo actuarial de las pensiones a cargo del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2625",
+      "nombre": "PARA OBRAS DE URBANISMO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Estimación de los costos pendientes en obras de urbanismo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2630",
+      "nombre": "PARA MANTENIMIENTO Y REPARACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Estimación de los costos de mantenimiento y reparaciones programadas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2635",
+      "nombre": "PARA CONTINGENCIAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Estimación de pérdidas probables por litigios, demandas y contingencias.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2640",
+      "nombre": "PARA OBLIGACIONES DE GARANTÍAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Estimación de los costos por garantías otorgadas sobre productos vendidos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2695",
+      "nombre": "PROVISIONES DIVERSAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Otras provisiones no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "27",
+      "nombre": "DIFERIDOS",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos recibidos por anticipado y demás partidas cuyo reconocimiento en resultados corresponde a periodos futuros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2705",
+      "nombre": "INGRESOS RECIBIDOS POR ANTICIPADO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los ingresos recibidos que corresponden a periodos futuros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2710",
+      "nombre": "ABONOS DIFERIDOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Utilidades diferidas originadas en ventas a plazos y operaciones similares.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2715",
+      "nombre": "UTILIDAD DIFERIDA EN VENTAS A PLAZOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Utilidad diferida originada en ventas a plazos, que se reconoce a medida que se recauda.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2720",
+      "nombre": "CRÉDITO POR CORRECCIÓN MONETARIA DIFERIDA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ajuste por inflación diferido de naturaleza crédito, pendiente de aplicar a resultados.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2725",
+      "nombre": "IMPUESTOS DIFERIDOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuesto de renta diferido por pagar originado en diferencias temporales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "28",
+      "nombre": "OTROS PASIVOS",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones a cargo del ente económico que no son clasificables en los demás grupos del pasivo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2805",
+      "nombre": "ANTICIPOS Y AVANCES RECIBIDOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas recibidas de clientes a cuenta de futuras ventas o servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2810",
+      "nombre": "DEPÓSITOS RECIBIDOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valores recibidos de terceros en calidad de depósito o garantía.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2815",
+      "nombre": "INGRESOS RECIBIDOS PARA TERCEROS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valores recaudados por cuenta de terceros pendientes de entrega.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2820",
+      "nombre": "CUENTAS DE OPERACIÓN CONJUNTA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Derechos derivados de contratos de operación conjunta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2825",
+      "nombre": "RETENCIONES A TERCEROS SOBRE CONTRATOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valores retenidos a contratistas como garantía de cumplimiento.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2830",
+      "nombre": "EMBARGOS JUDICIALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valores retenidos por orden de autoridad judicial.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2835",
+      "nombre": "ACREEDORES DEL SISTEMA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones con acreedores registradas mediante sistemas de información específicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2840",
+      "nombre": "CUENTAS EN PARTICIPACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes entregados en desarrollo de contratos de cuentas en participación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2895",
+      "nombre": "DIVERSOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Otros activos no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "29",
+      "nombre": "BONOS Y PAPELES COMERCIALES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Obligaciones representadas en títulos de deuda emitidos por el ente económico y colocados en el mercado de capitales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2905",
+      "nombre": "BONOS EN CIRCULACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor nominal de los bonos emitidos y colocados pendientes de redención.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2910",
+      "nombre": "BONOS OBLIGATORIAMENTE CONVERTIBLES EN ACCIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los bonos que deben convertirse en acciones al vencimiento.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2915",
+      "nombre": "PAPELES COMERCIALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversiones en títulos de deuda de corto plazo emitidos por sociedades.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2920",
+      "nombre": "BONOS PENSIONALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los bonos pensionales a cargo del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "2925",
+      "nombre": "TÍTULOS PENSIONALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los títulos pensionales a cargo del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3",
+      "nombre": "PATRIMONIO",
+      "nivel": "clase",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que representan el valor residual de comparar el activo total menos el pasivo externo, producto de los recursos netos del ente económico.",
+      "dinamica": {
+        "debita": [
+          "Las disminuciones de capital legalmente aprobadas.",
+          "La distribución o aplicación de utilidades y reservas.",
+          "El registro de las pérdidas del ejercicio."
+        ],
+        "acredita": [
+          "Los aportes efectuados por socios o accionistas.",
+          "La apropiación de reservas y el registro de utilidades.",
+          "Las valorizaciones y demás incrementos patrimoniales."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "31",
+      "nombre": "CAPITAL SOCIAL",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor total de los aportes iniciales y los posteriores aumentos o disminuciones que los socios, accionistas o el Estado ponen a disposición del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3105",
+      "nombre": "CAPITAL SUSCRITO Y PAGADO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del capital suscrito por los accionistas y efectivamente pagado en sociedades por acciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3115",
+      "nombre": "APORTES SOCIALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los aportes efectuados por los socios en sociedades de personas y entidades cooperativas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3120",
+      "nombre": "CAPITAL ASIGNADO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor asignado por la casa matriz a las sucursales de sociedades extranjeras.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3125",
+      "nombre": "INVERSIÓN SUPLEMENTARIA AL CAPITAL ASIGNADO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Inversión adicional que la casa matriz destina a su sucursal, sin formar parte del capital asignado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3130",
+      "nombre": "CAPITAL DE PERSONAS NATURALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los recursos aportados por el comerciante persona natural.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3135",
+      "nombre": "APORTES DEL ESTADO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los aportes efectuados por el Estado en empresas oficiales y de economía mixta.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3140",
+      "nombre": "FONDO SOCIAL",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los aportes de las entidades sin ánimo de lucro.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "32",
+      "nombre": "SUPERÁVIT DE CAPITAL",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del mayor importe pagado sobre el valor nominal de los aportes, las donaciones y demás partidas que incrementan el patrimonio sin ser resultados.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3205",
+      "nombre": "PRIMA EN COLOCACIÓN DE ACCIONES, CUOTAS O PARTES DE INTERÉS SOCIAL",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor pagado sobre el valor nominal de las acciones, cuotas o partes de interés.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3210",
+      "nombre": "DONACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los bienes y recursos recibidos a título gratuito.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3215",
+      "nombre": "CRÉDITO MERCANTIL",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor adicional pagado en la compra de un ente económico sobre el valor en libros de su patrimonio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3220",
+      "nombre": "KNOW HOW",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del conocimiento técnico o experiencia acumulada adquirido por el ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3225",
+      "nombre": "SUPERÁVIT MÉTODO DE PARTICIPACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Variaciones patrimoniales de las subordinadas reconocidas por el método de participación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "33",
+      "nombre": "RESERVAS",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Valores apropiados de las utilidades líquidas por mandato legal, disposición estatutaria o decisión voluntaria del máximo órgano social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3305",
+      "nombre": "RESERVAS OBLIGATORIAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Apropiaciones de utilidades exigidas por la ley, como la reserva legal.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3310",
+      "nombre": "RESERVAS ESTATUTARIAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Apropiaciones de utilidades ordenadas por los estatutos sociales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3315",
+      "nombre": "RESERVAS OCASIONALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Apropiaciones de utilidades decididas voluntariamente por el máximo órgano social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "34",
+      "nombre": "REVALORIZACION DEL PATRIMONIO",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Efecto sobre el patrimonio originado en la aplicación del sistema de ajustes integrales por inflación y el saneamiento fiscal.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3405",
+      "nombre": "AJUSTES POR INFLACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Efecto patrimonial acumulado del sistema de ajustes integrales por inflación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3410",
+      "nombre": "SANEAMIENTO FISCAL",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Efecto patrimonial del saneamiento fiscal de activos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3415",
+      "nombre": "AJUSTES POR INFLACIÓN DECRETO 3019 DE 1989",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Efecto patrimonial de los ajustes por inflación aplicados bajo el Decreto 3019 de 1989.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "35",
+      "nombre": "DIVIDENDOS O PARTICIPACIONES DECRETADOS EN ACCIONES, CUOTAS O PARTES DE INTERÉS SOCIAL",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Dividendos y participaciones decretados por el máximo órgano social que se pagarán en acciones, cuotas o partes de interés social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3505",
+      "nombre": "DIVIDENDOS DECRETADOS EN ACCIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Dividendos decretados que se pagarán mediante la emisión de acciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3510",
+      "nombre": "PARTICIPACIONES DECRETADAS EN CUOTAS O PARTES DE INTERÉS SOCIAL",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Participaciones decretadas que se pagarán en cuotas o partes de interés social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "36",
+      "nombre": "RESULTADOS DEL EJERCICIO",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Utilidad o pérdida obtenida por el ente económico al cierre del ejercicio contable.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3605",
+      "nombre": "UTILIDAD DEL EJERCICIO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Resultado positivo obtenido por el ente económico al cierre del ejercicio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3610",
+      "nombre": "PÉRDIDA DEL EJERCICIO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Resultado negativo obtenido por el ente económico al cierre del ejercicio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "37",
+      "nombre": "RESULTADOS DE EJERCICIOS ANTERIORES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Utilidades acumuladas o pérdidas acumuladas de ejercicios anteriores que se encuentran pendientes de aplicación o enjugue.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3705",
+      "nombre": "UTILIDADES ACUMULADAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Utilidades de ejercicios anteriores pendientes de distribución o capitalización.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3710",
+      "nombre": "PÉRDIDAS ACUMULADAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Pérdidas de ejercicios anteriores pendientes de enjugar.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "38",
+      "nombre": "SUPERÁVIT POR VALORIZACIONES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Contrapartida patrimonial de las valorizaciones registradas en el grupo 19.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3805",
+      "nombre": "DE INVERSIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor de las inversiones frente a su costo ajustado en libros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3810",
+      "nombre": "DE PROPIEDADES, PLANTA Y EQUIPO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor de la propiedad, planta y equipo determinado mediante avalúo técnico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "3895",
+      "nombre": "DE OTROS ACTIVOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Mayor valor de otros activos frente a su costo en libros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4",
+      "nombre": "INGRESOS",
+      "nivel": "clase",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que representan los beneficios operativos y financieros percibidos por el ente económico en desarrollo del giro normal de su actividad en un ejercicio determinado.",
+      "dinamica": {
+        "debita": [
+          "La cancelación de saldos al cierre del ejercicio contra ganancias y pérdidas.",
+          "Las devoluciones, rebajas y descuentos concedidos."
+        ],
+        "acredita": [
+          "El valor de los bienes vendidos o los servicios prestados.",
+          "La causación de rendimientos, arrendamientos y demás ingresos."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "41",
+      "nombre": "OPERACIONALES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos provenientes de las transacciones que constituyen la actividad principal u objeto social del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4105",
+      "nombre": "AGRICULTURA, GANADERÍA, CAZA Y SILVICULTURA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de actividades agrícolas, pecuarias, de caza y silvicultura.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4110",
+      "nombre": "PESCA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la pesca y la acuicultura.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4115",
+      "nombre": "EXPLOTACIÓN DE MINAS Y CANTERAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la extracción de minerales e hidrocarburos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4120",
+      "nombre": "INDUSTRIAS MANUFACTURERAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la transformación industrial de bienes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4125",
+      "nombre": "SUMINISTRO DE ELECTRICIDAD, GAS Y AGUA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por la generación y distribución de servicios públicos domiciliarios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4130",
+      "nombre": "CONSTRUCCIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la actividad de construcción y obras civiles.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4135",
+      "nombre": "COMERCIO AL POR MAYOR Y AL POR MENOR",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la compraventa de mercancías sin transformación.",
+      "dinamica": {
+        "debita": [
+          "La cancelación del saldo al cierre del ejercicio contra ganancias y pérdidas."
+        ],
+        "acredita": [
+          "El valor de las mercancías vendidas, a crédito o de contado."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4140",
+      "nombre": "HOTELES Y RESTAURANTES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de alojamiento, comida y bebidas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4145",
+      "nombre": "TRANSPORTE, ALMACENAMIENTO Y COMUNICACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de transporte, almacenamiento y telecomunicaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4150",
+      "nombre": "ACTIVIDAD FINANCIERA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales de entidades cuya actividad principal es la intermediación financiera.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4155",
+      "nombre": "ACTIVIDADES INMOBILIARIAS, EMPRESARIALES Y DE ALQUILER",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios inmobiliarios, empresariales, de consultoría y alquiler.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4160",
+      "nombre": "ENSEÑANZA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de educación formal y no formal.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4165",
+      "nombre": "SERVICIOS SOCIALES Y DE SALUD",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de salud y asistencia social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4170",
+      "nombre": "OTRAS ACTIVIDADES DE SERVICIOS COMUNITARIOS, SOCIALES Y PERSONALES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios comunitarios, culturales, deportivos y personales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4175",
+      "nombre": "DEVOLUCIONES EN VENTAS (DB)",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Valor de las devoluciones, rebajas y descuentos en ventas, que disminuye el ingreso operacional.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "42",
+      "nombre": "NO OPERACIONALES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos provenientes de transacciones diferentes a la actividad principal del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4205",
+      "nombre": "OTRAS VENTAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por ventas de bienes distintos a los del objeto social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4210",
+      "nombre": "FINANCIEROS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por intereses, descuentos y demás rendimientos financieros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4215",
+      "nombre": "DIVIDENDOS Y PARTICIPACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por dividendos y participaciones decretados a favor del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4218",
+      "nombre": "INGRESOS MÉTODO DE PARTICIPACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos reconocidos por la aplicación del método de participación patrimonial.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4220",
+      "nombre": "ARRENDAMIENTOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por el alquiler de bienes ajenos al giro ordinario del negocio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4225",
+      "nombre": "COMISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por comisiones no operacionales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4230",
+      "nombre": "HONORARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por honorarios no operacionales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4235",
+      "nombre": "SERVICIOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por servicios prestados de manera ocasional.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4240",
+      "nombre": "UTILIDAD EN VENTA DE INVERSIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ganancia obtenida en la enajenación de inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4245",
+      "nombre": "UTILIDAD EN VENTA DE PROPIEDADES, PLANTA Y EQUIPO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ganancia obtenida en la enajenación de propiedad, planta y equipo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4248",
+      "nombre": "UTILIDAD EN VENTA DE OTROS BIENES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ganancia obtenida en la enajenación de otros bienes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4250",
+      "nombre": "RECUPERACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por recuperación de provisiones, deducciones, castigos y gastos de ejercicios anteriores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4255",
+      "nombre": "INDEMNIZACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por indemnizaciones recibidas de compañías de seguros y terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4260",
+      "nombre": "PARTICIPACIONES EN CONCESIONES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos derivados de la participación en contratos de concesión.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4265",
+      "nombre": "INGRESOS DE EJERCICIOS ANTERIORES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos correspondientes a ejercicios anteriores reconocidos en el periodo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4275",
+      "nombre": "DEVOLUCIONES EN OTRAS VENTAS (DB)",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Devoluciones, rebajas y descuentos sobre otras ventas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4295",
+      "nombre": "DIVERSOS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Otros activos no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "47",
+      "nombre": "AJUSTES POR INFLACION",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Resultado neto del sistema de ajustes integrales por inflación, hoy suspendido para efectos contables y fiscales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "4705",
+      "nombre": "CORRECCIÓN MONETARIA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Resultado neto de los ajustes integrales por inflación del ejercicio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5",
+      "nombre": "GASTOS",
+      "nivel": "clase",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que representan los cargos operativos y financieros en que incurre el ente económico en el desarrollo del giro normal de su actividad en un ejercicio económico determinado.",
+      "dinamica": {
+        "debita": [
+          "La causación del gasto, se pague o no en el periodo.",
+          "Los ajustes que incrementan el valor del gasto."
+        ],
+        "acredita": [
+          "Las devoluciones, anulaciones y reintegros de gastos.",
+          "La cancelación de saldos al cierre del ejercicio contra ganancias y pérdidas."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "51",
+      "nombre": "OPERACIONALES DE ADMINISTRACIÓN",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos ocasionados en el desarrollo del objeto social principal en el área administrativa del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5105",
+      "nombre": "GASTOS DE PERSONAL",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Salarios, prestaciones sociales, aportes y demás pagos laborales del área administrativa.",
+      "dinamica": {
+        "debita": [
+          "La causación de salarios, prestaciones, aportes y demás pagos laborales del área administrativa."
+        ],
+        "acredita": [
+          "Los reintegros y anulaciones.",
+          "La cancelación del saldo al cierre del ejercicio contra ganancias y pérdidas."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510506",
+      "nombre": "SUELDOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Remuneración fija pactada con los trabajadores del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510515",
+      "nombre": "HORAS EXTRAS Y RECARGOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Pagos por trabajo suplementario, nocturno, dominical y festivo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510518",
+      "nombre": "COMISIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Comisiones causadas a favor del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510521",
+      "nombre": "VIATICOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas reconocidas por manutención y alojamiento en comisiones de servicio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510527",
+      "nombre": "AUXILIO DE TRANSPORTE",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Auxilio legal de transporte reconocido a los trabajadores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510530",
+      "nombre": "CESANTÍAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por cesantías causadas del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510533",
+      "nombre": "INTERESES SOBRE CESANTÍAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por intereses sobre cesantías del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510536",
+      "nombre": "PRIMA DE SERVICIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por prima legal de servicios del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510539",
+      "nombre": "VACACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por vacaciones causadas del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510548",
+      "nombre": "BONIFICACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Bonificaciones ocasionales o habituales reconocidas al personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510551",
+      "nombre": "DOTACION Y SUMINISTRO A TRABAJADORES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de la dotación legal entregada a los trabajadores.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510560",
+      "nombre": "INDEMNIZACIONES LABORALES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Indemnizaciones causadas por terminación del contrato de trabajo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510563",
+      "nombre": "CAPACITACIÓN AL PERSONAL",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos de formación y capacitación del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510568",
+      "nombre": "APORTES A ADMINISTRADORAS DE RIESGOS PROFESIONALES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a ARL a cargo del empleador.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510569",
+      "nombre": "APORTES A ENTIDADES PROMOTORAS DE SALUD",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a salud a cargo del empleador.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510570",
+      "nombre": "APORTES A FONDOS DE PENSIONES Y/O CESANTÍAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a pensiones y cesantías a cargo del empleador.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510572",
+      "nombre": "APORTES CAJAS DE COMPENSACIÓN FAMILIAR",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aporte parafiscal a cajas de compensación familiar.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510575",
+      "nombre": "APORTES ICBF",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aporte parafiscal al Instituto Colombiano de Bienestar Familiar.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510578",
+      "nombre": "SENA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aporte parafiscal al Servicio Nacional de Aprendizaje.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5110",
+      "nombre": "HONORARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por honorarios no operacionales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5115",
+      "nombre": "IMPUESTOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos, tasas y contribuciones no recuperables asumidos por el área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5120",
+      "nombre": "ARRENDAMIENTOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por el alquiler de bienes ajenos al giro ordinario del negocio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5125",
+      "nombre": "CONTRIBUCIONES Y AFILIACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a gremios, entidades de vigilancia y afiliaciones del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5130",
+      "nombre": "SEGUROS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Primas de seguros que amparan bienes y riesgos del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5135",
+      "nombre": "SERVICIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por servicios prestados de manera ocasional.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "513505",
+      "nombre": "ASEO Y VIGILANCIA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos por servicios de aseo y vigilancia del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "513525",
+      "nombre": "ACUEDUCTO Y ALCANTARILLADO",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos por servicios de acueducto y alcantarillado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "513530",
+      "nombre": "ENERGÍA ELÉCTRICA",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos por servicio de energía eléctrica del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "513535",
+      "nombre": "TELÉFONO",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos por servicios de telefonía y comunicaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "513540",
+      "nombre": "CORREO, PORTES Y TELEGRAMAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos por servicios de mensajería y correo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5140",
+      "nombre": "GASTOS LEGALES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos notariales, de registro, trámites y licencias del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5145",
+      "nombre": "MANTENIMIENTO Y REPARACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos de conservación y reparación de bienes del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5150",
+      "nombre": "ADECUACIÓN E INSTALACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos de instalación, montaje y adecuación de bienes del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5155",
+      "nombre": "GASTOS DE VIAJE",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos de alojamiento, manutención y transporte del personal administrativo en comisión.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5160",
+      "nombre": "DEPRECIACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por depreciación de los bienes asignados al área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5165",
+      "nombre": "AMORTIZACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por amortización de intangibles y diferidos del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5195",
+      "nombre": "DIVERSOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Otros activos no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5199",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "52",
+      "nombre": "OPERACIONALES DE VENTAS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos ocasionados en el desarrollo del objeto social principal en el área de comercialización, mercadeo y distribución.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5205",
+      "nombre": "GASTOS DE PERSONAL",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Salarios, prestaciones sociales, aportes y demás pagos laborales del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5210",
+      "nombre": "HONORARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por honorarios no operacionales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5215",
+      "nombre": "IMPUESTOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos, tasas y contribuciones no recuperables asumidos por el área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5220",
+      "nombre": "ARRENDAMIENTOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por el alquiler de bienes ajenos al giro ordinario del negocio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5225",
+      "nombre": "CONTRIBUCIONES Y AFILIACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a gremios, entidades de vigilancia y afiliaciones del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5230",
+      "nombre": "SEGUROS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Primas de seguros que amparan bienes y riesgos del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5235",
+      "nombre": "SERVICIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por servicios prestados de manera ocasional.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5240",
+      "nombre": "GASTOS LEGALES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos notariales, de registro, trámites y licencias del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5245",
+      "nombre": "MANTENIMIENTO Y REPARACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos de conservación y reparación de bienes del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5250",
+      "nombre": "ADECUACIÓN E INSTALACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos de instalación, montaje y adecuación de bienes del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5255",
+      "nombre": "GASTOS DE VIAJE",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos de alojamiento, manutención y transporte del personal administrativo en comisión.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5260",
+      "nombre": "DEPRECIACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por depreciación de los bienes asignados al área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5265",
+      "nombre": "AMORTIZACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gasto por amortización de intangibles y diferidos del área administrativa.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5270",
+      "nombre": "FINANCIEROS-REAJUSTE DEL SISTEMA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos financieros originados en el reajuste del sistema de valor constante.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5275",
+      "nombre": "PÉRDIDAS MÉTODO DE PARTICIPACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Pérdidas reconocidas por la aplicación del método de participación patrimonial.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5295",
+      "nombre": "DIVERSOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Otros activos no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5299",
+      "nombre": "PROVISIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Monto provisionado para cubrir la desvalorización de las inversiones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "53",
+      "nombre": "NO OPERACIONALES",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos que no corresponden directamente a la actividad principal del ente económico, incluidos los financieros y extraordinarios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5305",
+      "nombre": "FINANCIEROS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos por intereses, descuentos y demás rendimientos financieros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "530505",
+      "nombre": "GASTOS BANCARIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Comisiones y cargos cobrados por las entidades bancarias.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "530515",
+      "nombre": "COMISIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Comisiones causadas por operaciones financieras.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "530520",
+      "nombre": "INTERESES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Intereses causados sobre obligaciones financieras.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "530525",
+      "nombre": "DIFERENCIA EN CAMBIO",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Pérdida generada por la fluctuación de la tasa de cambio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "530535",
+      "nombre": "DESCUENTOS COMERCIALES CONDICIONADOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Descuentos concedidos a clientes por pronto pago.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5310",
+      "nombre": "PÉRDIDA EN VENTA Y RETIRO DE BIENES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Pérdida originada en la venta, retiro o baja de bienes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5313",
+      "nombre": "PÉRDIDAS MÉTODO DE PARTICIPACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Pérdidas reconocidas por la aplicación del método de participación patrimonial.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5315",
+      "nombre": "GASTOS EXTRAORDINARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos originados en hechos ajenos a la actividad normal del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5395",
+      "nombre": "GASTOS DIVERSOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos no operacionales no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "54",
+      "nombre": "IMPUESTO DE RENTA Y COMPLEMENTARIOS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del impuesto de renta y complementarios a cargo del ente económico por el ejercicio gravable.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5405",
+      "nombre": "IMPUESTO DE RENTA Y COMPLEMENTARIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor del impuesto de renta y complementarios causado en el ejercicio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "59",
+      "nombre": "GANANCIAS Y PÉRDIDAS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Cuenta de cierre que resume el resultado del ejercicio antes de su traslado al patrimonio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "5905",
+      "nombre": "GANANCIAS Y PÉRDIDAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Cuenta de cierre donde se cancelan ingresos, costos y gastos para determinar el resultado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6",
+      "nombre": "COSTOS DE VENTAS",
+      "nivel": "clase",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que representan la acumulación de los costos directos e indirectos necesarios en la elaboración de productos y prestación de servicios vendidos.",
+      "dinamica": {
+        "debita": [
+          "El costo de los bienes vendidos o de los servicios prestados.",
+          "Los ajustes que incrementan el costo."
+        ],
+        "acredita": [
+          "El costo de las devoluciones en ventas.",
+          "La cancelación de saldos al cierre del ejercicio contra ganancias y pérdidas."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "61",
+      "nombre": "COSTO DE VENTAS Y DE PRESTACION DE SERVICIOS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los artículos vendidos y de los servicios prestados durante el ejercicio, clasificado por actividad económica.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6105",
+      "nombre": "AGRICULTURA, GANADERÍA, CAZA Y SILVICULTURA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de actividades agrícolas, pecuarias, de caza y silvicultura.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6110",
+      "nombre": "PESCA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la pesca y la acuicultura.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6115",
+      "nombre": "EXPLOTACIÓN DE MINAS Y CANTERAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la extracción de minerales e hidrocarburos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6120",
+      "nombre": "INDUSTRIAS MANUFACTURERAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la transformación industrial de bienes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6125",
+      "nombre": "SUMINISTRO DE ELECTRICIDAD, GAS Y AGUA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por la generación y distribución de servicios públicos domiciliarios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6130",
+      "nombre": "CONSTRUCCIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la actividad de construcción y obras civiles.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6135",
+      "nombre": "COMERCIO AL POR MAYOR Y AL POR MENOR",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales provenientes de la compraventa de mercancías sin transformación.",
+      "dinamica": {
+        "debita": [
+          "El costo de las mercancías vendidas en el periodo."
+        ],
+        "acredita": [
+          "El costo de las devoluciones en ventas.",
+          "La cancelación del saldo al cierre del ejercicio contra ganancias y pérdidas."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6140",
+      "nombre": "HOTELES Y RESTAURANTES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de alojamiento, comida y bebidas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6145",
+      "nombre": "TRANSPORTE, ALMACENAMIENTO Y COMUNICACIONES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de transporte, almacenamiento y telecomunicaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6150",
+      "nombre": "ACTIVIDAD FINANCIERA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales de entidades cuya actividad principal es la intermediación financiera.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6155",
+      "nombre": "ACTIVIDADES INMOBILIARIAS, EMPRESARIALES Y DE ALQUILER",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios inmobiliarios, empresariales, de consultoría y alquiler.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6160",
+      "nombre": "ENSEÑANZA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de educación formal y no formal.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6165",
+      "nombre": "SERVICIOS SOCIALES Y DE SALUD",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios de salud y asistencia social.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6170",
+      "nombre": "OTRAS ACTIVIDADES DE SERVICIOS COMUNITARIOS, SOCIALES Y PERSONALES",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingresos operacionales por servicios comunitarios, culturales, deportivos y personales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "62",
+      "nombre": "COMPRAS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las adquisiciones de mercancías, materias primas y materiales, utilizado por entes que manejan inventario periódico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6205",
+      "nombre": "DE MERCANCÍAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las mercancías adquiridas para la venta, bajo el sistema de inventario periódico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6210",
+      "nombre": "DE MATERIAS PRIMAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de las materias primas adquiridas, bajo el sistema de inventario periódico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6215",
+      "nombre": "DE MATERIALES INDIRECTOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de los materiales indirectos adquiridos para el proceso productivo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6220",
+      "nombre": "COMPRA DE ENERGÍA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Valor de la energía adquirida para su comercialización o para el proceso productivo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "6225",
+      "nombre": "DEVOLUCIONES EN COMPRAS (CR)",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Valor de las devoluciones, rebajas y descuentos en compras.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "7",
+      "nombre": "COSTOS DE PRODUCCIÓN O DE OPERACIÓN",
+      "nivel": "clase",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que representan la acumulación de los costos incurridos en el proceso productivo o en la prestación del servicio durante un periodo, antes de su traslado al costo de ventas.",
+      "dinamica": {
+        "debita": [
+          "El consumo de materia prima, mano de obra y costos indirectos del periodo."
+        ],
+        "acredita": [
+          "El traslado de los costos acumulados a inventario de productos en proceso, terminados o al costo de ventas."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "71",
+      "nombre": "MATERIA PRIMA",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los materiales que se transforman e incorporan físicamente al producto terminado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "7105",
+      "nombre": "MATERIA PRIMA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de los materiales consumidos y transformados en el proceso productivo del periodo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "72",
+      "nombre": "MANO DE OBRA DIRECTA",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de la remuneración y prestaciones del personal que interviene directamente en la transformación de la materia prima.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "7205",
+      "nombre": "MANO DE OBRA DIRECTA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costo de la remuneración y prestaciones del personal que interviene directamente en la producción.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "73",
+      "nombre": "COSTOS INDIRECTOS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos que participan en el proceso productivo sin poder identificarse directamente con el producto, como mano de obra indirecta, materiales indirectos, depreciaciones y servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "7305",
+      "nombre": "COSTOS INDIRECTOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos de mano de obra indirecta, materiales indirectos, servicios, depreciaciones y demás cargos aplicables a la producción.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "74",
+      "nombre": "CONTRATOS DE SERVICIOS",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos acumulados en la ejecución de contratos de prestación de servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "7405",
+      "nombre": "CONTRATOS DE SERVICIOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos acumulados en la ejecución de contratos de prestación de servicios.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8",
+      "nombre": "CUENTAS DE ORDEN DEUDORAS",
+      "nivel": "clase",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que registran hechos o circunstancias que pueden llegar a afectar la estructura financiera del ente económico, así como el control interno y la información fiscal. No afectan los estados financieros básicos.",
+      "dinamica": {
+        "debita": [
+          "El registro del derecho contingente o de la operación sujeta a control."
+        ],
+        "acredita": [
+          "La cancelación del derecho contingente o la extinción de la operación controlada."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "81",
+      "nombre": "DERECHOS CONTINGENTES",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Hechos o circunstancias de los cuales pueden generarse derechos que afecten la estructura financiera del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8105",
+      "nombre": "BIENES Y VALORES ENTREGADOS EN CUSTODIA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los bienes y valores del ente económico entregados a terceros en custodia.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8110",
+      "nombre": "BIENES Y VALORES ENTREGADOS EN GARANTÍA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los bienes y valores entregados para respaldar obligaciones.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8115",
+      "nombre": "BIENES Y VALORES EN PODER DE TERCEROS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los bienes de propiedad del ente económico que están en poder de terceros.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8120",
+      "nombre": "LITIGIOS Y/O DEMANDAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los litigios y demandas instaurados por el ente económico a su favor.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8125",
+      "nombre": "PROMESAS DE COMPRAVENTA",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas entregadas en virtud de promesas de compraventa de bienes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8195",
+      "nombre": "DIVERSAS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Otros derechos contingentes no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "82",
+      "nombre": "DEUDORAS FISCALES",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Diferencias entre las cifras contables y las cifras fiscales que deben ser reveladas y controladas.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "83",
+      "nombre": "DEUDORAS DE CONTROL",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Operaciones que requieren control interno o revelación, sin afectar los estados financieros básicos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8305",
+      "nombre": "BIENES RECIBIDOS EN ARRENDAMIENTO FINANCIERO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los bienes tomados en arrendamiento financiero.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8310",
+      "nombre": "TÍTULOS DE INVERSIÓN NO COLOCADOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los títulos de inversión emitidos y aún no colocados en el mercado.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8315",
+      "nombre": "PROPIEDADES, PLANTA Y EQUIPO TOTALMENTE DEPRECIADOS, AGOTADOS Y/O AMORTIZADOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los activos que siguen en uso y ya están totalmente depreciados, agotados o amortizados.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8320",
+      "nombre": "CRÉDITOS A FAVOR NO UTILIZADOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los cupos de crédito aprobados a favor del ente económico y no utilizados.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8325",
+      "nombre": "ACTIVOS CASTIGADOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los activos castigados contablemente sobre los que se conserva el derecho de cobro.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8330",
+      "nombre": "TÍTULOS DE INVERSIÓN AMORTIZADOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los títulos de inversión que ya fueron amortizados.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8335",
+      "nombre": "CAPITALIZACIÓN POR REVALORIZACIÓN DE PATRIMONIO",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de la capitalización efectuada con cargo a la revalorización del patrimonio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8395",
+      "nombre": "OTRAS CUENTAS DEUDORAS DE CONTROL",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Otras operaciones que requieren control interno de naturaleza deudora.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "8399",
+      "nombre": "AJUSTES POR INFLACIÓN ACTIVOS",
+      "nivel": "cuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los ajustes por inflación aplicados a los activos.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "84",
+      "nombre": "DERECHOS CONTINGENTES POR CONTRA",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Contrapartida acreedora de las cuentas del grupo 81.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "85",
+      "nombre": "DEUDORAS FISCALES POR CONTRA",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Contrapartida acreedora de las cuentas del grupo 82.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "86",
+      "nombre": "DEUDORAS DE CONTROL POR CONTRA",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": true,
+      "descripcion": "Contrapartida acreedora de las cuentas del grupo 83.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9",
+      "nombre": "CUENTAS DE ORDEN ACREEDORAS",
+      "nivel": "clase",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Agrupa las cuentas que registran compromisos o contratos que se relacionan con posibles obligaciones y que pueden llegar a afectar la estructura financiera del ente económico, así como el control interno y la información fiscal.",
+      "dinamica": {
+        "debita": [
+          "La cancelación de la responsabilidad contingente o la extinción de la operación controlada."
+        ],
+        "acredita": [
+          "El registro de la responsabilidad contingente o de la operación sujeta a control."
+        ]
+      },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "91",
+      "nombre": "RESPONSABILIDADES CONTINGENTES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Compromisos o contratos de los que pueden derivarse obligaciones a cargo del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9105",
+      "nombre": "BIENES Y VALORES RECIBIDOS EN CUSTODIA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los bienes y valores de terceros recibidos en custodia.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9110",
+      "nombre": "BIENES Y VALORES RECIBIDOS EN GARANTÍA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los bienes y valores recibidos de terceros como garantía.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9115",
+      "nombre": "BIENES Y VALORES RECIBIDOS DE TERCEROS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los bienes de terceros que están en poder del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9120",
+      "nombre": "LITIGIOS Y/O DEMANDAS",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los litigios y demandas instaurados contra el ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9125",
+      "nombre": "PROMESAS DE COMPRAVENTA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Sumas entregadas en virtud de promesas de compraventa de bienes.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9130",
+      "nombre": "CONTRATOS DE ADMINISTRACIÓN DELEGADA",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de las obligaciones derivadas de contratos de administración delegada.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9135",
+      "nombre": "CUENTAS EN PARTICIPACIÓN",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de las obligaciones derivadas de contratos de cuentas en participación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9195",
+      "nombre": "OTRAS RESPONSABILIDADES CONTINGENTES",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Otras responsabilidades contingentes no clasificables en las demás cuentas del grupo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "92",
+      "nombre": "ACREEDORAS FISCALES",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Diferencias de naturaleza acreedora entre las cifras contables y las fiscales.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "93",
+      "nombre": "ACREEDORAS DE CONTROL",
+      "nivel": "grupo",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Operaciones de naturaleza acreedora que requieren control interno o revelación.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9305",
+      "nombre": "CONTRATOS DE ARRENDAMIENTO FINANCIERO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de las obligaciones derivadas de contratos de arrendamiento financiero.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9395",
+      "nombre": "OTRAS CUENTAS DE ORDEN ACREEDORAS DE CONTROL",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Otras operaciones que requieren control interno de naturaleza acreedora.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "9399",
+      "nombre": "AJUSTES POR INFLACIÓN PATRIMONIO",
+      "nivel": "cuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Control de los ajustes por inflación aplicados al patrimonio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "94",
+      "nombre": "RESPONSABILIDADES CONTINGENTES POR CONTRA",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Contrapartida deudora de las cuentas del grupo 91.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "95",
+      "nombre": "ACREEDORAS FISCALES POR CONTRA",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Contrapartida deudora de las cuentas del grupo 92.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "96",
+      "nombre": "ACREEDORAS DE CONTROL POR CONTRA",
+      "nivel": "grupo",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Contrapartida deudora de las cuentas del grupo 93.",
+      "origen": "oficial"
+    }
+  ]
+}
