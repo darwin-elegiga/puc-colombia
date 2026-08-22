@@ -135,3 +135,30 @@ export function IconoFiltro({ className = 'size-4' }: Props) {
     </svg>
   )
 }
+
+export function IconoVisto({ className = 'size-4' }: Props) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={`${base} ${className}`}>
+      <path d="m4.5 10.5 3.5 3.5 7.5-8" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function IconoBalanza({ className = 'size-4' }: Props) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={`${base} ${className}`}>
+      <path d="M10 3v14M5.5 17h9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M3 5.5h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M6 5.5 3.5 11h5L6 5.5ZM14 5.5 11.5 11h5L14 5.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function IconoReiniciar({ className = 'size-4' }: Props) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={`${base} ${className}`}>
+      <path d="M16.5 10a6.5 6.5 0 1 1-1.9-4.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M16.5 3v3.5H13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}

@@ -5,8 +5,7 @@ import type { Movimiento } from '@/lib/movimientos'
 import type { Destino } from '@/lib/navegacion'
 import { InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen } from './Insignias'
 import { IconoIntercambio, IconoChevron } from './Iconos'
-
-const capitalizar = (t: string) => t.charAt(0) + t.slice(1).toLowerCase()
+import { nombreLegible } from '@/lib/puc'
 
 export default function ListaResultados({
   cuentas,
@@ -96,12 +95,13 @@ export default function ListaResultados({
                         {c.codigo}
                       </span>
                       <span className="min-w-0 flex-1 truncate text-[15px] text-tinta">
-                        {capitalizar(c.nombre)}
+                        {nombreLegible(c.nombre)}
                       </span>
                     </span>
 
+                    {/* Sin `block`: pisaba el display:-webkit-box de line-clamp y el resumen no se recortaba a dos líneas. */}
                     {c.resumen && (
-                      <span className="mt-1 line-clamp-2 block text-[13px] leading-relaxed text-tinta-suave">
+                      <span className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-tinta-suave">
                         {c.resumen}
                       </span>
                     )}

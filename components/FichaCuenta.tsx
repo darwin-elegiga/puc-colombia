@@ -2,12 +2,10 @@
 
 import type { Ficha } from '@/lib/tipos'
 import type { Movimiento } from '@/lib/movimientos'
-import { ESTADO_FINANCIERO } from '@/lib/puc'
+import { ESTADO_FINANCIERO, nombreLegible } from '@/lib/puc'
 import LecturaCodigo from './LecturaCodigo'
 import { InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen } from './Insignias'
 import { IconoMas, IconoPapelera, IconoIntercambio } from './Iconos'
-
-const capitalizar = (t: string) => t.charAt(0) + t.slice(1).toLowerCase()
 
 export default function FichaCuenta({
   ficha,
@@ -39,7 +37,7 @@ export default function FichaCuenta({
                   onClick={() => onIr(a.codigo)}
                   className="min-h-9 rounded-lg px-2 py-1 pulsable"
                 >
-                  <span className="tabular">{a.codigo}</span> {capitalizar(a.nombre)}
+                  <span className="tabular">{a.codigo}</span> {nombreLegible(a.nombre)}
                 </button>
                 <span aria-hidden>/</span>
               </span>
@@ -49,7 +47,7 @@ export default function FichaCuenta({
 
         <header>
           <p className="tabular text-[26px] text-tinta-tenue lg:text-3xl">{ficha.codigo}</p>
-          <h2 className="editorial mt-1 text-[30px] text-tinta lg:text-4xl">{capitalizar(ficha.nombre)}</h2>
+          <h2 className="editorial mt-1 text-[30px] text-tinta lg:text-4xl">{nombreLegible(ficha.nombre)}</h2>
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             <InsigniaNivel nivel={ficha.nivel} />
             <InsigniaNaturaleza naturaleza={ficha.naturaleza} forzada={ficha.naturalezaForzada} />
@@ -143,7 +141,7 @@ export default function FichaCuenta({
                     className="tactil flex w-full items-center gap-3 px-4 text-left pulsable"
                   >
                     <span className="tabular text-[14px] text-tinta-suave">{h.codigo}</span>
-                    <span className="min-w-0 flex-1 truncate text-[14.5px] text-tinta">{capitalizar(h.nombre)}</span>
+                    <span className="min-w-0 flex-1 truncate text-[14.5px] text-tinta">{nombreLegible(h.nombre)}</span>
                     <InsigniaOrigen origen={h.origen} />
                   </button>
                 </li>

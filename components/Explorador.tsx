@@ -10,18 +10,20 @@ import {
 import { buscarMovimientos, movimientoPorId, movimientosDeCuenta } from '@/lib/movimientos'
 import { descargar, useCuentasPropias } from '@/lib/almacenamiento'
 import { useDestino } from '@/lib/navegacion'
+import { EJERCICIOS } from '@/lib/ejercicios'
 import PanelClases from './PanelClases'
 import ListaResultados from './ListaResultados'
 import FichaCuenta from './FichaCuenta'
 import FichaMovimiento from './FichaMovimiento'
+import Entrenador from './Entrenador'
 import LecturaCodigo from './LecturaCodigo'
 import DialogoNuevaCuenta from './DialogoNuevaCuenta'
 import DialogoDatos, { type ResultadoImportacion } from './DialogoDatos'
 import Dialogo, { botonSecundario } from './Dialogo'
 import Menu from './Menu'
 import {
-  IconoCapas, IconoCerrar, IconoChevron, IconoDescarga, IconoInfo, IconoInstalar, IconoLupa,
-  IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
+  IconoBalanza, IconoCapas, IconoCerrar, IconoChevron, IconoDescarga, IconoInfo, IconoInstalar,
+  IconoLupa, IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
 } from './Iconos'
 
 const OFICIALES = datosPuc.cuentas as unknown as Cuenta[]
@@ -209,6 +211,12 @@ export default function Explorador() {
 
   const opcionesMenu = [
     {
+      etiqueta: 'Nueva cuenta',
+      descripcion: 'Crear una cuenta propia',
+      icono: <IconoMas className="size-4" />,
+      onSeleccionar: () => { setCodigoInicial(''); setDialogo('nueva') },
+    },
+    {
       etiqueta: 'Importar y exportar',
       descripcion: 'CSV de cuentas',
       icono: <IconoSubida className="size-4" />,
@@ -232,6 +240,23 @@ export default function Explorador() {
       onSeleccionar: () => setDialogo('acerca'),
     },
   ]
+
+  /*
+    El entrenamiento no es una consulta del catálogo sino una tarea con principio
+    y final, así que se lleva la pantalla entera en lugar de vivir en la columna
+    de detalle.
+  */
+  if (destino?.tipo === 'entrenar' || destino?.tipo === 'ejercicio') {
+    return (
+      <Entrenador
+        catalogo={catalogo}
+        ejercicioId={destino.tipo === 'ejercicio' ? destino.id : null}
+        onAbrir={(id) => abrir({ tipo: 'ejercicio', id })}
+        onVolverALista={cerrar}
+        onSalir={() => abrir(null)}
+      />
+    )
+  }
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -306,11 +331,11 @@ export default function Explorador() {
           {/* Acciones de escritorio: en móvil viven en la barra inferior. */}
           <button
             type="button"
-            onClick={() => { setCodigoInicial(''); setDialogo('nueva') }}
+            onClick={() => abrir({ tipo: 'entrenar' })}
             className="hidden shrink-0 items-center gap-1.5 rounded-lg bg-tinta px-3 py-2 text-[13px] text-white hover:bg-[#3d4347] lg:inline-flex"
           >
-            <IconoMas className="size-3.5" />
-            Nueva
+            <IconoBalanza className="size-3.5" />
+            Entrenar
           </button>
           <Menu
             etiqueta="Más opciones"
@@ -330,10 +355,15 @@ export default function Explorador() {
         )}
       </header>
 
-      {/* ═══════════ Cuerpo ═══════════ */}
+      {/*
+        ═══════════ Cuerpo ═══════════
+        Las columnas llevan min-w-0: por omisión un hijo de grid no baja de su
+        contenido, así que una descripción larga ensanchaba el panel más allá de
+        la pantalla y el texto quedaba cortado por la derecha en el móvil.
+      */}
       <div className="grid min-h-0 flex-1 lg:grid-cols-[15rem_24rem_1fr]">
         {/* Lateral: solo escritorio. En móvil es la hoja inferior. */}
-        <aside className="panel-scroll hidden border-r border-borde bg-lienzo lg:block">
+        <aside className="panel-scroll hidden min-w-0 border-r border-borde bg-lienzo lg:block">
           <div className="border-b border-borde px-5 py-3">
             <p className="rotulo">Las nueve clases</p>
           </div>
@@ -351,7 +381,7 @@ export default function Explorador() {
         {/* Resultados */}
         <section
           className={[
-            'flex min-h-0 flex-col border-borde lg:border-r',
+            'flex min-h-0 min-w-0 flex-col border-borde lg:border-r',
             hayDetalle ? 'hidden lg:flex' : 'flex',
           ].join(' ')}
         >
@@ -397,14 +427,21 @@ export default function Explorador() {
                   </div>
                 )}
 
-                {!consulta && !hayFiltros && <IntroCompacta onEjemplo={ejecutarBusqueda} />}
+                {!consulta && !hayFiltros && (
+                  <IntroCompacta
+                    onEjemplo={ejecutarBusqueda}
+                    onEntrenar={() => abrir({ tipo: 'entrenar' })}
+                  />
+                )}
               </>
             }
           />
         </section>
 
         {/* Detalle */}
-        <section className={['min-h-0 flex-col bg-lienzo', hayDetalle ? 'flex' : 'hidden lg:flex'].join(' ')}>
+        <section
+          className={['min-h-0 min-w-0 flex-col bg-lienzo', hayDetalle ? 'flex' : 'hidden lg:flex'].join(' ')}
+        >
           {hayDetalle && (
             <div
               className="z-20 flex shrink-0 items-center gap-1 border-b border-borde bg-lienzo px-2 py-2 lg:hidden"
@@ -448,7 +485,11 @@ export default function Explorador() {
                 onIr={irACuenta}
               />
             ) : (
-              <Bienvenida total={datos.total} onEjemplo={ejecutarBusqueda} />
+              <Bienvenida
+                total={datos.total}
+                onEjemplo={ejecutarBusqueda}
+                onEntrenar={() => abrir({ tipo: 'entrenar' })}
+              />
             )}
           </div>
         </section>
@@ -472,11 +513,11 @@ export default function Explorador() {
 
           <button
             type="button"
-            onClick={() => { setCodigoInicial(''); setDialogo('nueva') }}
+            onClick={() => abrir({ tipo: 'entrenar' })}
             className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl bg-tinta text-[14px] text-white active:bg-[#3d4347]"
           >
-            <IconoMas className="size-[18px]" />
-            Nueva
+            <IconoBalanza className="size-[18px]" />
+            Entrenar
           </button>
 
           <Menu
@@ -605,7 +646,13 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
 const EJEMPLOS = ['1105', '110505', '2365', 'depreciación', 'consigno el dinero', 'pago la nómina']
 
 /** Presentación breve en la lista del móvil, donde no hay tercera columna. */
-function IntroCompacta({ onEjemplo }: { onEjemplo: (texto: string) => void }) {
+function IntroCompacta({
+  onEjemplo,
+  onEntrenar,
+}: {
+  onEjemplo: (texto: string) => void
+  onEntrenar: () => void
+}) {
   return (
     <div className="border-b border-borde px-5 py-5 lg:hidden">
       <h1 className="editorial text-[26px] text-tinta">Qué significa cada código, dígito a dígito.</h1>
@@ -624,11 +671,47 @@ function IntroCompacta({ onEjemplo }: { onEjemplo: (texto: string) => void }) {
           </button>
         ))}
       </div>
+
+      <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-4" />
     </div>
   )
 }
 
-function Bienvenida({ total, onEjemplo }: { total: number; onEjemplo: (texto: string) => void }) {
+/** Acceso al entrenamiento desde las pantallas de inicio. */
+function EntradaEntrenamiento({
+  onEntrenar,
+  className = '',
+}: {
+  onEntrenar: () => void
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onEntrenar}
+      className={`tactil flex w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 text-left pulsable lg:hover:border-borde-fuerte ${className}`}
+    >
+      <IconoBalanza className="size-5 shrink-0 text-tinta-suave" />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] leading-snug text-tinta">Entrena el debe y el haber</span>
+        <span className="block truncate text-[12.5px] text-tinta-tenue">
+          {EJERCICIOS.length} ejercicios, de menor a mayor dificultad
+        </span>
+      </span>
+      <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
+    </button>
+  )
+}
+
+function Bienvenida({
+  total,
+  onEjemplo,
+  onEntrenar,
+}: {
+  total: number
+  onEjemplo: (texto: string) => void
+  onEntrenar: () => void
+}) {
   return (
     <div className="surgir panel-scroll h-full">
       <div className="mx-auto max-w-xl px-8 py-14">
@@ -654,6 +737,8 @@ function Bienvenida({ total, onEjemplo }: { total: number; onEjemplo: (texto: st
             ))}
           </div>
         </div>
+
+        <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-8" />
 
         <dl className="mt-10 space-y-4 border-t border-borde pt-6 text-[14px]">
           <div className="grid gap-1 sm:grid-cols-[8rem_1fr]">

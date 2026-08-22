@@ -13,8 +13,30 @@ Aplicación web instalable, pensada para el móvil, que funciona sin conexión, 
   qué cuentas se debitan y cuáles se acreditan, con el concepto de cada renglón.
 - **Explica cada cuenta:** qué registra, su naturaleza, en qué estado financiero se presenta y su
   dinámica (se debita por / se acredita por), heredada del nivel superior cuando no tiene una propia.
+- **Entrena el debe y el haber.** 37 ejercicios en cinco niveles: la aplicación plantea una
+  operación y entrega sus renglones sueltos para que los ubiques en su columna. Desde el nivel 3
+  hay que elegir además la cuenta del PUC.
 - **Permite crear tus propias cuentas** validando que el código sea correcto y que exista su nivel
   superior. Importa y exporta en CSV.
+
+## Entrenamiento del debe y el haber
+
+Cada ejercicio da un caso —una venta con IVA, una nómina con descuentos, la venta de un activo
+depreciado— y sus renglones desordenados, cada uno con su importe. Se ubica cada renglón en el debe
+o en el haber; el control de cuadre va sumando las dos columnas en vivo. Al comprobar, cada renglón
+queda marcado y se explica el porqué del asiento.
+
+| Nivel | Qué se pide | Ejercicios |
+| --- | --- | --- |
+| 1 · La partida doble | Solo la columna, dos renglones | 8 |
+| 2 · Tres renglones o más | Solo la columna: impuestos, retenciones, pagos parciales | 7 |
+| 3 · Entra el PUC | Columna y cuenta de 4 dígitos, elegida de un banco de opciones | 8 |
+| 4 · Hasta la subcuenta | Columna y subcuenta de 6 dígitos, con distractores parecidos | 8 |
+| 5 · Sin opciones | La cuenta se busca en el catálogo completo | 6 |
+
+Los ejercicios viven en `data/ejercicios.ts`. Las pruebas verifican que cada asiento cuadre, que
+todas las cuentas citadas existan en `data/puc.json`, que los bancos de opciones incluyan siempre
+la respuesta y al menos un distractor, y que la dificultad suba nivel a nivel.
 
 ## Uso
 
@@ -22,7 +44,7 @@ Aplicación web instalable, pensada para el móvil, que funciona sin conexión, 
 npm install
 npm run dev          # http://localhost:3000
 npm run build && npm start
-npm test             # 15 pruebas de la lógica del catálogo
+npm test             # 37 pruebas de la lógica del catálogo y de los ejercicios
 npm run seed         # regenera data/puc.json y los iconos de la PWA
 ```
 
@@ -47,7 +69,9 @@ La interfaz se diseñó primero para la pantalla del teléfono; el escritorio es
 - Navegación por capas: lista → ficha a pantalla completa. **El botón atrás del sistema cierra la
   ficha** en lugar de salir de la aplicación, porque lo que se está viendo vive en el hash de la URL
   (`#c/1105`, `#m/pago-nomina`). De paso, la dirección se puede compartir y recargar la mantiene.
-- Barra inferior fija con lo que más se usa —Clases, Nueva y el menú— al alcance del pulgar.
+- Barra inferior fija con lo que más se usa —Clases, Entrenar y el menú— al alcance del pulgar.
+- Las columnas de la maqueta llevan `min-w-0`: un hijo de `grid` no baja de su contenido por
+  omisión, y sin eso una descripción larga ensancha el panel y corta el texto por la derecha.
 - Áreas táctiles de 48px como mínimo (variable `--tactil`).
 - Campos de formulario a 16px: por debajo de eso Safari amplía la página al enfocarlos.
 - Se respetan los márgenes seguros del dispositivo (notch y barra de gestos) con `env(safe-area-inset-*)`.
@@ -78,7 +102,9 @@ Para instalarla, el menú de la aplicación tiene la opción **Instalar en el te
 | --- | --- | --- |
 | Catálogo oficial | `data/puc.json`, empaquetado en el repositorio | Solo lectura |
 | Movimientos típicos | `data/movimientos.ts` | Solo lectura |
+| Ejercicios | `data/ejercicios.ts` | Solo lectura |
 | Tus cuentas | `localStorage` del navegador | No salen del dispositivo |
+| Tu progreso en los ejercicios | `localStorage` del navegador | No sale del dispositivo |
 
 En Vercel el sistema de archivos del servidor es de solo lectura, así que las cuentas propias se
 guardan en el navegador. **Exporta el CSV** si quieres conservarlas o llevarlas a otro dispositivo.
@@ -100,7 +126,7 @@ resto se agrega desde la aplicación o importando un CSV.
 
 Un chequeo automático (`npm test`) valida que no haya duplicados, que toda cuenta tenga su nivel
 superior, que la naturaleza sea coherente con la clase y que todos los códigos usados en los
-asientos de `data/movimientos.ts` existan en el catálogo.
+asientos de `data/movimientos.ts` y `data/ejercicios.ts` existan en el catálogo.
 
 > El Decreto 2650 perdió obligatoriedad para reconocimiento y medición con la convergencia a NIIF
 > (Ley 1314 de 2009, Decreto 2420 de 2015). Se mantiene como catálogo operativo y de referencia,
@@ -117,9 +143,12 @@ lib/
   almacenamiento.ts  cuentas propias en localStorage
   navegacion.ts      qué se está viendo, guardado en el hash de la URL
   movimientos.ts     búsqueda de operaciones típicas
+  ejercicios.ts      calificación y recorrido del entrenamiento
+  progreso.ts        ejercicios resueltos en localStorage
 data/
   puc.json           catálogo oficial (generado)
   movimientos.ts     operaciones típicas con su asiento
+  ejercicios.ts      ejercicios del entrenamiento, por nivel
 scripts/
   build-seed.mjs     fuente compacta del catálogo → data/puc.json
   build-icons.mjs    iconos PNG de la PWA

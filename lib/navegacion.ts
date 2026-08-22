@@ -13,6 +13,9 @@ import { useCallback, useSyncExternalStore } from 'react'
 export type Destino =
   | { tipo: 'cuenta'; codigo: string }
   | { tipo: 'movimiento'; id: string }
+  /** Listado del entrenamiento. */
+  | { tipo: 'entrenar' }
+  | { tipo: 'ejercicio'; id: string }
   | null
 
 const escuchadores = new Set<() => void>()
@@ -20,18 +23,36 @@ const escuchadores = new Set<() => void>()
 let profundidad = 0
 let cache: Destino | undefined
 
-export const aHash = (destino: Destino): string =>
-  destino === null ? '' : destino.tipo === 'cuenta' ? `#c/${destino.codigo}` : `#m/${destino.id}`
+export function aHash(destino: Destino): string {
+  if (destino === null) return ''
+  switch (destino.tipo) {
+    case 'cuenta':
+      return `#c/${destino.codigo}`
+    case 'movimiento':
+      return `#m/${destino.id}`
+    case 'entrenar':
+      return '#entrenar'
+    case 'ejercicio':
+      return `#e/${destino.id}`
+  }
+}
+
+const ID_VALIDO = /^[a-z0-9-]{1,64}$/
 
 function desdeHash(hash: string): Destino {
   const valor = decodeURIComponent(hash.replace(/^#/, ''))
+  if (valor === 'entrenar') return { tipo: 'entrenar' }
   if (valor.startsWith('c/')) {
     const codigo = valor.slice(2)
     return /^\d{1,10}$/.test(codigo) ? { tipo: 'cuenta', codigo } : null
   }
   if (valor.startsWith('m/')) {
     const id = valor.slice(2)
-    return /^[a-z0-9-]{1,64}$/.test(id) ? { tipo: 'movimiento', id } : null
+    return ID_VALIDO.test(id) ? { tipo: 'movimiento', id } : null
+  }
+  if (valor.startsWith('e/')) {
+    const id = valor.slice(2)
+    return ID_VALIDO.test(id) ? { tipo: 'ejercicio', id } : null
   }
   return null
 }

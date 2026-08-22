@@ -3,6 +3,7 @@
 import type { NodoClase } from '@/lib/catalogo'
 import type { Filtros, Nivel } from '@/lib/tipos'
 import { IconoChevron } from './Iconos'
+import { nombreLegible } from '@/lib/puc'
 
 const NIVELES: { valor: Nivel | ''; etiqueta: string }[] = [
   { valor: '', etiqueta: 'Todos' },
@@ -11,8 +12,6 @@ const NIVELES: { valor: Nivel | ''; etiqueta: string }[] = [
   { valor: 'cuenta', etiqueta: 'Cuenta' },
   { valor: 'subcuenta', etiqueta: 'Subcuenta' },
 ]
-
-const capitalizar = (t: string) => t.charAt(0) + t.slice(1).toLowerCase()
 
 /**
  * Navegación por clases y filtros.
@@ -57,7 +56,7 @@ export default function PanelClases({
                     {clase.codigo}
                   </span>
                   <span className={`truncate text-[15px] ${activa ? 'font-medium text-tinta' : 'text-tinta'}`}>
-                    {capitalizar(clase.nombre)}
+                    {nombreLegible(clase.nombre)}
                   </span>
                 </button>
                 <button
@@ -82,7 +81,7 @@ export default function PanelClases({
                       >
                         <span className="tabular text-[13px] text-tinta-tenue">{grupo.codigo}</span>
                         <span className="min-w-0 flex-1 truncate text-[14px] text-tinta-suave">
-                          {capitalizar(grupo.nombre)}
+                          {nombreLegible(grupo.nombre)}
                         </span>
                         <span className="tabular text-[12px] text-tinta-tenue">{grupo.cuentas}</span>
                       </button>

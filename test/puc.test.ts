@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import {
-  aCSV, codigoPadre, codigosAncestros, decodificar, desdeCSV, nivelDe, normalizar, validarBorrador,
+  aCSV, codigoPadre, codigosAncestros, decodificar, desdeCSV, nivelDe, nombreLegible, normalizar,
+  validarBorrador,
 } from '../lib/puc'
 import { buscar, construirCatalogo, fichaDe, leerCodigo } from '../lib/catalogo'
 import { MOVIMIENTOS } from '../data/movimientos'
@@ -178,4 +179,14 @@ test('cada asiento tiene al menos un débito y un crédito', () => {
     (m) => !m.asiento.some((r) => r.efecto === 'debito') || !m.asiento.some((r) => r.efecto === 'credito'),
   )
   assert.deepEqual(descuadrados.map((m) => m.id), [])
+})
+
+test('los nombres en mayúsculas se leen como frase y conservan las siglas', () => {
+  assert.equal(nombreLegible('CAJA GENERAL'), 'Caja general')
+  assert.equal(
+    nombreLegible('APORTES AL ICBF, SENA Y CAJAS DE COMPENSACIÓN'),
+    'Aportes al ICBF, SENA y cajas de compensación',
+  )
+  assert.equal(nombreLegible('DEVOLUCIONES EN VENTAS (DB)'), 'Devoluciones en ventas (DB)')
+  assert.equal(nombreLegible('SENA'), 'SENA')
 })

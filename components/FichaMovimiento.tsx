@@ -2,8 +2,7 @@
 
 import type { Movimiento, Renglon } from '@/data/movimientos'
 import type { Cuenta } from '@/lib/tipos'
-
-const capitalizar = (t: string) => t.charAt(0) + t.slice(1).toLowerCase()
+import { nombreLegible } from '@/lib/puc'
 
 /**
  * Detalle de una operación típica: qué cuentas se debitan y cuáles se acreditan.
@@ -103,7 +102,7 @@ function Columna({
                 <span className="flex items-baseline gap-3">
                   <span className="tabular text-[15px] text-tinta">{renglon.codigo}</span>
                   <span className="min-w-0 flex-1 truncate text-[15px] text-tinta">
-                    {cuenta ? capitalizar(cuenta.nombre) : 'Cuenta no encontrada'}
+                    {cuenta ? nombreLegible(cuenta.nombre) : 'Cuenta no encontrada'}
                   </span>
                 </span>
                 <span className="text-[13px] leading-relaxed text-tinta-suave">{renglon.concepto}</span>

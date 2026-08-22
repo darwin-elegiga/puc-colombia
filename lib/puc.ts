@@ -74,6 +74,22 @@ export function codigosAncestros(codigo: string): string[] {
 export const naturalezaPorClase = (codigo: string): Naturaleza | null =>
   NATURALEZA_POR_CLASE[codigo[0]] ?? null
 
+/** Siglas del catálogo que deben conservar sus mayúsculas al mostrarse. */
+const SIGLAS = new Set(['ICBF', 'SENA', 'DB', 'CR'])
+
+/**
+ * El catálogo guarda los nombres en mayúsculas, que en pantalla se leen mal.
+ * Esto los devuelve como frase respetando las siglas:
+ * «APORTES AL ICBF, SENA Y CAJAS» pasa a «Aportes al ICBF, SENA y cajas».
+ */
+export function nombreLegible(nombre: string): string {
+  const frase = nombre
+    .split(/(\P{L}+)/u)
+    .map((parte) => (SIGLAS.has(parte) ? parte : parte.toLowerCase()))
+    .join('')
+  return frase.charAt(0).toUpperCase() + frase.slice(1)
+}
+
 export const normalizar = (texto: unknown): string =>
   String(texto ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
 
