@@ -5,6 +5,7 @@ import {
   aCSV, codigoPadre, codigosAncestros, decodificar, desdeCSV, nivelDe, normalizar, validarBorrador,
 } from '../lib/puc'
 import { buscar, construirCatalogo, fichaDe, leerCodigo } from '../lib/catalogo'
+import { MOVIMIENTOS } from '../data/movimientos'
 import type { Cuenta } from '../lib/tipos'
 
 const OFICIALES = JSON.parse(readFileSync(new URL('../data/puc.json', import.meta.url), 'utf8'))
@@ -165,16 +166,14 @@ test('los nombres conservan las tildes del catálogo oficial', () => {
   assert.deepEqual(fallan.map((c) => `${c.codigo} ${c.nombre}`), [])
 })
 
-test('todo código usado en los asientos existe en el catálogo', async () => {
-  const { MOVIMIENTOS } = await import('../data/movimientos.ts')
+test('todo código usado en los asientos existe en el catálogo', () => {
   const rotos = MOVIMIENTOS.flatMap((m) =>
     m.asiento.filter((r) => !catalogo.indice.has(r.codigo)).map((r) => `${m.id}: ${r.codigo}`),
   )
   assert.deepEqual(rotos, [])
 })
 
-test('cada asiento tiene al menos un débito y un crédito', async () => {
-  const { MOVIMIENTOS } = await import('../data/movimientos.ts')
+test('cada asiento tiene al menos un débito y un crédito', () => {
   const descuadrados = MOVIMIENTOS.filter(
     (m) => !m.asiento.some((r) => r.efecto === 'debito') || !m.asiento.some((r) => r.efecto === 'credito'),
   )
