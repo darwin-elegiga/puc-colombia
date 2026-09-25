@@ -124,8 +124,30 @@ export default function Inicio({
             Entrena el debe y el haber <IconoChevron className="size-3.5" />
           </button>
         </nav>
+
+        <footer className="mt-12 text-center lg:mt-16">
+          <Autoria />
+        </footer>
       </div>
     </div>
+  )
+}
+
+/** Crédito del autor, en la portada y en «Sobre el catálogo». */
+export function Autoria() {
+  return (
+    <p className="text-[12px] text-tinta-tenue">
+      Desarrollado por{' '}
+      <a
+        href="https://www.instagram.com/its.darwinalejandro/"
+        target="_blank"
+        rel="noreferrer"
+        className="text-tinta-suave underline underline-offset-2 hover:text-tinta"
+      >
+        Darwin Alejandro
+      </a>{' '}
+      · @its.darwinalejandro
+    </p>
   )
 }
 

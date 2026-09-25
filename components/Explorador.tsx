@@ -16,7 +16,7 @@ import FichaCuenta from './FichaCuenta'
 import FichaMovimiento from './FichaMovimiento'
 import Entrenador from './Entrenador'
 import MapaClases from './MapaClases'
-import Inicio from './Inicio'
+import Inicio, { Autoria } from './Inicio'
 import AsientoBeta from './AsientoBeta'
 import type { Lado } from '@/data/guia'
 import LecturaCodigo from './LecturaCodigo'
@@ -728,6 +728,9 @@ export default function Explorador() {
             Con la convergencia a NIIF el Decreto 2650 dejó de ser obligatorio para reconocimiento y medición.
             Se mantiene como catálogo operativo y de referencia, que es el uso que cubre esta aplicación.
           </p>
+          <div className="border-t border-borde pt-3">
+            <Autoria />
+          </div>
         </div>
       </Dialogo>
 
