@@ -53,7 +53,21 @@ async function main(clave: string) {
     if (previo?.h === huella(d)) items.push(previo)
     else pendientes.push(d)
   }
+  // Primero lo que no tiene ningún vector (operaciones o cuentas nuevas); luego lo que cambió.
+  pendientes.sort((a, b) => Number(guardados.has(`${a.tipo}:${a.id}`)) - Number(guardados.has(`${b.tipo}:${b.id}`)))
   console.log(`${documentos.length - pendientes.length} vectores sin cambios; ${pendientes.length} por pedir`)
+
+  // Se guarda tras cada lote: si la cuota diaria se agota a medias, la próxima vez sigue desde ahí.
+  const guardar = () => {
+    const orden = new Map(documentos.map((d, k) => [`${d.tipo}:${d.id}`, k]))
+    const vigentes = new Map(items.map((it) => [`${it.tipo}:${it.id}`, it]))
+    // Los vectores previos aún no regenerados se conservan hasta que se sustituyan.
+    for (const [clave, previo] of guardados) if (orden.has(clave) && !vigentes.has(clave)) vigentes.set(clave, previo)
+    const lista = [...vigentes.values()].sort((a, b) => orden.get(`${a.tipo}:${a.id}`)! - orden.get(`${b.tipo}:${b.id}`)!)
+    const base: BaseVectorial = { modelo: MODELO, dimensiones: DIMENSIONES, generado: new Date().toISOString().slice(0, 10), items: lista }
+    writeFileSync(ruta, JSON.stringify(base) + '\n')
+    return lista.length
+  }
 
   for (let i = 0; i < pendientes.length; i += LOTE) {
     const lote = pendientes.slice(i, i + LOTE)
@@ -64,22 +78,22 @@ async function main(clave: string) {
         break
       } catch (error) {
         // Límite de tokens por minuto de la capa gratuita: se espera y se reintenta.
-        if ((error as { estado?: number }).estado !== 429 || intento >= 12) throw error
+        if ((error as { estado?: number }).estado !== 429 || intento >= 6) {
+          const total = guardar()
+          console.error(`Se detuvo con ${total} vectores guardados; vuelve a ejecutarlo más tarde para completar.`)
+          throw error
+        }
         const segundos = Math.min(20 * intento, 90)
         console.log(`  límite por minuto, reintento en ${segundos} s…`)
         await espera(segundos * 1000)
       }
     }
+    guardar()
     console.log(`  ${Math.min(i + LOTE, pendientes.length)} de ${pendientes.length}`)
   }
 
-  // Mismo orden que los documentos, para que el archivo cambie lo mínimo entre versiones.
-  const orden = new Map(documentos.map((d, k) => [`${d.tipo}:${d.id}`, k]))
-  items.sort((a, b) => orden.get(`${a.tipo}:${a.id}`)! - orden.get(`${b.tipo}:${b.id}`)!)
-
-  const base: BaseVectorial = { modelo: MODELO, dimensiones: DIMENSIONES, generado: new Date().toISOString().slice(0, 10), items }
-  writeFileSync(join(RAIZ, 'data/vectores.json'), JSON.stringify(base) + '\n')
-  console.log(`data/vectores.json: ${items.length} vectores de ${DIMENSIONES} dimensiones (${MODELO})`)
+  const total = guardar()
+  console.log(`data/vectores.json: ${total} vectores de ${DIMENSIONES} dimensiones (${MODELO})`)
 }
 
 main(CLAVE).catch((error) => {
