@@ -77,6 +77,11 @@ export interface Filtros {
 
 export interface ResultadoBusqueda {
   total: number
+  /**
+   * false cuando la búsqueda por texto solo encontró coincidencias parciales: ninguna
+   * cuenta contiene todas las palabras importantes. Es la señal para ofrecer la IA.
+   */
+  completa: boolean
   resultados: (Pick<Cuenta, 'codigo' | 'nombre' | 'nivel' | 'naturaleza' | 'origen'> & {
     resumen: string
     hijos: number

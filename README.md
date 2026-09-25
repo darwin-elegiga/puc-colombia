@@ -45,7 +45,7 @@ respuesta y el usuario pulsa el botón; nunca de forma automática.
   servidor comprueba que los códigos existan en el catálogo y que el asiento cuadre.
 - **Buscar por significado.** Al final de los resultados (destacado si no hubo ninguno), el botón llama a
   `/api/sugerir`: la consulta se convierte en un vector con `gemini-embedding-2` y se compara con la base
-  vectorial `data/vectores.json` (510 cuentas y 58 operaciones) para devolver el Top 5.
+  vectorial `data/vectores.json` (529 cuentas y 345 operaciones) para devolver el Top 5.
 
 ```
 cuentas + movimientos ──gemini-embedding-2 (npm run vectores)──▶ data/vectores.json
@@ -83,7 +83,7 @@ la respuesta y al menos un distractor, y que la dificultad suba nivel a nivel.
 npm install
 npm run dev          # http://localhost:3000
 npm run build && npm start
-npm test             # 50 pruebas: catálogo, búsqueda, asiento local, movimientos y ejercicios
+npm test             # 53 pruebas: catálogo, búsqueda, asiento local, operaciones y ejercicios
 npm run vectores     # regenera la base vectorial con Gemini (necesita GEMINI_API_KEY)
 npm run seed         # regenera data/puc.json y los iconos de la PWA
 node scripts/descargar-oficial.mjs   # vuelve a bajar los textos oficiales de puc.com.co
@@ -148,7 +148,7 @@ Para instalarla, el menú de la aplicación tiene la opción **Instalar en el te
 | Dato | Dónde | Nota |
 | --- | --- | --- |
 | Catálogo oficial | `data/puc.json`, empaquetado en el repositorio | Solo lectura |
-| Movimientos típicos | `data/movimientos.ts` | Solo lectura |
+| Operaciones típicas (345) | `data/movimientos.ts` y `data/operaciones/` | Solo lectura |
 | Guía de clases y grupos | `data/guia.ts` | Solo lectura |
 | Textos oficiales del decreto | `scripts/oficial.json` | Descargado de puc.com.co |
 | Ejercicios | `data/ejercicios.ts` | Solo lectura |
@@ -162,7 +162,7 @@ cambio es `lib/almacenamiento.ts`: es la única pieza que toca el almacenamiento
 
 ## Alcance del catálogo
 
-`data/puc.json` trae **510 registros**: las 9 clases, los 52 grupos, 344 cuentas y 105 subcuentas
+`data/puc.json` trae **529 registros**: las 9 clases, los 52 grupos, 344 cuentas y 124 subcuentas
 de mayor uso, con descripción.
 
 **Verificación.** Las 9 clases, los 52 grupos y las 344 cuentas de 4 dígitos se contrastaron una a
@@ -206,7 +206,8 @@ lib/
   progreso.ts        ejercicios resueltos en localStorage
 data/
   puc.json           catálogo oficial (generado)
-  movimientos.ts     operaciones típicas con su asiento y quién paga
+  movimientos.ts     operaciones básicas con su asiento y quién paga, más las de operaciones/
+  operaciones/       ventas, compras y producción, nómina, impuestos, bancos, activos y patrimonio
   guia.ts            las clases y grupos en palabras simples
   sinonimos.ts       sinónimos, frases, conceptos y alias de cuentas para la búsqueda
   ejercicios.ts      ejercicios del entrenamiento, por nivel

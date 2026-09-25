@@ -7,7 +7,7 @@ import { aCSV, colorDe, desdeCSV, validarBorrador } from '@/lib/puc'
 import {
   arbol, buscar, construirCatalogo, descripcionEfectiva, estadisticas, fichaDe, leerCodigo,
 } from '@/lib/catalogo'
-import { buscarMovimientos, movimientoPorId, movimientosDeCuenta } from '@/lib/movimientos'
+import { buscarMovimientos, buscarMovimientosPuntuados, movimientoPorId, movimientosDeCuenta } from '@/lib/movimientos'
 import { descargar, useCuentasPropias } from '@/lib/almacenamiento'
 import { useDestino } from '@/lib/navegacion'
 import { EJERCICIOS } from '@/lib/ejercicios'
@@ -68,6 +68,11 @@ export default function Explorador() {
   )
   const [lado, setLado] = useState<Lado | ''>('')
   const hayMovimientos = useMemo(() => buscarMovimientos(consulta, 1).length > 0, [consulta])
+  // Lo local resuelve si alguna operación o cuenta contiene todas las palabras importantes.
+  const movimientosCompletos = useMemo(
+    () => buscarMovimientosPuntuados(consulta, 1).some((r) => r.cobertura >= 1),
+    [consulta],
+  )
   const movimientos = useMemo(() => buscarMovimientos(consulta, 12, lado), [consulta, lado])
 
   const lectura = useMemo(() => {
@@ -438,6 +443,7 @@ export default function Explorador() {
             movimientos={movimientos}
             hayMovimientos={hayMovimientos}
             consulta={consulta}
+            localResuelve={movimientosCompletos || resultados.completa}
             cuentaDe={(codigo) => catalogo.indice.get(codigo)}
             lado={lado}
             onLado={setLado}

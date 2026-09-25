@@ -34,17 +34,21 @@ export function buscarMovimientos(consulta: string, limite = 12, lado: Lado | ''
 
 /**
  * Propuesta local de asiento para una situación descrita con palabras: la operación
- * conocida más parecida, si lo es lo bastante. Umbral: que aparezcan al menos el 60 %
+ * conocida más parecida, si lo es lo bastante. Umbral: que aparezcan al menos el 70 %
  * de las palabras importantes y que el nombre o las formas coloquiales de la operación
  * coincidan de verdad (puntaje ≥ 4), no solo su descripción.
  */
 export function asientoLocal(situacion: string): { propuesta: Movimiento | null; alternativas: Movimiento[] } {
-  const resultados = buscarMovimientosPuntuados(situacion, 4)
+  // Para proponer un asiento pesa más cubrir toda la frase que el puntaje: primero las
+  // operaciones que contienen todas las palabras importantes, y entre ellas la de más puntaje.
+  const resultados = buscarMovimientosPuntuados(situacion, 6)
+    .sort((a, b) => Number(b.cobertura >= 1) - Number(a.cobertura >= 1) || b.puntaje - a.puntaje)
+    .slice(0, 4)
   const [primero] = resultados
   // Si la frase dice quién paga y la mejor operación es del lado contrario, algo no encaja.
   const lado = ladoDeConsulta(situacion)
   const ladoContrario = Boolean(lado && primero && primero.valor.lado !== 'interno' && primero.valor.lado !== lado)
-  const fiable = primero && primero.cobertura >= 0.6 && primero.puntaje >= 4 && !ladoContrario
+  const fiable = primero && primero.cobertura >= 0.7 && primero.puntaje >= 4 && !ladoContrario
   return {
     propuesta: fiable ? primero.valor : null,
     alternativas: resultados.slice(fiable ? 1 : 0, 4).map((r) => r.valor),

@@ -910,6 +910,15 @@
       "origen": "oficial"
     },
     {
+      "codigo": "134505",
+      "nombre": "DIVIDENDOS Y/O PARTICIPACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Dividendos o participaciones decretados a favor del ente económico y pendientes de cobro.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "1350",
       "nombre": "RETENCIÓN SOBRE CONTRATOS",
       "nivel": "cuenta",
@@ -3372,6 +3381,15 @@
       "origen": "oficial"
     },
     {
+      "codigo": "233505",
+      "nombre": "GASTOS FINANCIEROS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Intereses y demás gastos financieros causados y pendientes de pago.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "233525",
       "nombre": "HONORARIOS",
       "nivel": "subcuenta",
@@ -3634,6 +3652,15 @@
       "origen": "oficial"
     },
     {
+      "codigo": "236575",
+      "nombre": "AUTORRETENCIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Retención en la fuente que el propio ente económico se practica cuando es autorretenedor.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "2367",
       "nombre": "IMPUESTO A LAS VENTAS RETENIDO",
       "nivel": "cuenta",
@@ -3740,6 +3767,24 @@
       "origen": "oficial"
     },
     {
+      "codigo": "237035",
+      "nombre": "SINDICATOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Cuotas sindicales descontadas a los trabajadores, pendientes de pagar al sindicato.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "237040",
+      "nombre": "COOPERATIVAS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Descuentos de nómina a favor de cooperativas, pendientes de pagar.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "2375",
       "nombre": "CUOTAS POR DEVOLVER",
       "nivel": "cuenta",
@@ -3779,6 +3824,15 @@
           "Por el valor de la utilidad en la liquidación de contratos de ganado en participación."
         ]
       },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "238030",
+      "nombre": "FONDOS DE CESANTÍAS Y/O PENSIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Aportes a fondos de pensiones y cesantías descontados o a cargo de la empresa, pendientes de girar.",
       "origen": "oficial"
     },
     {
@@ -5043,6 +5097,15 @@
       "origen": "oficial"
     },
     {
+      "codigo": "310515",
+      "nombre": "CAPITAL SUSCRITO POR COBRAR (DB)",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": true,
+      "descripcion": "Capital suscrito por los accionistas pendiente de pago.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "3115",
       "nombre": "APORTES SOCIALES",
       "nivel": "cuenta",
@@ -6000,6 +6063,24 @@
       "origen": "oficial"
     },
     {
+      "codigo": "421020",
+      "nombre": "DIFERENCIA EN CAMBIO",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Ingreso por el mayor valor en pesos de derechos u obligaciones en moneda extranjera.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "421040",
+      "nombre": "DESCUENTOS COMERCIALES CONDICIONADOS",
+      "nivel": "subcuenta",
+      "naturaleza": "credito",
+      "naturalezaForzada": false,
+      "descripcion": "Descuentos obtenidos de proveedores por pronto pago.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "4215",
       "nombre": "DIVIDENDOS Y PARTICIPACIONES",
       "nivel": "cuenta",
@@ -6360,6 +6441,15 @@
       "origen": "oficial"
     },
     {
+      "codigo": "510503",
+      "nombre": "SALARIO INTEGRAL",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Salario que incluye prestaciones sociales, del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "510506",
       "nombre": "SUELDOS",
       "nivel": "subcuenta",
@@ -6393,6 +6483,15 @@
       "naturaleza": "debito",
       "naturalezaForzada": false,
       "descripcion": "Sumas reconocidas por manutención y alojamiento en comisiones de servicio.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510524",
+      "nombre": "INCAPACIDADES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Días de incapacidad a cargo de la empresa del personal administrativo.",
       "origen": "oficial"
     },
     {
@@ -6441,6 +6540,15 @@
       "origen": "oficial"
     },
     {
+      "codigo": "510545",
+      "nombre": "AUXILIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Auxilios extralegales entregados al personal administrativo.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "510548",
       "nombre": "BONIFICACIONES",
       "nivel": "subcuenta",
@@ -6474,6 +6582,15 @@
       "naturaleza": "debito",
       "naturalezaForzada": false,
       "descripcion": "Gastos de formación y capacitación del personal administrativo.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "510566",
+      "nombre": "GASTOS DEPORTIVOS Y DE RECREACIÓN",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Actividades de bienestar, deporte y recreación del personal.",
       "origen": "oficial"
     },
     {
@@ -6531,6 +6648,15 @@
       "origen": "oficial"
     },
     {
+      "codigo": "510584",
+      "nombre": "GASTOS MÉDICOS Y DROGAS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Gastos médicos y medicamentos del personal asumidos por la empresa.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "5110",
       "nombre": "HONORARIOS",
       "nivel": "cuenta",
@@ -6546,6 +6672,15 @@
           "Por la cancelación del saldo al cierre del ejercicio."
         ]
       },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "511010",
+      "nombre": "REVISORÍA FISCAL",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Honorarios del revisor fiscal.",
       "origen": "oficial"
     },
     {
@@ -7276,6 +7411,24 @@
       "origen": "oficial"
     },
     {
+      "codigo": "531515",
+      "nombre": "COSTOS Y GASTOS DE EJERCICIOS ANTERIORES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Costos y gastos de periodos anteriores reconocidos en el ejercicio actual.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "531520",
+      "nombre": "IMPUESTOS ASUMIDOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Impuestos de terceros que el ente económico asume, como retenciones no practicadas.",
+      "origen": "oficial"
+    },
+    {
       "codigo": "5395",
       "nombre": "GASTOS DIVERSOS",
       "nivel": "cuenta",
@@ -7291,6 +7444,24 @@
           "Por la cancelación de saldos al cierre del ejercicio."
         ]
       },
+      "origen": "oficial"
+    },
+    {
+      "codigo": "539520",
+      "nombre": "MULTAS, SANCIONES Y LITIGIOS",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Multas, sanciones e indemnizaciones por litigios a cargo del ente económico.",
+      "origen": "oficial"
+    },
+    {
+      "codigo": "539525",
+      "nombre": "DONACIONES",
+      "nivel": "subcuenta",
+      "naturaleza": "debito",
+      "naturalezaForzada": false,
+      "descripcion": "Donaciones efectuadas por el ente económico.",
       "origen": "oficial"
     },
     {

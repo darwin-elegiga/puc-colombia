@@ -56,7 +56,7 @@ const SUAVES = new Set(
 )
 
 /** Palabras cuya raíz automática chocaría con otra de significado distinto. */
-const RAICES_FIJAS: Record<string, string> = {
+const RAICES_FIJAS = new Map<string, string>(Object.entries({
   prestacion: 'prestacion', prestaciones: 'prestacion',
   contador: 'contador', contadora: 'contador', contadores: 'contador',
   renta: 'renta', rentas: 'renta',
@@ -64,7 +64,7 @@ const RAICES_FIJAS: Record<string, string> = {
   caja: 'caja', cajas: 'caja',
   iva: 'iva', ica: 'ica', gmf: 'gmf', eps: 'eps', arl: 'arl', pila: 'pila',
   utilidad: 'utilidad', utilidades: 'utilidad', util: 'utiles', utiles: 'utiles',
-}
+}))
 
 const SUFIJOS = [
   'amientos', 'imientos', 'aciones', 'iciones', 'amiento', 'imiento', 'idades',
@@ -81,7 +81,9 @@ const SUFIJOS = [
  * o vendo · vendí · vendió · vender.
  */
 export function raiz(palabra: string): string {
-  if (RAICES_FIJAS[palabra]) return RAICES_FIJAS[palabra]
+  // Un Map y no un objeto: «constructor» o «toString» no deben leerse como propiedades heredadas.
+  const fija = RAICES_FIJAS.get(palabra)
+  if (fija) return fija
   if (palabra.length <= 3 || /\d/.test(palabra)) return palabra
 
   // Pretérito de primera persona: pagué → pag, saqué → sac.
@@ -183,8 +185,10 @@ const FRASES_QUIEN_PAGA = prepararFrases(Object.entries(FRASES_LADO))
  * Quién paga según cómo está escrita la consulta: «me pagaron el arriendo» es
  * cobrar; «pagué el arriendo», pagar. Se usa para ordenar primero ese lado.
  */
-export function ladoDeConsulta(consulta: string): 'pago' | 'cobro' | null {
+export function ladoDeConsulta(consulta: string): 'pago' | 'cobro' | 'interno' | null {
   const t = ` ${palabras(consulta).join(' ')} `
+  // «El cliente no me paga»: no entra ni sale dinero; es un problema de cartera.
+  if (/ no (me |nos |le |les )?(pag|consign|transfir|abon|cancel)/.test(t)) return 'interno'
   if (/ (me|nos) (pag|consign|transfir|abon|gir|devolv|dan |dieron|prest)|cobr|recib|recaud|me deben|entra (plata|dinero)|vend| factur(e|o|amos|aron) | ingres/.test(t)) return 'cobro'
   if (/ (pag|cancel|compr|le (pag|debo|di|doy|prest|devuelv))|sale (plata|dinero)|gast| egres/.test(t)) return 'pago'
   return null

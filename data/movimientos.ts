@@ -6,6 +6,12 @@
  */
 
 import type { Lado } from './guia'
+import { OPERACIONES_VENTAS } from './operaciones/ventas'
+import { OPERACIONES_COMPRAS } from './operaciones/compras'
+import { OPERACIONES_NOMINA } from './operaciones/nomina'
+import { OPERACIONES_IMPUESTOS } from './operaciones/impuestos'
+import { OPERACIONES_FINANCIERO } from './operaciones/financiero'
+import { OPERACIONES_ACTIVOS_PATRIMONIO_GASTOS } from './operaciones/activos-patrimonio-gastos'
 
 export type Efecto = 'debito' | 'credito'
 
@@ -42,9 +48,12 @@ export const CATEGORIAS = [
   'Impuestos',
   'Activos fijos',
   'Cartera y patrimonio',
+  'Inversiones y financiación',
+  'Producción',
 ] as const
 
-export const MOVIMIENTOS: Movimiento[] = [
+/** Las operaciones básicas; el resto vive por áreas en data/operaciones/. */
+const BASICAS: Movimiento[] = [
   /* ─────────────────────── Caja y bancos ─────────────────────── */
   {
     id: 'venta-contado-efectivo',
@@ -529,10 +538,10 @@ export const MOVIMIENTOS: Movimiento[] = [
     descripcion: 'El bien se capitaliza porque se usará por más de un año: no es gasto del periodo.',
     palabras: ['comprar computador', 'activo fijo', 'equipo de computo', 'capitalizar', 'compro un portatil', 'compro un computador', 'compro una impresora', 'compro un celular para la empresa', 'compro muebles', 'compro un escritorio', 'compro maquinaria', 'compro un carro para la empresa', 'compro un vehiculo', 'compro equipos', 'compra de activos', 'inversion en equipos'],
     asiento: [
-      { codigo: '152805', efecto: 'debito', concepto: 'Equipo de procesamiento de datos' },
-      { codigo: '2408', efecto: 'debito', concepto: 'IVA descontable' },
+      { codigo: '152805', efecto: 'debito', concepto: 'Equipo de procesamiento de datos, con el IVA incluido en su costo' },
       { codigo: '111005', efecto: 'credito', concepto: 'Pago al proveedor' },
     ],
+    nota: 'El IVA de un activo fijo no se descuenta en la declaración de IVA (2408): se suma al costo del activo. Si es un activo fijo real productivo, puede tomarse como descuento en el impuesto de renta (art. 258-1 del Estatuto Tributario) y entonces se debita a 1355 en lugar de sumarse al costo.',
   },
   {
     id: 'depreciacion',
@@ -843,4 +852,14 @@ export const MOVIMIENTOS: Movimiento[] = [
     ],
     nota: 'Si el cliente paga después del castigo, lo recibido es un ingreso por recuperaciones (4250).',
   },
+]
+
+export const MOVIMIENTOS: Movimiento[] = [
+  ...BASICAS,
+  ...OPERACIONES_VENTAS,
+  ...OPERACIONES_COMPRAS,
+  ...OPERACIONES_NOMINA,
+  ...OPERACIONES_IMPUESTOS,
+  ...OPERACIONES_FINANCIERO,
+  ...OPERACIONES_ACTIVOS_PATRIMONIO_GASTOS,
 ]

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { ResultadoBusqueda } from '@/lib/tipos'
 import type { Movimiento } from '@/lib/movimientos'
 import type { Destino } from '@/lib/navegacion'
@@ -15,6 +16,7 @@ export default function ListaResultados({
   movimientos,
   hayMovimientos,
   consulta,
+  localResuelve,
   cuentaDe,
   lado,
   onLado,
@@ -28,6 +30,8 @@ export default function ListaResultados({
   movimientos: Movimiento[]
   /** Lo que se buscó: si es texto, se ofrece la búsqueda por significado con IA. */
   consulta: string
+  /** true si lo local encontró coincidencias completas: entonces no se ofrece la IA. */
+  localResuelve: boolean
   cuentaDe: (codigo: string) => Cuenta | undefined
   /** Hay operaciones para la búsqueda aunque el filtro de lado las esconda todas. */
   hayMovimientos: boolean
@@ -191,9 +195,32 @@ export default function ListaResultados({
           <BusquedaIA key={consulta} consulta={consulta} destacado cuentaDe={cuentaDe} onSeleccionar={onSeleccionar} />
         )}
         {!vacio && conIA && (
-          <BusquedaIA key={consulta} consulta={consulta} destacado={false} cuentaDe={cuentaDe} onSeleccionar={onSeleccionar} />
+          <IAConfirmada
+            key={consulta}
+            // Si lo local resolvió, la IA espera a que el usuario diga que nada le sirve.
+            pedirConfirmacion={localResuelve}
+          >
+            <BusquedaIA consulta={consulta} destacado={false} cuentaDe={cuentaDe} onSeleccionar={onSeleccionar} />
+          </IAConfirmada>
         )}
       </section>
+    </div>
+  )
+}
+
+/** Muestra la opción de IA directamente o tras el enlace «Nada de esto es lo que busco». */
+function IAConfirmada({ pedirConfirmacion, children }: { pedirConfirmacion: boolean; children: React.ReactNode }) {
+  const [confirmado, setConfirmado] = useState(!pedirConfirmacion)
+  if (confirmado) return <>{children}</>
+  return (
+    <div className="border-t border-borde px-5 py-4 text-center">
+      <button
+        type="button"
+        onClick={() => setConfirmado(true)}
+        className="min-h-10 text-[13px] text-tinta-tenue underline underline-offset-2"
+      >
+        Nada de esto es lo que busco
+      </button>
     </div>
   )
 }

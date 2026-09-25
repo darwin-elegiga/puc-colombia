@@ -6,7 +6,7 @@ import {
   validarBorrador,
 } from '../lib/puc'
 import { buscar, construirCatalogo, fichaDe, leerCodigo } from '../lib/catalogo'
-import { MOVIMIENTOS } from '../data/movimientos'
+import { CATEGORIAS, MOVIMIENTOS } from '../data/movimientos'
 import { GUIA_CLASES, GUIA_GRUPOS } from '../data/guia'
 import type { Cuenta } from '../lib/tipos'
 
@@ -228,4 +228,13 @@ test('la guía cubre las nueve clases y los 52 grupos', () => {
   const grupos = OFICIALES.filter((c: Cuenta) => c.nivel === 'grupo').map((c: Cuenta) => c.codigo)
   assert.deepEqual(clases.filter((c: string) => !GUIA_CLASES[c]), [])
   assert.deepEqual(grupos.filter((c: string) => !GUIA_GRUPOS[c]), [])
+})
+
+test('cada operación tiene un id único, una categoría conocida y un asiento con cuentas distintas por columna', () => {
+  const ids = MOVIMIENTOS.map((m) => m.id)
+  assert.deepEqual(ids.filter((id, i) => ids.indexOf(id) !== i), [], 'ids repetidos')
+  const categorias = new Set<string>(CATEGORIAS)
+  assert.deepEqual(MOVIMIENTOS.filter((m) => !categorias.has(m.categoria)).map((m) => `${m.id}: ${m.categoria}`), [])
+  const nombres = MOVIMIENTOS.map((m) => m.nombre.toLowerCase())
+  assert.deepEqual(nombres.filter((n, i) => nombres.indexOf(n) !== i), [], 'nombres repetidos')
 })

@@ -548,6 +548,26 @@ D(`
 530520|INTERESES|Intereses causados sobre obligaciones financieras.
 530525|DIFERENCIA EN CAMBIO|Pérdida generada por la fluctuación de la tasa de cambio.
 530535|DESCUENTOS COMERCIALES CONDICIONADOS|Descuentos concedidos a clientes por pronto pago.
+# Añadidas al ampliar las operaciones (nombres verificados en puc.com.co)
+236575|AUTORRETENCIONES|Retención en la fuente que el propio ente económico se practica cuando es autorretenedor.
+238030|FONDOS DE CESANTÍAS Y/O PENSIONES|Aportes a fondos de pensiones y cesantías descontados o a cargo de la empresa, pendientes de girar.
+237035|SINDICATOS|Cuotas sindicales descontadas a los trabajadores, pendientes de pagar al sindicato.
+237040|COOPERATIVAS|Descuentos de nómina a favor de cooperativas, pendientes de pagar.
+510503|SALARIO INTEGRAL|Salario que incluye prestaciones sociales, del personal administrativo.
+510524|INCAPACIDADES|Días de incapacidad a cargo de la empresa del personal administrativo.
+510545|AUXILIOS|Auxilios extralegales entregados al personal administrativo.
+510566|GASTOS DEPORTIVOS Y DE RECREACIÓN|Actividades de bienestar, deporte y recreación del personal.
+510584|GASTOS MÉDICOS Y DROGAS|Gastos médicos y medicamentos del personal asumidos por la empresa.
+511010|REVISORÍA FISCAL|Honorarios del revisor fiscal.
+233505|GASTOS FINANCIEROS|Intereses y demás gastos financieros causados y pendientes de pago.
+134505|DIVIDENDOS Y/O PARTICIPACIONES|Dividendos o participaciones decretados a favor del ente económico y pendientes de cobro.
+421020|DIFERENCIA EN CAMBIO|Ingreso por el mayor valor en pesos de derechos u obligaciones en moneda extranjera.
+421040|DESCUENTOS COMERCIALES CONDICIONADOS|Descuentos obtenidos de proveedores por pronto pago.
+310515|CAPITAL SUSCRITO POR COBRAR (DB)|Capital suscrito por los accionistas pendiente de pago.|DB
+531515|COSTOS Y GASTOS DE EJERCICIOS ANTERIORES|Costos y gastos de periodos anteriores reconocidos en el ejercicio actual.
+531520|IMPUESTOS ASUMIDOS|Impuestos de terceros que el ente económico asume, como retenciones no practicadas.
+539520|MULTAS, SANCIONES Y LITIGIOS|Multas, sanciones e indemnizaciones por litigios a cargo del ente económico.
+539525|DONACIONES|Donaciones efectuadas por el ente económico.
 `)
 
 /* ─────────── DINAMICA (se debita por / se acredita por) ─────────── */

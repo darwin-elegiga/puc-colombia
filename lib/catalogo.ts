@@ -98,7 +98,7 @@ const VERBOS_DE_LADO = new Set(['pagar', 'pago', 'cobrar', 'cobro', 'recibir', '
  * costos (5, 6, 7); al cobrar, ingresos (4), el disponible (11) y los deudores (13).
  * Las cuentas de orden (8, 9) casi nunca son lo que se busca en lenguaje natural.
  */
-function pesoPorLado(codigo: string, lado: 'pago' | 'cobro' | null): number {
+function pesoPorLado(codigo: string, lado: 'pago' | 'cobro' | 'interno' | null): number {
   if (codigo[0] === '8' || codigo[0] === '9') return 0.75
   // Ante un empate, la cuenta de 4 dígitos va antes que sus subcuentas y que el grupo.
   if (codigo.length === 4) return pesoPorLado(`x${codigo}`, lado) * 1.04
@@ -132,6 +132,7 @@ export function buscar(
   const coincide = (c: Cuenta) => coincideFiltros(c) && (!consulta || c.codigo.includes(consulta))
 
   let encontradas: Cuenta[]
+  let completa = true
 
   if (!consulta || esNumerica) {
     encontradas = cat.lista.filter(coincide)
@@ -144,17 +145,19 @@ export function buscar(
     // «Pagar» y «cobrar» no describen una cuenta sino el lado: orientan, pero no obligan.
     const q = filtros.q ?? ''
     const lado = ladoDeConsulta(q)
-    encontradas = cat
+    const puntuadas = cat
       .motor()
       .buscar(analizar(q, VERBOS_DE_LADO))
+      .filter((r) => coincideFiltros(r.valor))
       .map((r) => ({ ...r, puntaje: r.puntaje * pesoPorLado(r.valor.codigo, lado) }))
       .sort((a, b) => b.puntaje - a.puntaje)
-      .map((r) => r.valor)
-      .filter(coincideFiltros)
+    completa = puntuadas.some((r) => r.cobertura >= 1)
+    encontradas = puntuadas.map((r) => r.valor)
   }
 
   return {
     total: encontradas.length,
+    completa: completa && encontradas.length > 0 ? true : !consulta,
     resultados: encontradas.slice(0, limite).map((c) => ({
       codigo: c.codigo,
       nombre: c.nombre,

@@ -49,6 +49,8 @@ export default function AsientoBeta({
   const [ia, setIa] = useState<AsientoIA | null>(respuestaGuardada)
   const [estadoIA, setEstadoIA] = useState<'inicio' | 'cargando' | 'error'>('inicio')
   const [errorIA, setErrorIA] = useState('')
+  /** El usuario dice que ninguna operación local es la suya: entonces se ofrece la IA. */
+  const [ningunaSirve, setNingunaSirve] = useState(false)
 
   const local = situacion ? asientoLocal(situacion) : null
   const opciones = local ? [local.propuesta, ...local.alternativas].filter(Boolean) as Movimiento[] : []
@@ -65,6 +67,7 @@ export default function AsientoBeta({
     setElegida(null)
     setIa(null)
     setEstadoIA('inicio')
+    setNingunaSirve(false)
   }
 
   const consultarIA = async () => {
@@ -101,8 +104,8 @@ export default function AsientoBeta({
           </div>
           <h1 className="editorial mt-2 text-[30px] leading-tight text-tinta lg:text-5xl">Cuéntame qué pasó</h1>
           <p className="mt-3 text-[15px] leading-relaxed text-tinta-suave">
-            Escribe la situación como se la contarías a tu contador. Primero la busco entre las operaciones que
-            conozco; si no encuentro una parecida, puedes pedírsela a la IA.
+            Escribe la situación como se la contarías a tu contador. La busco entre las operaciones que conozco,
+            aquí mismo en el teléfono; solo si no encuentro ninguna que encaje te ofrezco pedírsela a la IA.
           </p>
 
           <form
@@ -201,8 +204,19 @@ export default function AsientoBeta({
                 </div>
               )}
 
-              {/* ─────────── Paso a la IA ─────────── */}
-              {!ia && (
+              {/* Si lo local encontró algo, la IA solo aparece si el usuario dice que no le sirve. */}
+              {!ia && mostrada && !ningunaSirve && (
+                <button
+                  type="button"
+                  onClick={() => setNingunaSirve(true)}
+                  className="mt-5 w-full text-center text-[13px] text-tinta-tenue underline underline-offset-2"
+                >
+                  Ninguna de estas es mi operación
+                </button>
+              )}
+
+              {/* ─────────── Paso a la IA: solo cuando lo local no resuelve ─────────── */}
+              {!ia && (!mostrada || ningunaSirve) && (
                 <div className="mt-6">
                   <button
                     type="button"
@@ -210,15 +224,11 @@ export default function AsientoBeta({
                     disabled={estadoIA === 'cargando'}
                     className={[
                       'tactil flex w-full items-center justify-center gap-2 rounded-xl px-4 text-[14.5px] transition-colors disabled:opacity-60',
-                      mostrada ? 'border border-borde bg-superficie text-tinta pulsable' : 'bg-tinta text-white active:bg-[#3d4347]',
+                      'bg-tinta text-white active:bg-[#3d4347]',
                     ].join(' ')}
                   >
-                    {estadoIA === 'cargando'
-                      ? 'La IA está preparando el asiento…'
-                      : mostrada
-                        ? 'No es esto: pedir el asiento a la IA'
-                        : 'Pedir el asiento a la IA'}
-                    <Beta invertido={!mostrada} />
+                    {estadoIA === 'cargando' ? 'La IA está preparando el asiento…' : 'Pedir el asiento a la IA'}
+                    <Beta invertido />
                   </button>
                   <p className="mt-1.5 text-center text-[11.5px] leading-relaxed text-tinta-tenue">
                     {estadoIA === 'error'

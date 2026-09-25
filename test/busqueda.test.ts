@@ -49,17 +49,20 @@ test('las consultas en lenguaje natural encuentran la operación', () => {
     'qué cuenta uso cuando le pago al contador': 'pago-honorarios',
     'me pagaron con tarjeta': 'cobro-tarjeta',
     'vendi fiado': 'venta-credito',
-    'el cliente no me paga': 'castigo-cartera',
+    'el cliente no me paga': 'provision-cartera|castigo-cartera',
     'le presté plata a un empleado': 'prestamo-empleado',
-    'cuatro por mil': 'comision-bancaria',
+    'cuatro por mil': 'comision-bancaria|gmf-como-impuesto',
     'pago de la pila': 'aportes-parafiscales',
     'prima de junio': 'pago-prima',
-    'HORAS EXTRAS': 'causacion-nomina',
+    'HORAS EXTRAS': 'causacion-horas-extras',
     'gasolina': 'pago-transporte',
     'caja chica': 'caja-menor-constitucion',
-    'ingresos por servisios': 'cobro-servicio',
+    'ingresos por servisios': 'cobro-servicio|venta-servicio-salud|venta-servicio-transporte',
   }
-  const fallan = Object.entries(casos).filter(([q, id]) => primerMovimiento(q) !== id).map(([q]) => `${q} → ${primerMovimiento(q)}`)
+  // Varias respuestas válidas se separan con «|».
+  const fallan = Object.entries(casos)
+    .filter(([q, ids]) => !ids.split('|').includes(primerMovimiento(q) ?? ''))
+    .map(([q]) => `${q} → ${primerMovimiento(q)}`)
   assert.deepEqual(fallan, [])
 })
 
@@ -101,11 +104,12 @@ test('el asiento se propone primero en local y solo si la operación se parece d
     'Vendí mercancía a crédito a un cliente por 1.190.000 con IVA': 'venta-credito',
     'hoy pagamos la nómina de septiembre': 'pago-nomina',
     'consigné 500 mil de la caja': 'consignacion-caja-banco',
-    // Sin operación conocida parecida: se ofrece la IA.
-    'Compré acciones de Ecopetrol': null,
-    'importé mercancía de china y pagué aranceles': null,
-    // La mejor coincidencia es de cobro pero la frase dice que pagué: no se da por buena.
+    'Compré acciones de Ecopetrol': 'compra-acciones',
+    'importé mercancía de china y pagué aranceles': 'importacion-factura-proveedor-exterior',
+    'el socio aportó un carro a la empresa': 'aporte-especie-vehiculo',
+    // Sin operación conocida que cubra la frase: se ofrece la IA.
     'Me llegó la factura de la luz y la pagué con la tarjeta de crédito de la empresa': null,
+    'firmé un contrato de franquicia con regalías mensuales': null,
   }
   const fallan = Object.entries(casos)
     .filter(([q, id]) => (asientoLocal(q).propuesta?.id ?? null) !== id)
@@ -116,4 +120,19 @@ test('el asiento se propone primero en local y solo si la operación se parece d
 test('los importes y las fechas no cuentan como palabras de la búsqueda', () => {
   const palabras = analizar('pagué 2.000.000 de arriendo en octubre').terminos.map((t) => t.palabra)
   assert.ok(!palabras.some((p) => /\d/.test(p) || p === 'octubre'))
+})
+
+test('la búsqueda local dice cuándo no resuelve, que es cuando se ofrece la IA', () => {
+  assert.equal(buscar(catalogo, { q: 'arriendo' }).completa, true)
+  assert.equal(buscar(catalogo, { q: '1105' }).completa, true)
+  // «ecopetrol» no está en ningún texto: solo hay coincidencias parciales.
+  assert.equal(buscar(catalogo, { q: 'compré acciones de ecopetrol' }).completa, false)
+  assert.equal(buscar(catalogo, { q: 'zzzz' }).completa, false)
+})
+
+test('palabras que coinciden con propiedades de los objetos no rompen la búsqueda', () => {
+  for (const q of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) {
+    assert.doesNotThrow(() => buscar(catalogo, { q }))
+    assert.doesNotThrow(() => buscarMovimientos(q))
+  }
 })

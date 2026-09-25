@@ -10,10 +10,11 @@ import { Codigo, InsigniaLado, franjaClase } from './Insignias'
 import { IconoChevron, IconoIntercambio } from './Iconos'
 
 /**
- * Búsqueda por significado con IA, al final de los resultados locales.
+ * Búsqueda por significado con IA: el último recurso.
  *
- * Nunca se lanza sola: se ofrece como botón, discreto si la búsqueda local ya
- * encontró cosas y destacado si no encontró nada. Al pulsarlo, el servidor
+ * Solo aparece cuando la búsqueda local no resuelve: destacada si no encontró
+ * nada, y al pie de los resultados si solo hubo coincidencias parciales o si el
+ * usuario dice que nada de lo encontrado le sirve. Nunca se lanza sola. Al pulsarlo, el servidor
  * convierte la consulta en un vector con Gemini y devuelve las 5 cuentas u
  * operaciones más parecidas de la base vectorial.
  */
@@ -90,7 +91,9 @@ export default function BusquedaIA({
   return (
     <div className={destacado ? 'px-5 pb-6' : 'border-t border-borde px-5 py-4'}>
       {!destacado && (
-        <p className="mb-2 text-[13px] text-tinta-suave">¿No es lo que buscas?</p>
+        <p className="mb-2 text-[13px] leading-relaxed text-tinta-suave">
+          Aquí no está lo que buscas: pregúntale a la IA.
+        </p>
       )}
       <button
         type="button"
