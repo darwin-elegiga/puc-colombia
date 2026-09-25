@@ -15,6 +15,8 @@ export type Destino =
   | { tipo: 'movimiento'; id: string }
   /** Mapa de clases: sin código el mosaico de las nueve; con código, una clase o un grupo. */
   | { tipo: 'clases'; codigo?: string }
+  /** Asiento a partir de una situación descrita con palabras (beta). */
+  | { tipo: 'asiento' }
   /** Listado del entrenamiento. */
   | { tipo: 'entrenar' }
   | { tipo: 'ejercicio'; id: string }
@@ -34,6 +36,8 @@ export function aHash(destino: Destino): string {
       return `#m/${destino.id}`
     case 'clases':
       return destino.codigo ? `#clases/${destino.codigo}` : '#clases'
+    case 'asiento':
+      return '#asiento'
     case 'entrenar':
       return '#entrenar'
     case 'ejercicio':
@@ -46,6 +50,7 @@ const ID_VALIDO = /^[a-z0-9-]{1,64}$/
 function desdeHash(hash: string): Destino {
   const valor = decodeURIComponent(hash.replace(/^#/, ''))
   if (valor === 'entrenar') return { tipo: 'entrenar' }
+  if (valor === 'asiento') return { tipo: 'asiento' }
   if (valor === 'clases') return { tipo: 'clases' }
   if (valor.startsWith('clases/')) {
     const codigo = valor.slice(7)

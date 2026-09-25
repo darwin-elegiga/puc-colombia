@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { analizar, fonetica, raiz, sonidoDe } from '../lib/busqueda'
-import { buscarMovimientos, ladoDeConsulta } from '../lib/movimientos'
+import { asientoLocal, buscarMovimientos, ladoDeConsulta } from '../lib/movimientos'
 import { buscar, construirCatalogo } from '../lib/catalogo'
 import { ALIAS_CUENTAS } from '../data/sinonimos'
 import { MOVIMIENTOS } from '../data/movimientos'
@@ -93,4 +93,27 @@ test('mayúsculas, tildes y minúsculas dan el mismo resultado', () => {
 test('los alias apuntan a cuentas del catálogo y los movimientos nuevos a códigos reales', () => {
   assert.deepEqual(Object.keys(ALIAS_CUENTAS).filter((c) => !catalogo.indice.has(c)), [])
   assert.ok(MOVIMIENTOS.length >= 55)
+})
+
+test('el asiento se propone primero en local y solo si la operación se parece de verdad', () => {
+  const casos: Record<string, string | null> = {
+    'Pagué el arriendo del local de octubre por 2.000.000': 'pago-arriendo',
+    'Vendí mercancía a crédito a un cliente por 1.190.000 con IVA': 'venta-credito',
+    'hoy pagamos la nómina de septiembre': 'pago-nomina',
+    'consigné 500 mil de la caja': 'consignacion-caja-banco',
+    // Sin operación conocida parecida: se ofrece la IA.
+    'Compré acciones de Ecopetrol': null,
+    'importé mercancía de china y pagué aranceles': null,
+    // La mejor coincidencia es de cobro pero la frase dice que pagué: no se da por buena.
+    'Me llegó la factura de la luz y la pagué con la tarjeta de crédito de la empresa': null,
+  }
+  const fallan = Object.entries(casos)
+    .filter(([q, id]) => (asientoLocal(q).propuesta?.id ?? null) !== id)
+    .map(([q, id]) => `${q}: esperaba ${id}, salió ${asientoLocal(q).propuesta?.id ?? null}`)
+  assert.deepEqual(fallan, [])
+})
+
+test('los importes y las fechas no cuentan como palabras de la búsqueda', () => {
+  const palabras = analizar('pagué 2.000.000 de arriendo en octubre').terminos.map((t) => t.palabra)
+  assert.ok(!palabras.some((p) => /\d/.test(p) || p === 'octubre'))
 })

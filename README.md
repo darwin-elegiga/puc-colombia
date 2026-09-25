@@ -33,6 +33,31 @@ Aplicación web instalable, pensada para el móvil, que funciona sin conexión, 
 - **Permite crear tus propias cuentas** validando que el código sea correcto y que exista su nivel
   superior. Importa y exporta en CSV.
 
+## IA a petición (Gemini, capa gratuita)
+
+Todo se resuelve primero en el teléfono. La IA solo se consulta cuando lo local no encuentra una
+respuesta y el usuario pulsa el botón; nunca de forma automática.
+
+- **Hazme el asiento (beta).** Se describe la situación con palabras. La app busca primero, entre sus
+  operaciones conocidas, la más parecida y muestra su asiento. Si no hay ninguna parecida, o no
+  convence, el botón *Pedir el asiento a la IA* la envía a `/api/asiento`. Gemini recibe las cuentas
+  candidatas (búsqueda local y vectorial) y operaciones parecidas como referencia, responde en JSON y el
+  servidor comprueba que los códigos existan en el catálogo y que el asiento cuadre.
+- **Buscar por significado.** Al final de los resultados (destacado si no hubo ninguno), el botón llama a
+  `/api/sugerir`: la consulta se convierte en un vector con `gemini-embedding-2` y se compara con la base
+  vectorial `data/vectores.json` (510 cuentas y 58 operaciones) para devolver el Top 5.
+
+```
+cuentas + movimientos ──gemini-embedding-2 (npm run vectores)──▶ data/vectores.json
+descripción escrita ──/api/sugerir──▶ vector ──similitud──▶ Top 5
+situación ──/api/asiento──▶ candidatas + referencias ──Gemini Flash──▶ asiento validado
+```
+
+Configuración: una clave gratuita de https://aistudio.google.com/apikey como `GEMINI_API_KEY` en
+`.env.local` (para `npm run vectores`) y en las variables de entorno del proyecto en Vercel. La clave solo
+vive en el servidor. Sin ella la app funciona igual y los botones de IA avisan de que no está configurada.
+En la capa gratuita, Google puede usar el contenido enviado para mejorar sus productos.
+
 ## Entrenamiento del debe y el haber
 
 Cada ejercicio da un caso —una venta con IVA, una nómina con descuentos, la venta de un activo
@@ -58,7 +83,8 @@ la respuesta y al menos un distractor, y que la dificultad suba nivel a nivel.
 npm install
 npm run dev          # http://localhost:3000
 npm run build && npm start
-npm test             # 48 pruebas: catálogo, búsqueda, movimientos y ejercicios
+npm test             # 50 pruebas: catálogo, búsqueda, asiento local, movimientos y ejercicios
+npm run vectores     # regenera la base vectorial con Gemini (necesita GEMINI_API_KEY)
 npm run seed         # regenera data/puc.json y los iconos de la PWA
 node scripts/descargar-oficial.mjs   # vuelve a bajar los textos oficiales de puc.com.co
 ```

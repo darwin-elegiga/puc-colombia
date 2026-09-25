@@ -6,12 +6,16 @@ import type { Destino } from '@/lib/navegacion'
 import type { Lado } from '@/data/guia'
 import { Codigo, InsigniaClase, InsigniaLado, InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen, franjaClase } from './Insignias'
 import { IconoIntercambio, IconoChevron } from './Iconos'
+import BusquedaIA from './BusquedaIA'
+import type { Cuenta } from '@/lib/tipos'
 import { nombreLegible } from '@/lib/puc'
 
 export default function ListaResultados({
   cuentas,
   movimientos,
   hayMovimientos,
+  consulta,
+  cuentaDe,
   lado,
   onLado,
   seleccion,
@@ -22,6 +26,9 @@ export default function ListaResultados({
 }: {
   cuentas: ResultadoBusqueda
   movimientos: Movimiento[]
+  /** Lo que se buscó: si es texto, se ofrece la búsqueda por significado con IA. */
+  consulta: string
+  cuentaDe: (codigo: string) => Cuenta | undefined
   /** Hay operaciones para la búsqueda aunque el filtro de lado las esconda todas. */
   hayMovimientos: boolean
   lado: Lado | ''
@@ -34,6 +41,8 @@ export default function ListaResultados({
   encabezado?: React.ReactNode
 }) {
   const vacio = cuentas.total === 0 && !hayMovimientos
+  // La IA se ofrece para texto libre, no para códigos: un código ya se lee dígito a dígito.
+  const conIA = consulta.trim().length >= 3 && !/^\d+$/.test(consulta.trim())
 
   return (
     <div
@@ -169,14 +178,20 @@ export default function ListaResultados({
         )}
 
         {vacio && (
-          <div className="px-6 py-16 text-center">
-            <p className="text-[15px] text-tinta-suave">Ningún resultado.</p>
+          <div className="px-6 pb-6 pt-14 text-center">
+            <p className="text-[15px] text-tinta-suave">Ningún resultado en el catálogo.</p>
             <p className="mt-1.5 text-[13px] leading-relaxed text-tinta-tenue">
               Prueba con un código, un nombre de cuenta o una operación como
               <br />
               &laquo;pagué el arriendo&raquo;.
             </p>
           </div>
+        )}
+        {vacio && conIA && (
+          <BusquedaIA key={consulta} consulta={consulta} destacado cuentaDe={cuentaDe} onSeleccionar={onSeleccionar} />
+        )}
+        {!vacio && conIA && (
+          <BusquedaIA key={consulta} consulta={consulta} destacado={false} cuentaDe={cuentaDe} onSeleccionar={onSeleccionar} />
         )}
       </section>
     </div>

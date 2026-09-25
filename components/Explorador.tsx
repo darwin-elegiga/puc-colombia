@@ -17,6 +17,7 @@ import FichaCuenta from './FichaCuenta'
 import FichaMovimiento from './FichaMovimiento'
 import Entrenador from './Entrenador'
 import MapaClases from './MapaClases'
+import AsientoBeta from './AsientoBeta'
 import type { Lado } from '@/data/guia'
 import LecturaCodigo from './LecturaCodigo'
 import DialogoNuevaCuenta from './DialogoNuevaCuenta'
@@ -25,7 +26,7 @@ import Dialogo, { botonSecundario } from './Dialogo'
 import Menu from './Menu'
 import {
   IconoBalanza, IconoCapas, IconoCerrar, IconoChevron, IconoDescarga, IconoInfo, IconoInstalar,
-  IconoFiltro, IconoLupa, IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
+  IconoFiltro, IconoIntercambio, IconoLupa, IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
 } from './Iconos'
 
 const OFICIALES = datosPuc.cuentas as unknown as Cuenta[]
@@ -215,6 +216,12 @@ export default function Explorador() {
 
   const opcionesMenu = [
     {
+      etiqueta: 'Hazme el asiento',
+      descripcion: 'Describe la situación · beta',
+      icono: <IconoBalanza className="size-4" />,
+      onSeleccionar: () => abrir({ tipo: 'asiento' }),
+    },
+    {
       etiqueta: 'Filtrar el catálogo',
       descripcion: 'Por clase, nivel y naturaleza',
       icono: <IconoFiltro className="size-4" />,
@@ -256,6 +263,17 @@ export default function Explorador() {
     y final, así que se lleva la pantalla entera en lugar de vivir en la columna
     de detalle.
   */
+  if (destino?.tipo === 'asiento') {
+    return (
+      <AsientoBeta
+        catalogo={catalogo}
+        onIr={(codigo) => abrir({ tipo: 'cuenta', codigo })}
+        onVerMovimiento={(id) => abrir({ tipo: 'movimiento', id })}
+        onSalir={() => abrir(null)}
+      />
+    )
+  }
+
   if (destino?.tipo === 'clases') {
     return (
       <MapaClases
@@ -419,6 +437,8 @@ export default function Explorador() {
             cuentas={resultados}
             movimientos={movimientos}
             hayMovimientos={hayMovimientos}
+            consulta={consulta}
+            cuentaDe={(codigo) => catalogo.indice.get(codigo)}
             lado={lado}
             onLado={setLado}
             seleccion={destino}
@@ -465,6 +485,7 @@ export default function Explorador() {
                     onEjemplo={ejecutarBusqueda}
                     onEntrenar={() => abrir({ tipo: 'entrenar' })}
                     onMapa={() => abrir({ tipo: 'clases' })}
+                    onAsiento={() => abrir({ tipo: 'asiento' })}
                   />
                 )}
               </>
@@ -529,6 +550,7 @@ export default function Explorador() {
                 onEjemplo={ejecutarBusqueda}
                 onEntrenar={() => abrir({ tipo: 'entrenar' })}
                 onMapa={() => abrir({ tipo: 'clases' })}
+                onAsiento={() => abrir({ tipo: 'asiento' })}
               />
             )}
           </div>
@@ -689,10 +711,12 @@ function IntroCompacta({
   onEjemplo,
   onEntrenar,
   onMapa,
+  onAsiento,
 }: {
   onEjemplo: (texto: string) => void
   onEntrenar: () => void
   onMapa: () => void
+  onAsiento: () => void
 }) {
   return (
     <div className="border-b border-borde px-5 py-5 lg:hidden">
@@ -714,6 +738,7 @@ function IntroCompacta({
       </div>
 
       <EntradaMapa onMapa={onMapa} className="mt-4" />
+      <EntradaAsiento onAsiento={onAsiento} className="mt-2.5" />
       <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-2.5" />
     </div>
   )
@@ -733,6 +758,29 @@ function EntradaMapa({ onMapa, className = '' }: { onMapa: () => void; className
         <span className="block truncate text-[12.5px] text-tinta-tenue">
           Qué es cada una, sus grupos y cuándo usarlos si pagas o te pagan
         </span>
+      </span>
+      <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
+    </button>
+  )
+}
+
+/** Acceso al asiento a partir de una situación (beta). */
+function EntradaAsiento({ onAsiento, className = '' }: { onAsiento: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onAsiento}
+      className={`tactil flex w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 text-left pulsable lg:hover:border-borde-fuerte ${className}`}
+    >
+      <IconoIntercambio className="size-5 shrink-0 text-tinta-suave" />
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2 text-[15px] leading-snug text-tinta">
+          Hazme el asiento
+          <span className="rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.08em]" style={{ background: 'var(--color-nota)', color: 'var(--color-nota-tinta)' }}>
+            Beta
+          </span>
+        </span>
+        <span className="block truncate text-[12.5px] text-tinta-tenue">Cuenta la situación y te propongo el asiento</span>
       </span>
       <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
     </button>
@@ -770,11 +818,13 @@ function Bienvenida({
   onEjemplo,
   onEntrenar,
   onMapa,
+  onAsiento,
 }: {
   total: number
   onEjemplo: (texto: string) => void
   onEntrenar: () => void
   onMapa: () => void
+  onAsiento: () => void
 }) {
   return (
     <div className="surgir panel-scroll h-full">
@@ -804,6 +854,7 @@ function Bienvenida({
         </div>
 
         <EntradaMapa onMapa={onMapa} className="mt-8" />
+        <EntradaAsiento onAsiento={onAsiento} className="mt-2.5" />
         <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-2.5" />
 
         <dl className="mt-10 space-y-4 border-t border-borde pt-6 text-[14px]">

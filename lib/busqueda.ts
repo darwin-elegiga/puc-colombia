@@ -36,7 +36,10 @@ const VACIAS = new Set(
     'un una unos unas y e o u ni que qu q se me mi mis te tu tus le les nos su sus yo ella ellos ' +
     'es son fue era ser estar esta este esto estos estas eso esa ese esos esas aquel ha han he hay ' +
     'como cual cuales cuando donde quien muy mas pero ya tambien solo si no algo alguna alguno ' +
-    'porque pues entonces asi aqui alli'
+    'porque pues entonces asi aqui alli ' +
+    // Importes y fechas: describen la operación pero no ayudan a identificarla.
+    'peso pesos cop mil millon millones valor total precio suma cantidad hoy ayer ' +
+    'enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre'
   ).split(' '),
 )
 
@@ -182,7 +185,7 @@ const FRASES_QUIEN_PAGA = prepararFrases(Object.entries(FRASES_LADO))
  */
 export function ladoDeConsulta(consulta: string): 'pago' | 'cobro' | null {
   const t = ` ${palabras(consulta).join(' ')} `
-  if (/ (me|nos) (pag|consign|transfir|abon|gir|devolv|dan |dieron|prest)|cobr|recib|recaud|me deben|entra (plata|dinero)|vend|factur| ingres/.test(t)) return 'cobro'
+  if (/ (me|nos) (pag|consign|transfir|abon|gir|devolv|dan |dieron|prest)|cobr|recib|recaud|me deben|entra (plata|dinero)|vend| factur(e|o|amos|aron) | ingres/.test(t)) return 'cobro'
   if (/ (pag|cancel|compr|le (pag|debo|di|doy|prest|devuelv))|sale (plata|dinero)|gast| egres/.test(t)) return 'pago'
   return null
 }
@@ -237,6 +240,8 @@ export function analizar(consulta: string, extraSuaves: Set<string> = new Set())
     vistas.set(r, { palabra, raiz: r, sonido: sonidoDe(palabra), suave, ultimo: palabra === ultima })
   }
   for (const palabra of escritas) {
+    // Los números sueltos son importes; los códigos se buscan por la vía numérica.
+    if (/^\d+$/.test(palabra)) continue
     agregar(palabra, SUAVES.has(palabra) || cubiertas.has(palabra) || extraSuaves.has(raiz(palabra)))
   }
   for (const { palabra, suave } of añadidas) agregar(palabra, suave)
@@ -309,7 +314,16 @@ export class Buscador<T> {
   /** Pares raíz–sonido distintos del índice. */
   private vocabulario: [string, string][]
 
-  constructor(valores: T[], campos: (valor: T) => Campo[]) {
+  /**
+   * pesoPrecision: cuánto premia que la consulta cubra entero el primer campo. Útil
+   * con nombres descriptivos largos (los movimientos); con nombres de una o dos
+   * palabras (las cuentas) favorecería a cualquier sinónimo suelto.
+   */
+  constructor(
+    valores: T[],
+    campos: (valor: T) => Campo[],
+    private pesoPrecision = 0,
+  ) {
     const vocabulario = new Map<string, [string, string]>()
     this.documentos = valores.map((valor) => ({
       valor,
@@ -378,10 +392,20 @@ export class Buscador<T> {
         }
       }
 
+      // Precisión en el campo principal (el nombre): qué parte de sus palabras pidió la consulta.
+      // Entre «Vendo mercancía a crédito» y «Vendo a crédito y el cliente me practica retención»,
+      // la consulta «vendí mercancía a crédito» cubre entero el primero.
+      const principal = doc.campos[0]
+      let precision = 0
+      if (this.pesoPrecision && principal?.raices.length) {
+        const pedidas = principal.raices.filter((r) => expansiones.some((e) => (e.get(r) ?? 0) >= 0.85))
+        precision = pedidas.length / principal.raices.length
+      }
+
       // La frase escrita tal cual en algún campo.
       const fraseExacta = frase.trim().includes(' ') && doc.campos.some((c) => c.texto.includes(frase))
 
-      puntaje = puntaje * (0.35 + 0.65 * cobertura * cobertura) + cercania * 0.8 + (fraseExacta ? 4 : 0)
+      puntaje = puntaje * (0.35 + 0.65 * cobertura * cobertura) + cercania * 0.8 + precision * this.pesoPrecision + (fraseExacta ? 4 : 0)
       resultados.push({ valor: doc.valor, puntaje, cobertura })
     }
 
