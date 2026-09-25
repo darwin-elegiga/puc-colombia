@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { analizar, fonetica, raiz, sonidoDe } from '../lib/busqueda'
 import { asientoLocal, buscarMovimientos, ladoDeConsulta } from '../lib/movimientos'
 import { buscar, construirCatalogo } from '../lib/catalogo'
-import { ALIAS_CUENTAS } from '../data/sinonimos'
+import { PRUEBAS_VOCABULARIO, codigosConAlias } from '../lib/vocabulario'
 import { MOVIMIENTOS } from '../data/movimientos'
 
 const catalogo = construirCatalogo(JSON.parse(readFileSync(new URL('../data/puc.json', import.meta.url), 'utf8')).cuentas, [])
@@ -94,7 +94,7 @@ test('mayúsculas, tildes y minúsculas dan el mismo resultado', () => {
 })
 
 test('los alias apuntan a cuentas del catálogo y los movimientos nuevos a códigos reales', () => {
-  assert.deepEqual(Object.keys(ALIAS_CUENTAS).filter((c) => !catalogo.indice.has(c)), [])
+  assert.deepEqual(codigosConAlias().filter((c) => !catalogo.indice.has(c)), [])
   assert.ok(MOVIMIENTOS.length >= 55)
 })
 
@@ -125,8 +125,8 @@ test('los importes y las fechas no cuentan como palabras de la búsqueda', () =>
 test('la búsqueda local dice cuándo no resuelve, que es cuando se ofrece la IA', () => {
   assert.equal(buscar(catalogo, { q: 'arriendo' }).completa, true)
   assert.equal(buscar(catalogo, { q: '1105' }).completa, true)
-  // «ecopetrol» no está en ningún texto: solo hay coincidencias parciales.
-  assert.equal(buscar(catalogo, { q: 'compré acciones de ecopetrol' }).completa, false)
+  // Nada contable: como mucho coincidencias parciales.
+  assert.equal(buscar(catalogo, { q: 'quiero aprender a tocar guitarra eléctrica' }).completa, false)
   assert.equal(buscar(catalogo, { q: 'zzzz' }).completa, false)
 })
 
@@ -135,4 +135,24 @@ test('palabras que coinciden con propiedades de los objetos no rompen la búsque
     assert.doesNotThrow(() => buscar(catalogo, { q }))
     assert.doesNotThrow(() => buscarMovimientos(q))
   }
+})
+
+test('el vocabulario ampliado encuentra la cuenta entre las 3 primeras', () => {
+  // Vale la cuenta esperada o su cuenta padre o hija: «el coche de la empresa» → 1540 o 154005.
+  const emparentadas = (a: string, b: string) => a.startsWith(b) || b.startsWith(a)
+  const fallan = Object.entries(PRUEBAS_VOCABULARIO)
+    .filter(([q, codigo]) => !primerasCuentas(q).some((c) => emparentadas(c, codigo)))
+    .map(([q, codigo]) => `${q}: esperaba ${codigo}, salió ${primerasCuentas(q).join(', ')}`)
+  const total = Object.keys(PRUEBAS_VOCABULARIO).length
+  // Se exige al menos el 95 %: algunas consultas son ambiguas por naturaleza.
+  assert.ok(fallan.length <= total * 0.05, `${fallan.length} de ${total} fallan:\n${fallan.join('\n')}`)
+})
+
+test('las consultas con palabras de otros países encuentran la operación', () => {
+  const casos: Record<string, string> = {
+    'compro ordenador': 'compra-activo-fijo',
+    'compré una mac para la oficina': 'compra-activo-fijo',
+  }
+  const fallan = Object.entries(casos).filter(([q, id]) => !buscarMovimientos(q, 3).some((m) => m.id === id))
+  assert.deepEqual(fallan.map(([q]) => `${q} → ${buscarMovimientos(q, 3).map((m) => m.id).join(', ')}`), [])
 })

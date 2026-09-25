@@ -19,7 +19,8 @@
  *
  * Funciones puras: no dependen de React ni del almacenamiento.
  */
-import { CONCEPTOS, FRASES, FRASES_LADO, GRUPOS_SINONIMOS } from '@/data/sinonimos'
+import { CONCEPTOS, FRASES, FRASES_LADO } from '@/data/sinonimos'
+import { GRUPOS } from './vocabulario'
 
 /* ─────────────────────────── Texto ─────────────────────────── */
 
@@ -39,7 +40,7 @@ const VACIAS = new Set(
     'porque pues entonces asi aqui alli ' +
     // Importes y fechas: describen la operación pero no ayudan a identificarla.
     'peso pesos cop mil millon millones valor total precio suma cantidad hoy ayer ' +
-    'enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre'
+    'enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre ano anos semana'
   ).split(' '),
 )
 
@@ -62,6 +63,7 @@ const RAICES_FIJAS = new Map<string, string>(Object.entries({
   renta: 'renta', rentas: 'renta',
   prima: 'prima', primas: 'prima',
   caja: 'caja', cajas: 'caja',
+  pagando: 'pag', dando: 'dand',
   iva: 'iva', ica: 'ica', gmf: 'gmf', eps: 'eps', arl: 'arl', pila: 'pila',
   utilidad: 'utilidad', utilidades: 'utilidad', util: 'utiles', utiles: 'utiles',
 }))
@@ -91,7 +93,9 @@ export function raiz(palabra: string): string {
   if (palabra.endsWith('que') && palabra.length > 4) return palabra.slice(0, -3) + 'c'
 
   for (const sufijo of SUFIJOS) {
-    if (palabra.endsWith(sufijo) && palabra.length - sufijo.length >= 3) return palabra.slice(0, -sufijo.length)
+    // Los gerundios dejan una raíz de al menos 4 letras: «demando» es «demand-o», no «dem-ando».
+    const minimo = sufijo === 'ando' || sufijo === 'iendo' ? 4 : 3
+    if (palabra.endsWith(sufijo) && palabra.length - sufijo.length >= minimo) return palabra.slice(0, -sufijo.length)
   }
   return palabra
 }
@@ -145,7 +149,7 @@ const tokensDe = (texto: string) =>
 const SINONIMOS = new Map<string, Set<string>>()
 const FRASES_DE_GRUPOS: [string, string][] = []
 
-for (const grupo of GRUPOS_SINONIMOS) {
+for (const grupo of GRUPOS) {
   const sueltas = grupo.filter((t) => palabras(t).length === 1)
   const raices = new Set(sueltas.map((t) => raiz(palabras(t)[0])))
   for (const r of raices) {
@@ -178,7 +182,9 @@ const prepararFrases = (entradas: [string, string][]) =>
     .map(([frase, equivale]) => [` ${palabras(frase).join(' ')} `, palabras(equivale)] as const)
     .sort((a, b) => b[0].length - a[0].length)
 
-const FRASES_CONTENIDO = prepararFrases([...Object.entries(FRASES), ...FRASES_DE_GRUPOS])
+const FRASES_CONTENIDO = prepararFrases(Object.entries(FRASES))
+/** Frases de los grupos de sinónimos («aire acondicionado» → minisplit): añaden una pista, no sustituyen. */
+const FRASES_SINONIMAS = prepararFrases(FRASES_DE_GRUPOS)
 const FRASES_QUIEN_PAGA = prepararFrases(Object.entries(FRASES_LADO))
 
 /**
@@ -223,6 +229,11 @@ export function analizar(consulta: string, extraSuaves: Set<string> = new Set())
     if (!texto.includes(frase)) continue
     frase.trim().split(' ').forEach((p) => cubiertas.add(p))
     equivale.forEach((p) => añadidas.push({ palabra: p, suave: false }))
+  }
+  // Frases sinónimas: la palabra principal del grupo como pista; lo escrito sigue siendo obligatorio.
+  for (const [frase, equivale] of FRASES_SINONIMAS) {
+    if (!texto.includes(frase)) continue
+    equivale.forEach((p) => añadidas.push({ palabra: p, suave: true }))
   }
   // Frases de quién paga: «me pagaron» → cobro. Solo orientan, no obligan.
   for (const [frase, equivale] of FRASES_QUIEN_PAGA) {

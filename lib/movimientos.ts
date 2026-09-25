@@ -2,6 +2,22 @@
 import { MOVIMIENTOS, type Movimiento } from '@/data/movimientos'
 import { REGLA_LADO, type Lado } from '@/data/guia'
 import { Buscador, ladoDeConsulta } from './busqueda'
+import { aliasDe } from './vocabulario'
+import datosPuc from '@/data/puc.json'
+
+const NOMBRE_CUENTA = new Map(
+  (datosPuc.cuentas as { codigo: string; nombre: string }[]).map((c) => [c.codigo, c.nombre]),
+)
+
+/**
+ * Cómo se nombran las cuentas del asiento: su nombre y sus alias, y los de la cuenta
+ * de 4 dígitos si el renglón usa una subcuenta. Así «compro ordenador» llega a la
+ * compra del computador aunque la operación no diga «ordenador»: lo dice 1528.
+ */
+function vocabularioDelAsiento(m: Movimiento): string {
+  const codigos = new Set(m.asiento.flatMap((r) => [r.codigo, r.codigo.slice(0, 4)]))
+  return [...codigos].flatMap((c) => [NOMBRE_CUENTA.get(c) ?? '', ...aliasDe(c)]).join(' · ')
+}
 
 /**
  * El nombre y las formas coloquiales mandan; la descripción, los conceptos del
@@ -14,6 +30,7 @@ const MOTOR = new Buscador(MOVIMIENTOS, (m) => [
   { texto: `${m.categoria} · ${REGLA_LADO[m.lado].titulo} · ${REGLA_LADO[m.lado].corto}`, peso: 1 },
   { texto: m.asiento.map((r) => r.concepto).join(' · '), peso: 0.8 },
   { texto: m.nota ?? '', peso: 0.5 },
+  { texto: vocabularioDelAsiento(m), peso: 0.7 },
 ], 5)
 
 /** Resultados con su puntaje y cobertura, para decidir si lo encontrado es fiable. */

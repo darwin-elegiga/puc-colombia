@@ -8,7 +8,7 @@ import {
 } from './puc'
 import type { Cuenta, Ficha, Filtros, Nivel, ResultadoBusqueda } from './tipos'
 import { Buscador, analizar, ladoDeConsulta, raiz } from './busqueda'
-import { ALIAS_CUENTAS } from '@/data/sinonimos'
+import { aliasDe } from './vocabulario'
 
 export interface Catalogo {
   lista: Cuenta[]
@@ -25,7 +25,8 @@ export interface Catalogo {
 function camposDe(c: Cuenta) {
   return [
     { texto: c.nombre, peso: 3 },
-    { texto: (ALIAS_CUENTAS[c.codigo] ?? []).join(' · '), peso: 3 },
+    // Un poco menos que el nombre: ante un empate, gana la cuenta que se llama así.
+    { texto: aliasDe(c.codigo).join(' · '), peso: 2.8 },
     { texto: c.descripcion, peso: 1 },
     { texto: [...(c.dinamica?.debita ?? []), ...(c.dinamica?.acredita ?? [])].join(' · '), peso: 0.5 },
   ]
@@ -99,7 +100,7 @@ const VERBOS_DE_LADO = new Set(['pagar', 'pago', 'cobrar', 'cobro', 'recibir', '
  * Las cuentas de orden (8, 9) casi nunca son lo que se busca en lenguaje natural.
  */
 function pesoPorLado(codigo: string, lado: 'pago' | 'cobro' | 'interno' | null): number {
-  if (codigo[0] === '8' || codigo[0] === '9') return 0.75
+  if (codigo[0] === '8' || codigo[0] === '9') return 0.9
   // Ante un empate, la cuenta de 4 dígitos va antes que sus subcuentas y que el grupo.
   if (codigo.length === 4) return pesoPorLado(`x${codigo}`, lado) * 1.04
   const c = codigo.replace(/^x/, '')
@@ -144,7 +145,10 @@ export function buscar(
     // Texto libre: raíces, sinónimos, errores de tecleo y cercanía (lib/busqueda.ts).
     // «Pagar» y «cobrar» no describen una cuenta sino el lado: orientan, pero no obligan.
     const q = filtros.q ?? ''
-    const lado = ladoDeConsulta(q)
+    // «Comprar» puede ser un gasto o un activo (un computador): solo «pagar» empuja hacia gastos.
+    const compra = /\bcompr/.test(normalizar(q))
+    const deducido = ladoDeConsulta(q)
+    const lado = deducido === 'pago' && compra ? null : deducido
     const puntuadas = cat
       .motor()
       .buscar(analizar(q, VERBOS_DE_LADO))

@@ -9,7 +9,7 @@
  */
 import type { Cuenta } from './tipos'
 import type { Movimiento } from '@/data/movimientos'
-import { ALIAS_CUENTAS } from '@/data/sinonimos'
+import { aliasDe } from './vocabulario'
 import { REGLA_LADO } from '@/data/guia'
 import { NOMBRE_CLASE, nombreLegible } from './puc'
 
@@ -30,7 +30,7 @@ export interface Documento {
 
 /** Texto con el que se describe una cuenta al modelo: nombre, clase, alias y qué registra. */
 export function documentoDeCuenta(c: Cuenta): Documento {
-  const alias = ALIAS_CUENTAS[c.codigo]
+  const alias = aliasDe(c.codigo)
   const primerParrafo = c.descripcion.split('\n\n')[0]
   return {
     tipo: 'cuenta',
@@ -39,7 +39,7 @@ export function documentoDeCuenta(c: Cuenta): Documento {
     texto: [
       `Cuenta ${c.codigo} del PUC colombiano: ${nombreLegible(c.nombre)}.`,
       `Clase ${c.codigo[0]}, ${NOMBRE_CLASE[c.codigo[0]]}.`,
-      alias ? `También se le dice: ${alias.join(', ')}.` : '',
+      alias.length ? `También se le dice: ${alias.slice(0, 20).join(', ')}.` : '',
       primerParrafo,
     ]
       .filter(Boolean)
