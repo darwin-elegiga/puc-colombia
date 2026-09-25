@@ -8,7 +8,10 @@
  *   - el modelo recibe el asiento y la explicación local ya hecha, y se le pide
  *     que añada lo que falta (un ejemplo con cifras, errores comunes), no que la repita;
  *   - la salida está acotada por esquema y por maxOutputTokens;
- *   - la misma operación se responde de la caché del servidor.
+ *   - la misma operación se responde de la caché del servidor;
+ *   - los modelos se prueban en escalera, no a la vez: si el primero está saturado
+ *     (en la capa gratuita tarda 20–30 s en dar 503) se pasa al siguiente a los 12 s,
+ *     y solo se paga una respuesta.
  *
  * Solo corre en el servidor (app/api/explicar).
  */
@@ -17,6 +20,10 @@ import type { Cuenta } from './tipos'
 import { construirCatalogo } from './catalogo'
 import { explicarAsiento, type RenglonAExplicar } from './explicacion'
 import { MODELO_RESPUESTAS, generarJSON } from './ia/gemini'
+
+/** El ligero configurado primero; si no responde a tiempo, el otro ligero. */
+const ESCALERA = [...new Set([MODELO_RESPUESTAS, 'gemini-flash-lite-latest'])]
+const ESPERAS = [12_000, 20_000]
 
 const CATALOGO = construirCatalogo(datosPuc.cuentas as unknown as Cuenta[], [])
 const cuentaDe = (codigo: string) => CATALOGO.indice.get(codigo)
@@ -68,10 +75,27 @@ export async function explicacionIA(operacion: string, renglones: RenglonAExplic
     `Explicación que ya leyó:\n${local.pasos.map((p) => `· ${p.porQue}`).join('\n')}\n${local.resumen}`,
   ].join('\n\n')
 
-  const r = await generarJSON<Omit<ExplicacionIA, 'modelo'>>({ sistema: INSTRUCCIONES, usuario, esquema: ESQUEMA, maxTokens: 700 })
+  let r: Omit<ExplicacionIA, 'modelo'> | undefined
+  let modelo = ESCALERA[0]
+  let ultimoError: unknown
+  for (const [i, candidato] of ESCALERA.entries()) {
+    try {
+      r = await generarJSON<Omit<ExplicacionIA, 'modelo'>>({
+        sistema: INSTRUCCIONES, usuario, esquema: ESQUEMA, maxTokens: 700,
+        modelo: candidato, espera: ESPERAS[i] ?? 20_000, intentos: 1,
+      })
+      modelo = candidato
+      break
+    } catch (error) {
+      ultimoError = error
+      // Una petición mal formada fallaría igual con el siguiente modelo.
+      if ((error as { estado?: number }).estado === 400) break
+    }
+  }
+  if (!r) throw ultimoError
   const textos = (v: unknown, n: number) => (Array.isArray(v) ? v.map(String).filter(Boolean).slice(0, n) : [])
   return {
-    modelo: MODELO_RESPUESTAS,
+    modelo,
     parrafos: textos(r.parrafos, 4),
     ejemplo: String(r.ejemplo ?? ''),
     errores: textos(r.errores, 3),

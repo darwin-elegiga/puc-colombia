@@ -85,14 +85,21 @@ export async function generarJSON<T>({
   usuario,
   esquema,
   maxTokens = 900,
+  modelo = MODELO_RESPUESTAS,
+  espera = 20_000,
+  intentos = 2,
 }: {
   sistema: string
   usuario: string
   esquema: object
   maxTokens?: number
+  modelo?: string
+  /** Milisegundos antes de abandonar la petición. */
+  espera?: number
+  intentos?: number
 }): Promise<T> {
   const r = await llamar<RespuestaGenerar>(
-    `models/${MODELO_RESPUESTAS}:generateContent`,
+    `models/${modelo}:generateContent`,
     {
       systemInstruction: { parts: [{ text: sistema }] },
       contents: [{ role: 'user', parts: [{ text: usuario }] }],
@@ -105,7 +112,7 @@ export async function generarJSON<T>({
         thinkingConfig: { thinkingLevel: 'minimal' },
       },
     },
-    { intentos: 2 },
+    { intentos, espera },
   )
   const texto = r.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
   if (!texto) throw new ErrorGemini(`Gemini no devolvió texto (${r.candidates?.[0]?.finishReason ?? 'sin candidatos'})`, 502)
