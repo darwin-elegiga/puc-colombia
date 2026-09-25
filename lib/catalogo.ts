@@ -7,12 +7,28 @@ import {
   longitudPadre, normalizar,
 } from './puc'
 import type { Cuenta, Ficha, Filtros, Nivel, ResultadoBusqueda } from './tipos'
+import { Buscador, analizar, ladoDeConsulta, raiz } from './busqueda'
+import { ALIAS_CUENTAS } from '@/data/sinonimos'
 
 export interface Catalogo {
   lista: Cuenta[]
   indice: Map<string, Cuenta>
   hijosPor: Map<string, string[]>
-  texto: Map<string, string>
+  /** Motor de búsqueda por texto; se construye la primera vez que se busca. */
+  motor: () => Buscador<Cuenta>
+}
+
+/**
+ * Qué se indexa de cada cuenta y con qué peso: el nombre y sus alias coloquiales
+ * mandan; la descripción oficial y la dinámica amplían el alcance con menos peso.
+ */
+function camposDe(c: Cuenta) {
+  return [
+    { texto: c.nombre, peso: 3 },
+    { texto: (ALIAS_CUENTAS[c.codigo] ?? []).join(' · '), peso: 3 },
+    { texto: c.descripcion, peso: 1 },
+    { texto: [...(c.dinamica?.debita ?? []), ...(c.dinamica?.acredita ?? [])].join(' · '), peso: 0.5 },
+  ]
 }
 
 /** Las cuentas personalizadas nunca sobrescriben una oficial con el mismo código. */
@@ -33,9 +49,9 @@ export function construirCatalogo(oficiales: Cuenta[], personalizadas: Cuenta[])
   for (const lista of hijosPor.values()) lista.sort()
 
   const lista = [...indice.values()].sort((a, b) => a.codigo.localeCompare(b.codigo))
-  const texto = new Map(lista.map((c) => [c.codigo, normalizar(`${c.codigo} ${c.nombre} ${c.descripcion}`)]))
 
-  return { lista, indice, hijosPor, texto }
+  let motor: Buscador<Cuenta> | null = null
+  return { lista, indice, hijosPor, motor: () => (motor ??= new Buscador(lista, camposDe)) }
 }
 
 export const obtener = (cat: Catalogo, codigo: string) => cat.indice.get(codigo.trim())
@@ -75,9 +91,27 @@ export function fichaDe(cat: Catalogo, codigo: string): Ficha | null {
 export const leerCodigo = (cat: Catalogo, codigo: string) =>
   decodificar(codigo, (c) => cat.indice.get(c))
 
+const VERBOS_DE_LADO = new Set(['pagar', 'pago', 'cobrar', 'cobro', 'recibir', 'recibo', 'comprar', 'compre'].map(raiz))
+
 /**
- * Búsqueda por código o texto con filtros. Prioriza coincidencia exacta de código,
- * luego prefijo de código, luego prefijo del nombre.
+ * Si la consulta dice quién paga, suben las clases de ese lado: al pagar, gastos y
+ * costos (5, 6, 7); al cobrar, ingresos (4), el disponible (11) y los deudores (13).
+ * Las cuentas de orden (8, 9) casi nunca son lo que se busca en lenguaje natural.
+ */
+function pesoPorLado(codigo: string, lado: 'pago' | 'cobro' | null): number {
+  if (codigo[0] === '8' || codigo[0] === '9') return 0.75
+  // Ante un empate, la cuenta de 4 dígitos va antes que sus subcuentas y que el grupo.
+  if (codigo.length === 4) return pesoPorLado(`x${codigo}`, lado) * 1.04
+  const c = codigo.replace(/^x/, '')
+  if (lado === 'pago' && '567'.includes(c[0])) return 1.3
+  if (lado === 'cobro' && c[0] === '4') return 1.3
+  if (lado === 'cobro' && (c.startsWith('11') || c.startsWith('13'))) return 1.1
+  return 1
+}
+
+/**
+ * Búsqueda por código o por texto, con filtros. Un número busca por código (exacto,
+ * luego prefijo, luego contenido); un texto usa el motor en lenguaje natural.
  */
 export function buscar(
   cat: Catalogo,
@@ -88,30 +122,35 @@ export function buscar(
   const esNumerica = /^\d+$/.test(consulta)
   const { clase = '', nivel = '', naturaleza = '', origen = '' } = filtros
 
-  const coincide = (c: Cuenta) => {
+  const coincideFiltros = (c: Cuenta) => {
     if (clase && c.codigo[0] !== clase) return false
     if (nivel && c.nivel !== nivel) return false
     if (naturaleza && c.naturaleza !== naturaleza) return false
     if (origen && c.origen !== origen) return false
-    if (!consulta) return true
-    return esNumerica
-      ? c.codigo.includes(consulta)
-      : (cat.texto.get(c.codigo) ?? '').includes(consulta)
+    return true
   }
+  const coincide = (c: Cuenta) => coincideFiltros(c) && (!consulta || c.codigo.includes(consulta))
 
-  let encontradas = cat.lista.filter(coincide)
+  let encontradas: Cuenta[]
 
-  if (consulta) {
-    const puntaje = (c: Cuenta) => {
-      if (c.codigo === consulta) return 0
-      if (c.codigo.startsWith(consulta)) return 1
-      if (normalizar(c.nombre).startsWith(consulta)) return 2
-      if (normalizar(c.nombre).includes(consulta)) return 3
-      return 4
+  if (!consulta || esNumerica) {
+    encontradas = cat.lista.filter(coincide)
+    if (consulta) {
+      const puntaje = (c: Cuenta) => (c.codigo === consulta ? 0 : c.codigo.startsWith(consulta) ? 1 : 2)
+      encontradas = [...encontradas].sort((a, b) => puntaje(a) - puntaje(b) || a.codigo.localeCompare(b.codigo))
     }
-    encontradas = [...encontradas].sort(
-      (a, b) => puntaje(a) - puntaje(b) || a.codigo.localeCompare(b.codigo),
-    )
+  } else {
+    // Texto libre: raíces, sinónimos, errores de tecleo y cercanía (lib/busqueda.ts).
+    // «Pagar» y «cobrar» no describen una cuenta sino el lado: orientan, pero no obligan.
+    const q = filtros.q ?? ''
+    const lado = ladoDeConsulta(q)
+    encontradas = cat
+      .motor()
+      .buscar(analizar(q, VERBOS_DE_LADO))
+      .map((r) => ({ ...r, puntaje: r.puntaje * pesoPorLado(r.valor.codigo, lado) }))
+      .sort((a, b) => b.puntaje - a.puntaje)
+      .map((r) => r.valor)
+      .filter(coincideFiltros)
   }
 
   return {

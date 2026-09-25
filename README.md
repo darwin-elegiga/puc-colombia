@@ -8,7 +8,13 @@ Aplicación web instalable, pensada para el móvil, que funciona sin conexión, 
 - **Lee el código dígito a dígito.** Escribes `110505` y ves cómo se descompone:
   `1` Activo → `11` Disponible → `1105` Caja → `110505` Caja general. También funciona con
   auxiliares (`11050501`) y avisa cuando la longitud no corresponde a ningún nivel.
-- **Busca por código o por nombre**, sin importar tildes: `depreciacion` encuentra `DEPRECIACIÓN`.
+- **Busca en lenguaje natural.** *"qué cuenta uso cuando le pago al contador"* lleva a 5110 y a su
+  asiento. El motor (`lib/busqueda.ts`) reduce cada palabra a su raíz (pagué = pago = pagar), entiende
+  sinónimos y expresiones coloquiales (plata, caja chica, cuatro por mil, la pila), conceptos
+  relacionados (nómina → prestaciones, parafiscales), errores de tecleo y escritura de oído (*vanco*,
+  *vacasiones*, *orarios*), ignora mayúsculas y tildes, y puntúa más cuando las palabras aparecen juntas.
+  Si la frase dice quién paga (*me pagaron* / *pagué*), ordena primero las cuentas y operaciones de ese
+  lado. El vocabulario vive en `data/sinonimos.ts`.
 - **Busca por movimiento.** Escribes *"consigno el dinero"* o *"pago la nómina"* y obtienes el asiento:
   qué cuentas se debitan y cuáles se acreditan, con el concepto de cada renglón.
 - **Distingue quién paga.** Cada movimiento dice si es *yo pago* (sale dinero), *me pagan* (entra
@@ -52,7 +58,7 @@ la respuesta y al menos un distractor, y que la dificultad suba nivel a nivel.
 npm install
 npm run dev          # http://localhost:3000
 npm run build && npm start
-npm test             # 40 pruebas de la lógica del catálogo, los movimientos y los ejercicios
+npm test             # 48 pruebas: catálogo, búsqueda, movimientos y ejercicios
 npm run seed         # regenera data/puc.json y los iconos de la PWA
 node scripts/descargar-oficial.mjs   # vuelve a bajar los textos oficiales de puc.com.co
 ```
@@ -168,6 +174,7 @@ lib/
   catalogo.ts        índice consultable: búsqueda, jerarquía, fichas
   almacenamiento.ts  cuentas propias en localStorage
   navegacion.ts      qué se está viendo, guardado en el hash de la URL
+  busqueda.ts        motor de búsqueda en lenguaje natural
   movimientos.ts     búsqueda de operaciones típicas
   ejercicios.ts      calificación y recorrido del entrenamiento
   progreso.ts        ejercicios resueltos en localStorage
@@ -175,6 +182,7 @@ data/
   puc.json           catálogo oficial (generado)
   movimientos.ts     operaciones típicas con su asiento y quién paga
   guia.ts            las clases y grupos en palabras simples
+  sinonimos.ts       sinónimos, frases, conceptos y alias de cuentas para la búsqueda
   ejercicios.ts      ejercicios del entrenamiento, por nivel
 scripts/
   build-seed.mjs     fuente compacta + textos oficiales → data/puc.json
