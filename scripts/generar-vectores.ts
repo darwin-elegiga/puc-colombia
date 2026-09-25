@@ -7,9 +7,13 @@
  *   npm run vectores
  *
  * Necesita GEMINI_API_KEY en .env.local (gratis en https://aistudio.google.com/apikey).
- * Son unas seis llamadas de hasta 100 textos cada una: cabe de sobra en la capa gratuita.
+ *
+ * Es incremental: cada vector guarda una huella de su texto y solo se piden los que
+ * cambiaron o son nuevos. La capa gratuita limita los tokens por minuto, así que se
+ * envían lotes pequeños y, ante un 429, se espera y se reintenta.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import { MOVIMIENTOS } from '../data/movimientos'
 import type { Cuenta } from '../lib/tipos'
@@ -33,26 +37,45 @@ const documentos = [...cuentas.map(documentoDeCuenta), ...MOVIMIENTOS.map(docume
 
 // Función y no await suelto: el proyecto compila los .ts como CommonJS.
 async function main(clave: string) {
-  const LOTE = 100
+  const LOTE = 20
   const espera = (ms: number) => new Promise((r) => setTimeout(r, ms))
-  const items: BaseVectorial['items'] = []
+  const huella = (d: { titulo: string; texto: string }) =>
+    createHash('sha1').update(`${MODELO}|${DIMENSIONES}|${d.titulo}|${d.texto}`).digest('hex').slice(0, 12)
 
-  for (let i = 0; i < documentos.length; i += LOTE) {
-    const lote = documentos.slice(i, i + LOTE)
+  const ruta = join(RAIZ, 'data/vectores.json')
+  const previa: BaseVectorial | null = existsSync(ruta) ? JSON.parse(readFileSync(ruta, 'utf8')) : null
+  const guardados = new Map((previa?.items ?? []).map((i) => [`${i.tipo}:${i.id}`, i]))
+
+  const items: BaseVectorial['items'] = []
+  const pendientes: (typeof documentos)[number][] = []
+  for (const d of documentos) {
+    const previo = guardados.get(`${d.tipo}:${d.id}`)
+    if (previo?.h === huella(d)) items.push(previo)
+    else pendientes.push(d)
+  }
+  console.log(`${documentos.length - pendientes.length} vectores sin cambios; ${pendientes.length} por pedir`)
+
+  for (let i = 0; i < pendientes.length; i += LOTE) {
+    const lote = pendientes.slice(i, i + LOTE)
     for (let intento = 1; ; intento++) {
       try {
         const vectores = await vectoresGemini(clave, lote, 'documento')
-        vectores.forEach((v, k) => items.push({ tipo: lote[k].tipo, id: lote[k].id, ...cuantizar(v) }))
+        vectores.forEach((v, k) => items.push({ tipo: lote[k].tipo, id: lote[k].id, ...cuantizar(v), h: huella(lote[k]) }))
         break
       } catch (error) {
-        // La capa gratuita limita peticiones por minuto: ante un 429 se espera y se reintenta.
-        if ((error as { estado?: number }).estado !== 429 || intento >= 6) throw error
-        console.log(`  límite de la capa gratuita, reintento en ${intento * 15} s…`)
-        await espera(intento * 15_000)
+        // Límite de tokens por minuto de la capa gratuita: se espera y se reintenta.
+        if ((error as { estado?: number }).estado !== 429 || intento >= 12) throw error
+        const segundos = Math.min(20 * intento, 90)
+        console.log(`  límite por minuto, reintento en ${segundos} s…`)
+        await espera(segundos * 1000)
       }
     }
-    console.log(`  ${Math.min(i + LOTE, documentos.length)} de ${documentos.length}`)
+    console.log(`  ${Math.min(i + LOTE, pendientes.length)} de ${pendientes.length}`)
   }
+
+  // Mismo orden que los documentos, para que el archivo cambie lo mínimo entre versiones.
+  const orden = new Map(documentos.map((d, k) => [`${d.tipo}:${d.id}`, k]))
+  items.sort((a, b) => orden.get(`${a.tipo}:${a.id}`)! - orden.get(`${b.tipo}:${b.id}`)!)
 
   const base: BaseVectorial = { modelo: MODELO, dimensiones: DIMENSIONES, generado: new Date().toISOString().slice(0, 10), items }
   writeFileSync(join(RAIZ, 'data/vectores.json'), JSON.stringify(base) + '\n')

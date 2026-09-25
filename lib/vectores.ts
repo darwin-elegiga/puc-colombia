@@ -95,7 +95,8 @@ export interface BaseVectorial {
   modelo: string
   dimensiones: number
   generado: string
-  items: { tipo: TipoResultado; id: string; v: string; escala: number }[]
+  /** h: huella del texto enviado al modelo; si no cambia, el vector se reutiliza. */
+  items: { tipo: TipoResultado; id: string; v: string; escala: number; h?: string }[]
 }
 
 /* ─────────────────────────── Gemini ─────────────────────────── */

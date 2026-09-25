@@ -238,3 +238,12 @@ test('cada operación tiene un id único, una categoría conocida y un asiento c
   const nombres = MOVIMIENTOS.map((m) => m.nombre.toLowerCase())
   assert.deepEqual(nombres.filter((n, i) => nombres.indexOf(n) !== i), [], 'nombres repetidos')
 })
+
+test('toda cuenta y subcuenta del catálogo aparece en al menos una operación', () => {
+  const usados = MOVIMIENTOS.flatMap((m) => m.asiento.map((r) => r.codigo))
+  const sinOperacion = (OFICIALES as Cuenta[])
+    .filter((c) => c.codigo.length >= 4)
+    .filter((c) => !usados.some((u) => u === c.codigo || u.startsWith(c.codigo)))
+    .map((c) => `${c.codigo} ${c.nombre}`)
+  assert.deepEqual(sinOperacion, [])
+})

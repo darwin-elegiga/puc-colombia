@@ -12,6 +12,11 @@ import { OPERACIONES_NOMINA } from './operaciones/nomina'
 import { OPERACIONES_IMPUESTOS } from './operaciones/impuestos'
 import { OPERACIONES_FINANCIERO } from './operaciones/financiero'
 import { OPERACIONES_ACTIVOS_PATRIMONIO_GASTOS } from './operaciones/activos-patrimonio-gastos'
+import { OPERACIONES_COBERTURA_C1 } from './operaciones/cobertura-c1'
+import { OPERACIONES_COBERTURA_C2 } from './operaciones/cobertura-c2'
+import { OPERACIONES_COBERTURA_C34 } from './operaciones/cobertura-c34'
+import { OPERACIONES_COBERTURA_C56 } from './operaciones/cobertura-c56'
+import { OPERACIONES_COBERTURA_C89 } from './operaciones/cobertura-c89'
 
 export type Efecto = 'debito' | 'credito'
 
@@ -862,4 +867,10 @@ export const MOVIMIENTOS: Movimiento[] = [
   ...OPERACIONES_IMPUESTOS,
   ...OPERACIONES_FINANCIERO,
   ...OPERACIONES_ACTIVOS_PATRIMONIO_GASTOS,
+  // Al menos una operación por cada cuenta del catálogo, por clases.
+  ...OPERACIONES_COBERTURA_C1,
+  ...OPERACIONES_COBERTURA_C2,
+  ...OPERACIONES_COBERTURA_C34,
+  ...OPERACIONES_COBERTURA_C56,
+  ...OPERACIONES_COBERTURA_C89,
 ]

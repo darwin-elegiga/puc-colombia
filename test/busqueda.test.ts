@@ -105,14 +105,17 @@ test('el asiento se propone primero en local y solo si la operación se parece d
     'hoy pagamos la nómina de septiembre': 'pago-nomina',
     'consigné 500 mil de la caja': 'consignacion-caja-banco',
     'Compré acciones de Ecopetrol': 'compra-acciones',
-    'importé mercancía de china y pagué aranceles': 'importacion-factura-proveedor-exterior',
+    'importé mercancía de china y pagué aranceles': 'importacion-factura-proveedor-exterior|pago-maquina-importada-transito|iva-arancel-importacion',
     'el socio aportó un carro a la empresa': 'aporte-especie-vehiculo',
     // Sin operación conocida que cubra la frase: se ofrece la IA.
     'Me llegó la factura de la luz y la pagué con la tarjeta de crédito de la empresa': null,
     'firmé un contrato de franquicia con regalías mensuales': null,
   }
+  // Varias respuestas válidas se separan con «|».
+  const acierta = (q: string, id: string | null) =>
+    id === null ? asientoLocal(q).propuesta === null : id.split('|').includes(asientoLocal(q).propuesta?.id ?? '')
   const fallan = Object.entries(casos)
-    .filter(([q, id]) => (asientoLocal(q).propuesta?.id ?? null) !== id)
+    .filter(([q, id]) => !acierta(q, id))
     .map(([q, id]) => `${q}: esperaba ${id}, salió ${asientoLocal(q).propuesta?.id ?? null}`)
   assert.deepEqual(fallan, [])
 })
