@@ -27,8 +27,16 @@ const VECTORES_CUENTAS = BASE.items
   .filter((i) => i.tipo === 'cuenta')
   .map((i) => ({ ...i, bytes: descuantizar(i.v) }))
 
-/** El Flash más capaz de la capa gratuita; si no responde, el Flash-Lite. */
-const MODELOS = [process.env.GEMINI_MODELO ?? 'gemini-3.8-flash', 'gemini-3.5-flash-lite']
+/**
+ * El modelo capaz y el ligero se lanzan a la vez. En la capa gratuita los Flash se
+ * saturan a ratos y tardan 20–30 s en responder «503»; Flash-Lite casi siempre
+ * contesta en un segundo. Si el capaz responde a tiempo se usa su asiento, que es
+ * mejor; si no, el del ligero, que ya está listo. La espera queda acotada.
+ */
+const PRINCIPAL = process.env.GEMINI_MODELO ?? 'gemini-3.8-flash'
+const LIGEROS = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest']
+const ESPERA_PRINCIPAL = 12_000
+const ESPERA_LIGERO = 25_000
 
 export interface RenglonIA {
   codigo: string
@@ -64,6 +72,7 @@ Reglas:
 - Importes en pesos colombianos, sin decimales. Si la situación no da importes, usa valores ilustrativos redondos y dilo en supuestos.
 - IVA general del 19 % cuando la operación esté gravada y el texto no diga lo contrario. Retenciones solo si la situación las sugiere o son habituales; en ese caso, indícalo en supuestos con la tarifa usada.
 - Conceptos cortos y en español.
+- Pagar con tarjeta de crédito de la empresa no mueve bancos: nace una obligación financiera con el banco emisor (2105), que se cancela al pagar el extracto.
 - Si la situación es ambigua, elige la interpretación más común, dilo en supuestos y menciona la alternativa en advertencias.`
 
 const ESQUEMA = {
@@ -107,7 +116,7 @@ async function candidatas(clave: string, situacion: string): Promise<string[]> {
   return [...codigos]
 }
 
-async function generar(clave: string, modelo: string, texto: string) {
+async function generar(clave: string, modelo: string, texto: string, espera: number) {
   const respuesta = await fetch(`${API_GEMINI}/models/${modelo}:generateContent`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-goog-api-key': clave },
@@ -116,6 +125,7 @@ async function generar(clave: string, modelo: string, texto: string) {
       contents: [{ role: 'user', parts: [{ text: texto }] }],
       generationConfig: { responseMimeType: 'application/json', responseSchema: ESQUEMA, temperature: 0.2 },
     }),
+    signal: AbortSignal.timeout(espera),
   })
   if (!respuesta.ok) throw errorGemini(respuesta.status, await respuesta.text())
   const datos = (await respuesta.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
@@ -142,19 +152,20 @@ export async function asientoIA(clave: string, situacion: string): Promise<Asien
     .filter(Boolean)
     .join('\n\n')
 
-  let ultimoError: unknown
-  for (const modelo of MODELOS) {
-    try {
-      const propuesta = await generar(clave, modelo, texto)
-      return validar(modelo, propuesta)
-    } catch (error) {
-      ultimoError = error
-      // Solo se prueba el siguiente modelo si este no existe o no tiene cuota.
-      const estado = (error as { estado?: number }).estado
-      if (estado !== 404 && estado !== 429 && estado !== 503) break
-    }
+  // El ligero arranca ya; su resultado (o su error) queda guardado para usarlo si hace falta.
+  const ligero = generar(clave, LIGEROS[0], texto, ESPERA_LIGERO).then(
+    (propuesta) => ({ modelo: LIGEROS[0], propuesta }),
+    (error: unknown) => ({ modelo: LIGEROS[0], error }),
+  )
+  try {
+    return validar(PRINCIPAL, await generar(clave, PRINCIPAL, texto, ESPERA_PRINCIPAL))
+  } catch {
+    // Saturado, sin cuota o lento: se sigue con el ligero.
   }
-  throw ultimoError
+  const respaldo = await ligero
+  if ('propuesta' in respaldo) return validar(respaldo.modelo, respaldo.propuesta)
+  // Último intento con el otro ligero; si también falla, el error llega a la ruta.
+  return validar(LIGEROS[1], await generar(clave, LIGEROS[1], texto, ESPERA_LIGERO))
 }
 
 /** Completa los nombres y comprueba códigos y cuadre: el modelo propone, el catálogo decide. */

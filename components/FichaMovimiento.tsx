@@ -5,6 +5,9 @@ import type { Cuenta } from '@/lib/tipos'
 import { nombreLegible } from '@/lib/puc'
 import { movimientoPorId } from '@/lib/movimientos'
 import { REGLA_LADO } from '@/data/guia'
+import { explicarAsiento } from '@/lib/explicacion'
+import ExplicacionAsiento from './ExplicacionAsiento'
+import AmpliarConIA from './AmpliarConIA'
 import { Codigo, InsigniaLado, franjaClase } from './Insignias'
 import { IconoChevron, IconoIntercambio } from './Iconos'
 
@@ -27,6 +30,7 @@ export default function FichaMovimiento({
   const espejo = movimiento.espejo ? movimientoPorId(movimiento.espejo) : undefined
   const debitos = movimiento.asiento.filter((r) => r.efecto === 'debito')
   const creditos = movimiento.asiento.filter((r) => r.efecto === 'credito')
+  const explicacion = explicarAsiento(movimiento.asiento, nombreDe, `${movimiento.nombre}. ${movimiento.descripcion}`)
 
   return (
     <article className="surgir panel-scroll h-full overflow-y-auto">
@@ -72,6 +76,8 @@ export default function FichaMovimiento({
           </p>
         )}
 
+        <ExplicacionAsiento explicacion={explicacion} onIr={onIr} />
+
         {espejo && (
           <section className="mt-7">
             <p className="rotulo mb-2">¿Y si es al revés?</p>
@@ -92,7 +98,7 @@ export default function FichaMovimiento({
           </section>
         )}
 
-        <section className="mt-7 border-t border-borde pt-4" style={{ paddingBottom: 'var(--seguro-abajo)' }}>
+        <section className="mt-7 border-t border-borde pt-4">
           <p className="rotulo mb-2">También se busca como</p>
           <div className="flex flex-wrap gap-1.5">
             {movimiento.palabras.map((palabra) => (
@@ -102,6 +108,11 @@ export default function FichaMovimiento({
             ))}
           </div>
         </section>
+
+        {/* Lo último de la ficha: la IA solo si la explicación local no basta. */}
+        <div style={{ paddingBottom: 'var(--seguro-abajo)' }}>
+          <AmpliarConIA clave={movimiento.id} operacion={`${movimiento.nombre}. ${movimiento.descripcion}`} renglones={movimiento.asiento} />
+        </div>
       </div>
     </article>
   )

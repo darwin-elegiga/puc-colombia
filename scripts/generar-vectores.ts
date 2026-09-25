@@ -18,7 +18,7 @@ import {
   type BaseVectorial,
 } from '../lib/vectores'
 
-const RAIZ = join(import.meta.dirname, '..')
+const RAIZ = join(__dirname, '..')
 for (const archivo of ['.env.local', '.env']) {
   if (existsSync(join(RAIZ, archivo))) process.loadEnvFile(join(RAIZ, archivo))
 }
@@ -31,27 +31,35 @@ if (!CLAVE) {
 const cuentas = (JSON.parse(readFileSync(join(RAIZ, 'data/puc.json'), 'utf8')).cuentas as Cuenta[])
 const documentos = [...cuentas.map(documentoDeCuenta), ...MOVIMIENTOS.map(documentoDeMovimiento)]
 
-const LOTE = 100
-const espera = (ms: number) => new Promise((r) => setTimeout(r, ms))
-const items: BaseVectorial['items'] = []
+// Función y no await suelto: el proyecto compila los .ts como CommonJS.
+async function main(clave: string) {
+  const LOTE = 100
+  const espera = (ms: number) => new Promise((r) => setTimeout(r, ms))
+  const items: BaseVectorial['items'] = []
 
-for (let i = 0; i < documentos.length; i += LOTE) {
-  const lote = documentos.slice(i, i + LOTE)
-  for (let intento = 1; ; intento++) {
-    try {
-      const vectores = await vectoresGemini(CLAVE, lote, 'documento')
-      vectores.forEach((v, k) => items.push({ tipo: lote[k].tipo, id: lote[k].id, ...cuantizar(v) }))
-      break
-    } catch (error) {
-      // La capa gratuita limita peticiones por minuto: ante un 429 se espera y se reintenta.
-      if ((error as { estado?: number }).estado !== 429 || intento >= 6) throw error
-      console.log(`  límite de la capa gratuita, reintento en ${intento * 15} s…`)
-      await espera(intento * 15_000)
+  for (let i = 0; i < documentos.length; i += LOTE) {
+    const lote = documentos.slice(i, i + LOTE)
+    for (let intento = 1; ; intento++) {
+      try {
+        const vectores = await vectoresGemini(clave, lote, 'documento')
+        vectores.forEach((v, k) => items.push({ tipo: lote[k].tipo, id: lote[k].id, ...cuantizar(v) }))
+        break
+      } catch (error) {
+        // La capa gratuita limita peticiones por minuto: ante un 429 se espera y se reintenta.
+        if ((error as { estado?: number }).estado !== 429 || intento >= 6) throw error
+        console.log(`  límite de la capa gratuita, reintento en ${intento * 15} s…`)
+        await espera(intento * 15_000)
+      }
     }
+    console.log(`  ${Math.min(i + LOTE, documentos.length)} de ${documentos.length}`)
   }
-  console.log(`  ${Math.min(i + LOTE, documentos.length)} de ${documentos.length}`)
+
+  const base: BaseVectorial = { modelo: MODELO, dimensiones: DIMENSIONES, generado: new Date().toISOString().slice(0, 10), items }
+  writeFileSync(join(RAIZ, 'data/vectores.json'), JSON.stringify(base) + '\n')
+  console.log(`data/vectores.json: ${items.length} vectores de ${DIMENSIONES} dimensiones (${MODELO})`)
 }
 
-const base: BaseVectorial = { modelo: MODELO, dimensiones: DIMENSIONES, generado: new Date().toISOString().slice(0, 10), items }
-writeFileSync(join(RAIZ, 'data/vectores.json'), JSON.stringify(base) + '\n')
-console.log(`data/vectores.json: ${items.length} vectores de ${DIMENSIONES} dimensiones (${MODELO})`)
+main(CLAVE).catch((error) => {
+  console.error(error instanceof Error ? error.message : error)
+  process.exit(1)
+})

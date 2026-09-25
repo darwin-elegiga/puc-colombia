@@ -6,6 +6,9 @@ import type { Movimiento } from '@/data/movimientos'
 import { asientoLocal } from '@/lib/movimientos'
 import { ErrorIA, pedirAsiento, type AsientoIA } from '@/lib/ia'
 import { nombreLegible } from '@/lib/puc'
+import { explicarAsiento, type RenglonAExplicar } from '@/lib/explicacion'
+import ExplicacionAsiento from './ExplicacionAsiento'
+import AmpliarConIA from './AmpliarConIA'
 import { Codigo, InsigniaLado, franjaClase } from './Insignias'
 import { IconoChevron, IconoIntercambio } from './Iconos'
 
@@ -55,6 +58,24 @@ export default function AsientoBeta({
   const local = situacion ? asientoLocal(situacion) : null
   const opciones = local ? [local.propuesta, ...local.alternativas].filter(Boolean) as Movimiento[] : []
   const mostrada = opciones.find((m) => m.id === elegida) ?? local?.propuesta ?? null
+
+  // Se explica el asiento que está a la vista: el de la IA si lo hay, con sus importes,
+  // o el de la operación conocida. La explicación es local; ampliarla, opcional.
+  const aExplicar: { clave?: string; operacion: string; renglones: RenglonAExplicar[] } | null = ia
+    ? {
+        operacion: situacion,
+        renglones: ia.renglones
+          .filter((r) => r.nombre)
+          .map((r) => ({
+            codigo: r.codigo,
+            efecto: r.debito > 0 ? 'debito' : 'credito',
+            concepto: r.concepto,
+            importe: r.debito || r.credito,
+          })),
+      }
+    : mostrada
+      ? { clave: mostrada.id, operacion: `${mostrada.nombre}. ${mostrada.descripcion}`, renglones: mostrada.asiento }
+      : null
 
   const analizar = (texto: string) => {
     const limpio = texto.trim()
@@ -242,6 +263,22 @@ export default function AsientoBeta({
 
           {/* ─────────── Respuesta de la IA ─────────── */}
           {ia && <RespuestaIA asiento={ia} onIr={onIr} onReintentar={consultarIA} cargando={estadoIA === 'cargando'} />}
+
+          {/* ─────────── Por qué se hace así: local, y la IA solo al final ─────────── */}
+          {aExplicar && aExplicar.renglones.length > 0 && (
+            <>
+              <ExplicacionAsiento
+                explicacion={explicarAsiento(aExplicar.renglones, (c) => catalogo.indice.get(c), aExplicar.operacion)}
+                onIr={onIr}
+              />
+              <AmpliarConIA
+                key={`${aExplicar.clave ?? aExplicar.operacion}-${aExplicar.renglones.length}`}
+                clave={aExplicar.clave}
+                operacion={aExplicar.operacion}
+                renglones={aExplicar.renglones}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

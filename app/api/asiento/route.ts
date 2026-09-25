@@ -7,6 +7,9 @@
  */
 import { asientoIA } from '@/lib/asientoIA'
 
+/** Varios intentos con modelos de respaldo pueden sumar tiempo: margen para la función de Vercel. */
+export const maxDuration = 60
+
 const LARGO_MAXIMO = 600
 
 export async function POST(peticion: Request) {

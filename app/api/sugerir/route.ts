@@ -14,6 +14,9 @@ import { descuantizar, similitud, vectoresGemini, type BaseVectorial } from '@/l
 const BASE = base as BaseVectorial
 const VECTORES = BASE.items.map((item) => ({ ...item, bytes: descuantizar(item.v) }))
 const TOP = 5
+/** Varios intentos con modelos de respaldo pueden sumar tiempo: margen para la función de Vercel. */
+export const maxDuration = 60
+
 const LARGO_MAXIMO = 300
 
 /** Las mismas consultas se repiten: se guardan las últimas para no gastar cuota. */

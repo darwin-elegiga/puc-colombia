@@ -3,8 +3,10 @@
  * pulsa el botón, después de que lo local no encontró una respuesta que le sirva.
  */
 import type { AsientoIA } from './asientoIA'
+import type { ExplicacionIA } from './explicacionIA'
+import type { RenglonAExplicar } from './explicacion'
 
-export type { AsientoIA }
+export type { AsientoIA, ExplicacionIA }
 
 export interface Sugerencia {
   tipo: 'cuenta' | 'movimiento'
@@ -39,3 +41,21 @@ export const pedirSugerencias = (q: string) =>
   llamar<{ sugerencias: Sugerencia[] }>('/api/sugerir', { q }).then((r) => r.sugerencias)
 
 export const pedirAsiento = (situacion: string) => llamar<AsientoIA>('/api/asiento', { situacion })
+
+/** Se guarda en el navegador durante la sesión: volver a una ficha no vuelve a gastar. */
+const explicaciones = new Map<string, Promise<ExplicacionIA>>()
+
+export function pedirExplicacion(clave: string | undefined, operacion: string, renglones: RenglonAExplicar[]) {
+  const id = `${clave ?? operacion}|${renglones.map((r) => `${r.efecto[0]}${r.codigo}`).join(',')}`
+  const guardada = explicaciones.get(id)
+  if (guardada) return guardada
+  const pedida = llamar<ExplicacionIA>('/api/explicar', {
+    clave,
+    operacion,
+    renglones: renglones.map(({ codigo, efecto, concepto }) => ({ codigo, efecto, concepto })),
+  })
+  explicaciones.set(id, pedida)
+  // Un error no se guarda: el usuario puede reintentar.
+  pedida.catch(() => explicaciones.delete(id))
+  return pedida
+}
