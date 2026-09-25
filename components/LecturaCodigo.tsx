@@ -2,6 +2,7 @@
 
 import type { Segmento } from '@/lib/tipos'
 import { IconoChevron } from './Iconos'
+import { colorDe } from '@/lib/puc'
 
 /**
  * Desglose de un código dígito a dígito: qué clase, grupo, cuenta y subcuenta
@@ -43,7 +44,7 @@ export default function LecturaCodigo({
               {/* El tramo nuevo del código se resalta sobre lo que ya venía heredado. */}
               <span className="tabular w-[4.75rem] shrink-0 text-[15px] leading-none">
                 <span className="text-tinta-tenue">{prefijo}</span>
-                <span className="font-medium text-tinta">{segmento.digitos}</span>
+                <span className="font-medium" style={{ color: colorDe(segmento.codigo).tinta }}>{segmento.digitos}</span>
               </span>
 
               <span className="min-w-0 flex-1">

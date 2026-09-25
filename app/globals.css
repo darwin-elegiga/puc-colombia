@@ -17,10 +17,18 @@
   --color-tinta-suave: #6f6e6b;
   --color-tinta-tenue: #93928f;
 
-  --color-debito: #e1f3fe;
-  --color-debito-tinta: #1f6c9f;
-  --color-credito: #fdebec;
-  --color-credito-tinta: #9f2f2d;
+  /*
+    Débito y crédito van sin tono: el color está reservado para identificar la
+    clase de cada cuenta (lib/puc.ts, PALETA_CLASE). Se distinguen por luminosidad:
+    el débito claro, el crédito oscuro.
+  */
+  --color-debito: #eceae4;
+  --color-debito-tinta: #2f3437;
+  --color-credito: #3a3f42;
+  --color-credito-tinta: #ffffff;
+  /* Errores y avisos de validación. */
+  --color-error: #fdebec;
+  --color-error-tinta: #9f2f2d;
   --color-nota: #fbf3db;
   --color-nota-tinta: #956400;
   --color-propia: #edf3ec;

@@ -5,7 +5,7 @@ import type { Cuenta } from '@/lib/tipos'
 import { nombreLegible } from '@/lib/puc'
 import { movimientoPorId } from '@/lib/movimientos'
 import { REGLA_LADO } from '@/data/guia'
-import { InsigniaLado, TONO_LADO } from './Insignias'
+import { Codigo, InsigniaLado, franjaClase } from './Insignias'
 import { IconoChevron, IconoIntercambio } from './Iconos'
 
 /**
@@ -41,16 +41,16 @@ export default function FichaMovimiento({
         {/* La regla de este lado: qué clase va al débito y cuál al crédito. */}
         <section
           className="mt-6 rounded-xl border-l-4 bg-superficie px-4 py-3.5"
-          style={{ borderColor: TONO_LADO[movimiento.lado].tinta }}
+          style={{ borderColor: movimiento.lado === 'cobro' ? 'var(--color-borde-fuerte)' : 'var(--color-credito)' }}
         >
           <p className="text-[14px] font-medium text-tinta">
             {regla.titulo} · {regla.corto.toLowerCase()}
           </p>
           <p className="mt-1 text-[14px] leading-relaxed text-tinta-suave">{regla.regla}</p>
           <dl className="mt-3 grid gap-2 text-[13.5px] leading-relaxed sm:grid-cols-[5.5rem_1fr]">
-            <dt className="font-medium" style={{ color: 'var(--color-debito-tinta)' }}>Al débito</dt>
+            <dt className="font-medium" style={{ color: 'var(--color-tinta)' }}>Al débito</dt>
             <dd className="text-tinta">{regla.debito}</dd>
-            <dt className="font-medium" style={{ color: 'var(--color-credito-tinta)' }}>Al crédito</dt>
+            <dt className="font-medium" style={{ color: 'var(--color-tinta)' }}>Al crédito</dt>
             <dd className="text-tinta">{regla.credito}</dd>
           </dl>
         </section>
@@ -141,14 +141,14 @@ function Columna({
         {renglones.map((renglon, i) => {
           const cuenta = nombreDe(renglon.codigo)
           return (
-            <li key={`${renglon.codigo}-${i}`} className="border-b border-borde last:border-b-0">
+            <li key={`${renglon.codigo}-${i}`} className="border-b border-borde last:border-b-0" style={franjaClase(renglon.codigo)}>
               <button
                 type="button"
                 onClick={() => onIr(renglon.codigo)}
                 className="flex w-full flex-col gap-0.5 px-4 py-3 text-left pulsable"
               >
                 <span className="flex items-baseline gap-3">
-                  <span className="tabular text-[15px] text-tinta">{renglon.codigo}</span>
+                  <Codigo valor={renglon.codigo} className="text-[15px] font-medium" />
                   <span className="min-w-0 flex-1 truncate text-[15px] text-tinta">
                     {cuenta ? nombreLegible(cuenta.nombre) : 'Cuenta no encontrada'}
                   </span>

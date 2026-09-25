@@ -3,7 +3,7 @@
 import type { NodoClase } from '@/lib/catalogo'
 import type { Filtros, Nivel } from '@/lib/tipos'
 import { IconoChevron } from './Iconos'
-import { nombreLegible } from '@/lib/puc'
+import { colorDe, nombreLegible } from '@/lib/puc'
 
 const NIVELES: { valor: Nivel | ''; etiqueta: string }[] = [
   { valor: '', etiqueta: 'Todos' },
@@ -43,7 +43,10 @@ export default function PanelClases({
           const abierta = expandida === clase.codigo
           return (
             <li key={clase.codigo} className="border-b border-borde">
-              <div className={`flex items-stretch ${activa ? 'bg-hueso' : ''}`}>
+              <div
+                className="flex items-stretch"
+                style={{ boxShadow: `inset 4px 0 0 ${colorDe(clase.codigo).borde}`, background: activa ? colorDe(clase.codigo).fondo : undefined }}
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -52,7 +55,7 @@ export default function PanelClases({
                   }}
                   className="tactil flex min-w-0 flex-1 items-center gap-3 px-5 text-left pulsable"
                 >
-                  <span className={`tabular text-[15px] ${activa ? 'text-tinta' : 'text-tinta-tenue'}`}>
+                  <span className="tabular text-[15px] font-medium" style={{ color: colorDe(clase.codigo).tinta }}>
                     {clase.codigo}
                   </span>
                   <span className={`truncate text-[15px] ${activa ? 'font-medium text-tinta' : 'text-tinta'}`}>
@@ -71,7 +74,7 @@ export default function PanelClases({
               </div>
 
               {abierta && (
-                <ul className="surgir-lista bg-hueso/60">
+                <ul className="surgir-lista" style={{ background: colorDe(clase.codigo).fondo }}>
                   {clase.grupos.map((grupo, i) => (
                     <li key={grupo.codigo} style={{ '--i': i } as React.CSSProperties}>
                       <button
@@ -79,7 +82,7 @@ export default function PanelClases({
                         onClick={() => onIr(grupo.codigo)}
                         className="tactil flex w-full items-center gap-3 py-2 pl-9 pr-4 text-left pulsable"
                       >
-                        <span className="tabular text-[13px] text-tinta-tenue">{grupo.codigo}</span>
+                        <span className="tabular text-[13px]" style={{ color: colorDe(grupo.codigo).tinta }}>{grupo.codigo}</span>
                         <span className="min-w-0 flex-1 truncate text-[14px] text-tinta-suave">
                           {nombreLegible(grupo.nombre)}
                         </span>

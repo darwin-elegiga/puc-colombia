@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Dialogo from './Dialogo'
-import { InsigniaNaturaleza } from './Insignias'
+import { Codigo, InsigniaNaturaleza } from './Insignias'
 import { buscar, type Catalogo } from '@/lib/catalogo'
 import { IconoLupa } from './Iconos'
 import { nombreLegible } from '@/lib/puc'
@@ -87,7 +87,7 @@ export default function SelectorCuenta({
                   >
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
-                        <span className="tabular text-[15px] text-tinta">{codigo}</span>
+                        <Codigo valor={codigo} className="text-[15px] font-medium" />
                         <InsigniaNaturaleza
                           naturaleza={cuenta.naturaleza}
                           forzada={cuenta.naturalezaForzada}

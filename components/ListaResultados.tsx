@@ -4,7 +4,7 @@ import type { ResultadoBusqueda } from '@/lib/tipos'
 import type { Movimiento } from '@/lib/movimientos'
 import type { Destino } from '@/lib/navegacion'
 import type { Lado } from '@/data/guia'
-import { InsigniaLado, InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen } from './Insignias'
+import { Codigo, InsigniaClase, InsigniaLado, InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen, franjaClase } from './Insignias'
 import { IconoIntercambio, IconoChevron } from './Iconos'
 import { nombreLegible } from '@/lib/puc'
 
@@ -119,12 +119,11 @@ export default function ListaResultados({
                     'flex w-full items-start gap-3 border-b border-borde px-5 py-3.5 text-left pulsable',
                     activo ? 'bg-superficie' : '',
                   ].join(' ')}
+                  style={franjaClase(c.codigo)}
                 >
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline gap-2.5">
-                      <span className={`tabular text-[15px] ${activo ? 'text-tinta' : 'text-tinta-suave'}`}>
-                        {c.codigo}
-                      </span>
+                      <Codigo valor={c.codigo} className="text-[15px] font-medium" />
                       <span className="min-w-0 flex-1 truncate text-[15px] text-tinta">
                         {nombreLegible(c.nombre)}
                       </span>
@@ -138,6 +137,7 @@ export default function ListaResultados({
                     )}
 
                     <span className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <InsigniaClase codigo={c.codigo} />
                       <InsigniaNivel nivel={c.nivel} />
                       <InsigniaNaturaleza naturaleza={c.naturaleza} />
                       <InsigniaOrigen origen={c.origen} />

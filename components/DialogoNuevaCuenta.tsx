@@ -5,6 +5,7 @@ import type { BorradorCuenta, Naturaleza, Segmento } from '@/lib/tipos'
 import { ETIQUETA_NIVEL, NATURALEZA_POR_CLASE, codigoPadre, nivelDe, validarBorrador } from '@/lib/puc'
 import Dialogo, { botonPrimario, botonSecundario } from './Dialogo'
 import LecturaCodigo from './LecturaCodigo'
+import { Codigo } from './Insignias'
 
 export default function DialogoNuevaCuenta({
   abierto,
@@ -79,7 +80,7 @@ export default function DialogoNuevaCuenta({
                 {' '}— será una <span className="text-tinta">{ETIQUETA_NIVEL[nivel].toLowerCase()}</span>
                 {padre && (
                   <>
-                    {' '}dentro de <span className="tabular text-tinta">{padre}</span>
+                    {' '}dentro de <Codigo valor={padre} />
                   </>
                 )}
               </>
@@ -134,7 +135,7 @@ export default function DialogoNuevaCuenta({
         {mostrarError && (
           <p
             className="rounded-lg px-3.5 py-2.5 text-[14px] leading-relaxed"
-            style={{ background: 'var(--color-credito)', color: 'var(--color-credito-tinta)' }}
+            style={{ background: 'var(--color-error)', color: 'var(--color-error-tinta)' }}
           >
             {validacion.mensaje}
           </p>

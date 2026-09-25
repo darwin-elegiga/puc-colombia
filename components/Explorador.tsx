@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import datosPuc from '@/data/puc.json'
 import type { BorradorCuenta, Cuenta, Filtros } from '@/lib/tipos'
-import { aCSV, desdeCSV, validarBorrador } from '@/lib/puc'
+import { aCSV, colorDe, desdeCSV, validarBorrador } from '@/lib/puc'
 import {
   arbol, buscar, construirCatalogo, descripcionEfectiva, estadisticas, fichaDe, leerCodigo,
 } from '@/lib/catalogo'
@@ -489,7 +489,10 @@ export default function Explorador() {
                 <IconoChevron className="size-5 rotate-180" />
                 Resultados
               </button>
-              <span className="tabular ml-auto truncate pr-2 text-[13px] text-tinta-tenue">
+              <span
+                className="tabular ml-auto truncate pr-2 text-[13px] text-tinta-tenue"
+                style={ficha ? { color: colorDe(ficha.codigo).tinta } : undefined}
+              >
                 {ficha?.codigo ?? movimiento?.categoria}
               </span>
             </div>

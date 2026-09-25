@@ -4,7 +4,8 @@ import type { Ficha } from '@/lib/tipos'
 import type { Movimiento } from '@/lib/movimientos'
 import { ESTADO_FINANCIERO, nombreLegible } from '@/lib/puc'
 import LecturaCodigo from './LecturaCodigo'
-import { InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen } from './Insignias'
+import { Codigo, InsigniaClase, InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen, franjaClase } from './Insignias'
+import { colorDe } from '@/lib/puc'
 import { IconoMas, IconoPapelera, IconoIntercambio, IconoCapas } from './Iconos'
 import { GUIA_CLASES, GUIA_GRUPOS } from '@/data/guia'
 import { FuenteOficial } from './MapaClases'
@@ -45,7 +46,7 @@ export default function FichaCuenta({
                   onClick={() => onIr(a.codigo)}
                   className="min-h-9 rounded-lg px-2 py-1 pulsable"
                 >
-                  <span className="tabular">{a.codigo}</span> {nombreLegible(a.nombre)}
+                  <Codigo valor={a.codigo} /> {nombreLegible(a.nombre)}
                 </button>
                 <span aria-hidden>/</span>
               </span>
@@ -53,10 +54,11 @@ export default function FichaCuenta({
           </nav>
         )}
 
-        <header>
-          <p className="tabular text-[26px] text-tinta-tenue lg:text-3xl">{ficha.codigo}</p>
+        <header className="border-l-4 pl-4" style={{ borderColor: colorDe(ficha.codigo).borde }}>
+          <Codigo valor={ficha.codigo} className="block text-[26px] lg:text-3xl" />
           <h2 className="editorial mt-1 text-[30px] text-tinta lg:text-4xl">{nombreLegible(ficha.nombre)}</h2>
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <InsigniaClase codigo={ficha.codigo} />
             <InsigniaNivel nivel={ficha.nivel} />
             <InsigniaNaturaleza naturaleza={ficha.naturaleza} forzada={ficha.naturalezaForzada} />
             <InsigniaOrigen origen={ficha.origen} />
@@ -168,13 +170,13 @@ export default function FichaCuenta({
             </p>
             <ul className="overflow-hidden rounded-xl border border-borde bg-superficie">
               {ficha.hijos.map((h) => (
-                <li key={h.codigo} className="border-b border-borde last:border-b-0">
+                <li key={h.codigo} className="border-b border-borde last:border-b-0" style={franjaClase(h.codigo)}>
                   <button
                     type="button"
                     onClick={() => onIr(h.codigo)}
                     className="tactil flex w-full items-center gap-3 px-4 text-left pulsable"
                   >
-                    <span className="tabular text-[14px] text-tinta-suave">{h.codigo}</span>
+                    <Codigo valor={h.codigo} className="text-[14px] font-medium" />
                     <span className="min-w-0 flex-1 truncate text-[14.5px] text-tinta">{nombreLegible(h.nombre)}</span>
                     <InsigniaOrigen origen={h.origen} />
                   </button>
@@ -224,7 +226,7 @@ export default function FichaCuenta({
             <button
               type="button"
               onClick={() => onEliminar(ficha.codigo)}
-              className="tactil inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-borde bg-superficie px-4 text-[14px] text-credito-tinta pulsable lg:min-h-9 lg:flex-none lg:text-[13px]"
+              className="tactil inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-borde bg-superficie px-4 text-[14px] text-error-tinta pulsable lg:min-h-9 lg:flex-none lg:text-[13px]"
             >
               <IconoPapelera className="size-4" />
               Eliminar

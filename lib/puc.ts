@@ -40,10 +40,43 @@ export const ESTADO_FINANCIERO: Record<string, string> = {
   '9': 'Cuentas de orden — se revelan en notas',
 }
 
-export const COLOR_CLASE: Record<string, string> = {
-  '1': '#2563eb', '2': '#dc2626', '3': '#7c3aed', '4': '#059669', '5': '#ea580c',
-  '6': '#0891b2', '7': '#c026d3', '8': '#64748b', '9': '#475569',
+/**
+ * Color de cada clase. Es su seña de identidad en toda la aplicación: el código,
+ * la franja lateral de cada fila y los bordes del mapa llevan el color de la clase
+ * a la que pertenecen, así que 1105 se reconoce como activo antes de leerlo.
+ *
+ * - borde: el tono pleno, para bordes, franjas y puntos.
+ * - tinta: el mismo tono oscurecido, para texto pequeño (contraste AA sobre blanco).
+ * - fondo: el mismo tono muy claro, para rellenos.
+ *
+ * Nueve tonos distintos entre sí; las cuentas de orden, que casi no se usan, llevan
+ * el ocre (8) y el pizarra (9) para no competir con las demás.
+ */
+export const PALETA_CLASE: Record<string, { borde: string; tinta: string; fondo: string }> = {
+  '1': { borde: '#2563eb', tinta: '#1d4ed8', fondo: '#eff6ff' }, // azul
+  '2': { borde: '#dc2626', tinta: '#b91c1c', fondo: '#fef2f2' }, // rojo
+  '3': { borde: '#7c3aed', tinta: '#6d28d9', fondo: '#f5f3ff' }, // violeta
+  '4': { borde: '#059669', tinta: '#047857', fondo: '#ecfdf5' }, // verde
+  '5': { borde: '#ea580c', tinta: '#c2410c', fondo: '#fff7ed' }, // naranja
+  '6': { borde: '#0891b2', tinta: '#0e7490', fondo: '#ecfeff' }, // cian
+  '7': { borde: '#c026d3', tinta: '#a21caf', fondo: '#fdf4ff' }, // fucsia
+  '8': { borde: '#ca8a04', tinta: '#a16207', fondo: '#fefce8' }, // ocre
+  '9': { borde: '#64748b', tinta: '#475569', fondo: '#f8fafc' }, // pizarra
 }
+
+export const NOMBRE_CLASE: Record<string, string> = {
+  '1': 'Activo', '2': 'Pasivo', '3': 'Patrimonio', '4': 'Ingresos', '5': 'Gastos',
+  '6': 'Costos de ventas', '7': 'Costos de producción', '8': 'Orden deudoras', '9': 'Orden acreedoras',
+}
+
+const SIN_CLASE = { borde: 'var(--color-borde-fuerte)', tinta: 'var(--color-tinta-suave)', fondo: 'var(--color-hueso)' }
+
+/** Colores de la clase a la que pertenece un código (se mira su primer dígito). */
+export const colorDe = (codigo: string) => PALETA_CLASE[codigo?.[0]] ?? SIN_CLASE
+
+export const COLOR_CLASE: Record<string, string> = Object.fromEntries(
+  Object.entries(PALETA_CLASE).map(([clase, color]) => [clase, color.borde]),
+)
 
 export function nivelDe(codigo: string): Nivel | null {
   if (NIVELES[codigo.length]) return NIVELES[codigo.length].nivel

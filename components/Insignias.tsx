@@ -1,5 +1,5 @@
 import type { Naturaleza, Nivel, Origen } from '@/lib/tipos'
-import { ETIQUETA_NIVEL } from '@/lib/puc'
+import { ETIQUETA_NIVEL, NOMBRE_CLASE, colorDe } from '@/lib/puc'
 import { REGLA_LADO, type Lado } from '@/data/guia'
 
 const pildora =
@@ -45,16 +45,42 @@ export function InsigniaOrigen({ origen }: { origen: Origen }) {
   )
 }
 
-/** Código de cuenta en monoespaciada, con los dígitos alineados. */
+/** Código de cuenta en monoespaciada y en el color de su clase. */
 export function Codigo({ valor, className = '' }: { valor: string; className?: string }) {
-  return <span className={`tabular ${className}`}>{valor}</span>
+  return (
+    <span className={`tabular ${className}`} style={{ color: colorDe(valor).tinta }}>
+      {valor}
+    </span>
+  )
 }
 
+/** Pastilla con el nombre de la clase, en su color: «Activo», «Gastos»… */
+export function InsigniaClase({ codigo }: { codigo: string }) {
+  const color = colorDe(codigo)
+  const nombre = NOMBRE_CLASE[codigo[0]]
+  if (!nombre) return null
+  return (
+    <span className={pildora} style={{ background: color.fondo, color: color.tinta }} title={`Clase ${codigo[0]}`}>
+      <span className="mr-1.5 size-1.5 rounded-full" style={{ background: color.borde }} aria-hidden />
+      {nombre}
+    </span>
+  )
+}
+
+/** Franja izquierda del color de la clase, para filas y tarjetas. */
+export const franjaClase = (codigo: string): React.CSSProperties => ({
+  boxShadow: `inset 3px 0 0 ${colorDe(codigo).borde}`,
+})
+
 /** Quién paga en un movimiento: sale dinero, entra dinero o no se mueve. */
-export const TONO_LADO: Record<Lado, { fondo: string; tinta: string }> = {
-  pago: { fondo: 'var(--color-credito)', tinta: 'var(--color-credito-tinta)' },
-  cobro: { fondo: 'var(--color-propia)', tinta: 'var(--color-propia-tinta)' },
-  interno: { fondo: 'var(--color-hueso)', tinta: 'var(--color-tinta-suave)' },
+/*
+  Sin tono, como el débito y el crédito: el color es de las clases. «Yo pago» va
+  oscuro y «me pagan» claro, con una flecha que indica si el dinero sale o entra.
+*/
+export const TONO_LADO: Record<Lado, { fondo: string; tinta: string; flecha: string }> = {
+  pago: { fondo: 'var(--color-credito)', tinta: 'var(--color-credito-tinta)', flecha: '↑' },
+  cobro: { fondo: 'var(--color-debito)', tinta: 'var(--color-debito-tinta)', flecha: '↓' },
+  interno: { fondo: 'transparent', tinta: 'var(--color-tinta-suave)', flecha: '·' },
 }
 
 export function InsigniaLado({ lado }: { lado: Lado }) {
@@ -64,6 +90,7 @@ export function InsigniaLado({ lado }: { lado: Lado }) {
       style={{ background: TONO_LADO[lado].fondo, color: TONO_LADO[lado].tinta }}
       title={REGLA_LADO[lado].corto}
     >
+      <span className="mr-1" aria-hidden>{TONO_LADO[lado].flecha}</span>
       {REGLA_LADO[lado].titulo}
     </span>
   )

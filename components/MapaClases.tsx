@@ -2,7 +2,7 @@
 
 import type { Catalogo } from '@/lib/catalogo'
 import { hijosDe, resumir } from '@/lib/catalogo'
-import { COLOR_CLASE, ESTADO_FINANCIERO, nombreLegible } from '@/lib/puc'
+import { ESTADO_FINANCIERO, PALETA_CLASE, nombreLegible } from '@/lib/puc'
 import { GUIA_CLASES, GUIA_GRUPOS, REGLA_LADO, type GuiaClase } from '@/data/guia'
 import type { Cuenta } from '@/lib/tipos'
 import { InsigniaLado, InsigniaNaturaleza } from './Insignias'
@@ -95,7 +95,7 @@ function Mosaico({ catalogo, onAbrir }: { catalogo: Catalogo; onAbrir: (codigo: 
           const cuenta = catalogo.indice.get(c)
           const guia = GUIA_CLASES[c]
           if (!cuenta || !guia) return null
-          const color = COLOR_CLASE[c]
+          const { borde, tinta, fondo } = PALETA_CLASE[c]
           const grupos = (catalogo.hijosPor.get(c) ?? []).length
           const pequeno = guia.prioridad === 3
           return (
@@ -104,10 +104,10 @@ function Mosaico({ catalogo, onAbrir }: { catalogo: Catalogo; onAbrir: (codigo: 
               type="button"
               onClick={() => onAbrir(c)}
               className={`${CUADRO[guia.prioridad]} group flex flex-col rounded-2xl border-2 bg-superficie p-3.5 text-left transition-transform active:scale-[0.99] lg:p-5 lg:hover:-translate-y-0.5`}
-              style={{ borderColor: color, background: `color-mix(in srgb, ${color} 5%, var(--color-superficie))` }}
+              style={{ borderColor: borde, background: fondo }}
             >
               <span className="flex items-baseline justify-between gap-2">
-                <span className="tabular text-[26px] leading-none lg:text-4xl" style={{ color }}>
+                <span className="tabular text-[26px] leading-none lg:text-4xl" style={{ color: tinta }}>
                   {c}
                 </span>
                 {!pequeno && (
@@ -150,11 +150,11 @@ function ReglaPago({ className = '' }: { className?: string }) {
             <p className="mt-2 text-[14px] leading-relaxed text-tinta">{regla.regla}</p>
             <dl className="mt-2.5 space-y-1.5 text-[13px] leading-relaxed">
               <div>
-                <dt className="inline font-medium" style={{ color: 'var(--color-debito-tinta)' }}>Débito: </dt>
+                <dt className="inline font-medium" style={{ color: 'var(--color-tinta)' }}>Débito: </dt>
                 <dd className="inline text-tinta-suave">{regla.debito}</dd>
               </div>
               <div>
-                <dt className="inline font-medium" style={{ color: 'var(--color-credito-tinta)' }}>Crédito: </dt>
+                <dt className="inline font-medium" style={{ color: 'var(--color-tinta)' }}>Crédito: </dt>
                 <dd className="inline text-tinta-suave">{regla.credito}</dd>
               </div>
             </dl>
@@ -177,13 +177,13 @@ function VistaClase({
   onAbrir: (codigo: string) => void
 }) {
   const guia = GUIA_CLASES[clase.codigo]
-  const color = COLOR_CLASE[clase.codigo]
+  const { borde: color, tinta, fondo } = PALETA_CLASE[clase.codigo]
   const grupos = hijosDe(catalogo, clase.codigo)
 
   return (
     <>
       <header className="border-l-4 pl-4" style={{ borderColor: color }}>
-        <p className="tabular text-[26px] leading-none lg:text-3xl" style={{ color }}>
+        <p className="tabular text-[26px] leading-none lg:text-3xl" style={{ color: tinta }}>
           Clase {clase.codigo}
         </p>
         <h1 className="editorial mt-2 text-[32px] leading-tight text-tinta lg:text-5xl">{nombreLegible(clase.nombre)}</h1>
@@ -224,11 +224,11 @@ function VistaClase({
                 key={g.codigo}
                 type="button"
                 onClick={() => onAbrir(g.codigo)}
-                className="flex flex-col rounded-xl border border-l-4 border-borde bg-superficie p-4 text-left transition-colors active:bg-hueso lg:hover:border-borde-fuerte"
-                style={{ borderLeftColor: color }}
+                className="flex flex-col rounded-xl border border-l-4 p-4 text-left transition-colors active:bg-hueso lg:hover:border-borde-fuerte"
+                style={{ borderColor: `color-mix(in srgb, ${color} 30%, transparent)`, borderLeftColor: color, background: fondo }}
               >
                 <span className="flex items-baseline gap-2.5">
-                  <span className="tabular text-[15px]" style={{ color }}>{g.codigo}</span>
+                  <span className="tabular text-[15px]" style={{ color: tinta }}>{g.codigo}</span>
                   <span className="min-w-0 flex-1 text-[15px] font-medium leading-snug text-tinta">{nombreLegible(g.nombre)}</span>
                 </span>
                 {guiaGrupo && (
@@ -277,7 +277,7 @@ function VistaGrupo({
 }) {
   const clase = catalogo.indice.get(grupo.codigo[0])!
   const guia = GUIA_GRUPOS[grupo.codigo]
-  const color = COLOR_CLASE[clase.codigo]
+  const { borde: color, tinta, fondo } = PALETA_CLASE[clase.codigo]
   const cuentas = hijosDe(catalogo, grupo.codigo)
 
   return (
@@ -288,12 +288,12 @@ function VistaGrupo({
         </button>
         <span aria-hidden>/</span>
         <button type="button" onClick={() => onAbrir(clase.codigo)} className="min-h-9 rounded-lg px-2 pulsable">
-          <span className="tabular">{clase.codigo}</span> {nombreLegible(clase.nombre)}
+          <span className="tabular" style={{ color: tinta }}>{clase.codigo}</span> {nombreLegible(clase.nombre)}
         </button>
       </nav>
 
       <header className="border-l-4 pl-4" style={{ borderColor: color }}>
-        <p className="tabular text-[26px] leading-none lg:text-3xl" style={{ color }}>
+        <p className="tabular text-[26px] leading-none lg:text-3xl" style={{ color: tinta }}>
           {grupo.codigo}
         </p>
         <h1 className="editorial mt-2 text-[30px] leading-tight text-tinta lg:text-5xl">{nombreLegible(grupo.nombre)}</h1>
@@ -331,11 +331,11 @@ function VistaGrupo({
                 <button
                   type="button"
                   onClick={() => onCuenta(c.codigo)}
-                  className="flex h-full w-full flex-col rounded-xl border border-l-4 border-borde bg-superficie p-4 text-left transition-colors active:bg-hueso lg:hover:border-borde-fuerte"
-                  style={{ borderLeftColor: color }}
+                  className="flex h-full w-full flex-col rounded-xl border border-l-4 p-4 text-left transition-colors active:bg-hueso lg:hover:border-borde-fuerte"
+                  style={{ borderColor: `color-mix(in srgb, ${color} 30%, transparent)`, borderLeftColor: color, background: fondo }}
                 >
                   <span className="flex items-baseline gap-2.5">
-                    <span className="tabular text-[15px]" style={{ color }}>{c.codigo}</span>
+                    <span className="tabular text-[15px]" style={{ color: tinta }}>{c.codigo}</span>
                     <span className="min-w-0 flex-1 text-[15px] font-medium leading-snug text-tinta">{nombreLegible(c.nombre)}</span>
                     <IconoChevron className="size-4 shrink-0 self-center text-tinta-tenue" />
                   </span>
@@ -346,13 +346,13 @@ function VistaGrupo({
                     <span className="mt-3 grid gap-1.5 border-t border-borde pt-2.5 text-[12.5px] leading-relaxed">
                       {debita && (
                         <span>
-                          <span className="font-medium" style={{ color: 'var(--color-debito-tinta)' }}>Se debita </span>
+                          <span className="font-medium" style={{ color: 'var(--color-tinta)' }}>Se debita </span>
                           <span className="text-tinta-suave">{minuscula(debita)}</span>
                         </span>
                       )}
                       {acredita && (
                         <span>
-                          <span className="font-medium" style={{ color: 'var(--color-credito-tinta)' }}>Se acredita </span>
+                          <span className="font-medium" style={{ color: 'var(--color-tinta)' }}>Se acredita </span>
                           <span className="text-tinta-suave">{minuscula(acredita)}</span>
                         </span>
                       )}

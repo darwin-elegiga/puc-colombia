@@ -5,6 +5,7 @@ import { NIVELES, type Columna, type Ejercicio as DatosEjercicio } from '@/data/
 import type { Catalogo } from '@/lib/catalogo'
 import { calificar, estaCompleto, pesos, respuestasVacias, sumas, type Respuesta } from '@/lib/ejercicios'
 import SelectorCuenta from './SelectorCuenta'
+import { Codigo } from './Insignias'
 import { IconoCerrar, IconoChevron, IconoVisto } from './Iconos'
 import { nombreLegible } from '@/lib/puc'
 
@@ -135,8 +136,8 @@ export default function Ejercicio({
                           key={columna}
                           type="button"
                           onClick={() => ubicar(i, columna)}
-                          className="tactil rounded-lg border text-[15px] font-medium transition-colors"
-                          style={{ borderColor: TONO[columna].fondo, color: TONO[columna].tinta }}
+                          className="tactil rounded-lg text-[15px] font-medium transition-opacity active:opacity-80"
+                          style={{ background: TONO[columna].fondo, color: TONO[columna].tinta }}
                         >
                           {TONO[columna].titulo}
                         </button>
@@ -361,7 +362,7 @@ function ColumnaAsiento({
                       >
                         {cuenta ? (
                           <>
-                            <span className="tabular shrink-0 text-[13px] text-tinta">{codigo}</span>
+                            <Codigo valor={cuenta.codigo} className="shrink-0 text-[13px] font-medium" />
                             <span className="min-w-0 truncate text-[13px] text-tinta-suave">
                               {nombreLegible(cuenta.nombre)}
                             </span>
@@ -393,8 +394,8 @@ function ColumnaAsiento({
                         aria-label={veredicto.ok ? 'Correcto' : 'Incorrecto'}
                         className="grid size-6 place-items-center rounded-full"
                         style={{
-                          background: veredicto.ok ? 'var(--color-propia)' : 'var(--color-credito)',
-                          color: veredicto.ok ? 'var(--color-propia-tinta)' : 'var(--color-credito-tinta)',
+                          background: veredicto.ok ? 'var(--color-propia)' : 'var(--color-error)',
+                          color: veredicto.ok ? 'var(--color-propia-tinta)' : 'var(--color-error-tinta)',
                         }}
                       >
                         {veredicto.ok ? <IconoVisto className="size-3.5" /> : <IconoCerrar className="size-3" />}

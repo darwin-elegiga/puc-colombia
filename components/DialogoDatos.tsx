@@ -88,7 +88,7 @@ export default function DialogoDatos({
               {resultado.errores.length > 0 && (
                 <div
                   className="rounded-lg px-3.5 py-2.5 text-[13px] leading-relaxed"
-                  style={{ background: 'var(--color-credito)', color: 'var(--color-credito-tinta)' }}
+                  style={{ background: 'var(--color-error)', color: 'var(--color-error-tinta)' }}
                 >
                   <p className="mb-1 font-medium">{resultado.errores.length} sin importar:</p>
                   <ul className="space-y-0.5">

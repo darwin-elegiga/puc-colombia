@@ -84,6 +84,11 @@ La interfaz se diseñó primero para la pantalla del teléfono; el escritorio es
   omisión, y sin eso una descripción larga ensancha el panel y corta el texto por la derecha.
 - Áreas táctiles de 48px como mínimo (variable `--tactil`).
 - Campos de formulario a 16px: por debajo de eso Safari amplía la página al enfocarlos.
+- **El color identifica la clase.** Cada clase tiene un tono propio (`PALETA_CLASE` en `lib/puc.ts`):
+  1 azul, 2 rojo, 3 violeta, 4 verde, 5 naranja, 6 cian, 7 fucsia, 8 ocre y 9 pizarra. Todo código
+  se escribe en el color de su clase y las filas llevan una franja lateral del mismo tono, en la
+  lista, las fichas, los asientos, el mapa y los ejercicios. Para no competir con eso, el débito y el
+  crédito —y «yo pago» / «me pagan»— van sin tono: claro el débito, oscuro el crédito.
 - Se respetan los márgenes seguros del dispositivo (notch y barra de gestos) con `env(safe-area-inset-*)`.
 - Clases y filtros, importar/exportar y crear cuenta van en hojas que suben desde el borde inferior;
   en escritorio las mismas piezas se muestran como columna lateral y tarjetas centradas.
