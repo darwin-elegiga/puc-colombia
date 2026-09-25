@@ -110,8 +110,10 @@ La interfaz se diseñó primero para la pantalla del teléfono; el escritorio es
 - Navegación por capas: lista → ficha a pantalla completa. **El botón atrás del sistema cierra la
   ficha** en lugar de salir de la aplicación, porque lo que se está viendo vive en el hash de la URL
   (`#c/1105`, `#m/pago-nomina`). De paso, la dirección se puede compartir y recargar la mantiene.
-- Barra inferior fija con lo que más se usa —Clases (el mapa), Entrenar y el menú— al alcance del
-  pulgar. Los filtros del catálogo pasan al menú.
+- La portada es mínima: el buscador y el mosaico de las nueve clases. Al buscar se pasa a la vista
+  de resultados; el logo (o «Inicio» en el móvil) vuelve a la portada.
+- Barra inferior fija al alcance del pulgar: Asiento (en la portada) o Inicio, Entrenar y el menú.
+  Los filtros del catálogo están en el menú.
 - Las columnas de la maqueta llevan `min-w-0`: un hijo de `grid` no baja de su contenido por
   omisión, y sin eso una descripción larga ensancha el panel y corta el texto por la derecha.
 - Áreas táctiles de 48px como mínimo (variable `--tactil`).

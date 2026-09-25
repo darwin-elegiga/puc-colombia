@@ -43,11 +43,11 @@ export default function MapaClases({
       >
         <button
           type="button"
-          onClick={() => (actual ? onAbrir(actual.codigo.length === 2 ? actual.codigo[0] : undefined) : onSalir())}
+          onClick={() => (actual?.codigo.length === 2 ? onAbrir(actual.codigo[0]) : onSalir())}
           className="tactil flex items-center gap-1 rounded-lg pl-2 pr-3 text-[15px] text-tinta pulsable"
         >
           <IconoChevron className="size-5 rotate-180" />
-          {actual ? (actual.codigo.length === 2 ? nombreLegible(clase!.nombre) : 'Clases') : 'Catálogo'}
+          {actual?.codigo.length === 2 ? nombreLegible(clase!.nombre) : 'Inicio'}
         </button>
         <span className="ml-auto shrink-0 pr-2 text-[13px] text-tinta-tenue">
           {actual ? `${actual.codigo.length === 1 ? 'Clase' : 'Grupo'} ${actual.codigo}` : 'Mapa de clases'}
@@ -80,17 +80,33 @@ const CUADRO: Record<GuiaClase['prioridad'], string> = {
 
 const ORDEN = ['1', '2', '4', '5', '3', '6', '7', '8', '9']
 
-function Mosaico({ catalogo, onAbrir }: { catalogo: Catalogo; onAbrir: (codigo: string) => void }) {
+/**
+ * El mosaico de las nueve clases. En la portada va sin encabezado ni regla de
+ * «¿pagas o te pagan?», solo los cuadros; en el mapa de clases, completo.
+ */
+export function Mosaico({
+  catalogo,
+  onAbrir,
+  completo = true,
+}: {
+  catalogo: Catalogo
+  onAbrir: (codigo: string) => void
+  completo?: boolean
+}) {
   return (
     <>
-      <p className="rotulo">Plan Único de Cuentas</p>
-      <h1 className="editorial mt-2 text-[30px] leading-tight text-tinta lg:text-5xl">Las nueve clases</h1>
-      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-pretty text-tinta-suave">
-        Los cuadros grandes son las clases que aparecen en casi todo asiento; los pequeños, las de uso ocasional.
-        Entra en una para ver qué es, sus grupos y cuándo se usa cada uno.
-      </p>
+      {completo && (
+        <>
+          <p className="rotulo">Plan Único de Cuentas</p>
+          <h1 className="editorial mt-2 text-[30px] leading-tight text-tinta lg:text-5xl">Las nueve clases</h1>
+          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-pretty text-tinta-suave">
+            Los cuadros grandes son las clases que aparecen en casi todo asiento; los pequeños, las de uso ocasional.
+            Entra en una para ver qué es, sus grupos y cuándo se usa cada uno.
+          </p>
+        </>
+      )}
 
-      <div className="mt-6 grid grid-cols-6 gap-2.5 lg:gap-3">
+      <div className={`${completo ? 'mt-6' : ''} grid grid-cols-6 gap-2.5 lg:gap-3`}>
         {ORDEN.map((c) => {
           const cuenta = catalogo.indice.get(c)
           const guia = GUIA_CLASES[c]
@@ -132,8 +148,12 @@ function Mosaico({ catalogo, onAbrir }: { catalogo: Catalogo; onAbrir: (codigo: 
         })}
       </div>
 
-      <p className="rotulo mb-2.5 mt-8">¿Pagas o te pagan?</p>
-      <ReglaPago />
+      {completo && (
+        <>
+          <p className="rotulo mb-2.5 mt-8">¿Pagas o te pagan?</p>
+          <ReglaPago />
+        </>
+      )}
     </>
   )
 }
@@ -284,7 +304,7 @@ function VistaGrupo({
     <>
       <nav className="-ml-1 mb-4 flex flex-wrap items-center gap-1 text-[13px] text-tinta-tenue">
         <button type="button" onClick={() => onAbrir()} className="min-h-9 rounded-lg px-2 pulsable">
-          Clases
+          Inicio
         </button>
         <span aria-hidden>/</span>
         <button type="button" onClick={() => onAbrir(clase.codigo)} className="min-h-9 rounded-lg px-2 pulsable">

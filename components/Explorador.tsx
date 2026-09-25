@@ -10,13 +10,13 @@ import {
 import { buscarMovimientos, buscarMovimientosPuntuados, movimientoPorId, movimientosDeCuenta } from '@/lib/movimientos'
 import { descargar, useCuentasPropias } from '@/lib/almacenamiento'
 import { useDestino } from '@/lib/navegacion'
-import { EJERCICIOS } from '@/lib/ejercicios'
 import PanelClases from './PanelClases'
 import ListaResultados from './ListaResultados'
 import FichaCuenta from './FichaCuenta'
 import FichaMovimiento from './FichaMovimiento'
 import Entrenador from './Entrenador'
 import MapaClases from './MapaClases'
+import Inicio from './Inicio'
 import AsientoBeta from './AsientoBeta'
 import type { Lado } from '@/data/guia'
 import LecturaCodigo from './LecturaCodigo'
@@ -218,6 +218,16 @@ export default function Explorador() {
   const ficha = destino?.tipo === 'cuenta' ? fichaDe(catalogo, destino.codigo) : null
   const movimiento = destino?.tipo === 'movimiento' ? movimientoPorId(destino.id) : undefined
   const hayDetalle = Boolean(ficha || movimiento)
+  /** Sin búsqueda, sin filtros y sin nada abierto: la portada con el buscador y las clases. */
+  const enInicio = !consulta && !hayFiltros && !hayDetalle
+
+  const volverAInicio = () => {
+    setBorrador('')
+    setConsulta('')
+    setFiltros(FILTROS_VACIOS)
+    setMostradas(PAGINA)
+    if (destino) abrir(null)
+  }
 
   const opcionesMenu = [
     {
@@ -279,7 +289,7 @@ export default function Explorador() {
     )
   }
 
-  if (destino?.tipo === 'clases') {
+  if (destino?.tipo === 'clases' && destino.codigo) {
     return (
       <MapaClases
         catalogo={catalogo}
@@ -305,6 +315,30 @@ export default function Explorador() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
+      {enInicio ? (
+        <Inicio
+          catalogo={catalogo}
+          borrador={borrador}
+          onEscribir={setBorrador}
+          onBuscar={ejecutarBusqueda}
+          onClase={(codigo) => abrir({ tipo: 'clases', codigo })}
+          onAsiento={() => abrir({ tipo: 'asiento' })}
+          onEntrenar={() => abrir({ tipo: 'entrenar' })}
+          campo={campoBusqueda}
+          sinConexion={sinConexion}
+          menu={
+            <Menu
+              etiqueta="Más opciones"
+              opciones={opcionesMenu}
+              className="shrink-0"
+              claseBoton="grid size-9 place-items-center rounded-lg text-tinta-suave hover:bg-hueso hover:text-tinta"
+            >
+              <IconoPuntos className="size-4" />
+            </Menu>
+          }
+        />
+      ) : (
+        <>
       {/* ═══════════ Cabecera de búsqueda ═══════════ */}
       <header
         className={[
@@ -314,10 +348,15 @@ export default function Explorador() {
         style={{ paddingTop: 'var(--seguro-arriba)' }}
       >
         <div className="flex items-center gap-3 px-4 py-2.5 lg:px-5">
-          <div className="hidden shrink-0 items-baseline gap-2 lg:flex">
+          <button
+            type="button"
+            onClick={volverAInicio}
+            aria-label="Volver al inicio"
+            className="hidden shrink-0 items-baseline gap-2 rounded-lg px-1 lg:flex"
+          >
             <span className="editorial text-xl text-tinta">PUC</span>
             <span className="text-[11px] text-tinta-tenue">Colombia</span>
-          </div>
+          </button>
 
           <form
             onSubmit={(e) => {
@@ -376,7 +415,7 @@ export default function Explorador() {
           {/* Acciones de escritorio: en móvil viven en la barra inferior. */}
           <button
             type="button"
-            onClick={() => abrir({ tipo: 'clases' })}
+            onClick={volverAInicio}
             className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-borde bg-superficie px-3 py-2 text-[13px] text-tinta-suave hover:border-borde-fuerte hover:text-tinta lg:inline-flex"
           >
             <IconoCapas className="size-3.5" />
@@ -486,14 +525,6 @@ export default function Explorador() {
                   </div>
                 )}
 
-                {!consulta && !hayFiltros && (
-                  <IntroCompacta
-                    onEjemplo={ejecutarBusqueda}
-                    onEntrenar={() => abrir({ tipo: 'entrenar' })}
-                    onMapa={() => abrir({ tipo: 'clases' })}
-                    onAsiento={() => abrir({ tipo: 'asiento' })}
-                  />
-                )}
               </>
             }
           />
@@ -551,17 +582,18 @@ export default function Explorador() {
                 onVerMovimiento={(id) => abrir({ tipo: 'movimiento', id })}
               />
             ) : (
-              <Bienvenida
-                total={datos.total}
-                onEjemplo={ejecutarBusqueda}
-                onEntrenar={() => abrir({ tipo: 'entrenar' })}
-                onMapa={() => abrir({ tipo: 'clases' })}
-                onAsiento={() => abrir({ tipo: 'asiento' })}
-              />
+              <div className="grid h-full place-items-center px-8 text-center">
+                <p className="max-w-xs text-[14px] leading-relaxed text-tinta-tenue">
+                  Elige una cuenta o una operación de la lista para ver su ficha.
+                </p>
+              </div>
             )}
           </div>
         </section>
       </div>
+
+        </>
+      )}
 
       {/* ═══════════ Barra inferior (solo móvil, solo en la lista) ═══════════ */}
       {!hayDetalle && (
@@ -569,14 +601,25 @@ export default function Explorador() {
           className="z-30 flex shrink-0 items-stretch gap-2 border-t border-borde bg-lienzo px-3 pt-2 lg:hidden"
           style={{ paddingBottom: 'calc(0.5rem + var(--seguro-abajo))' }}
         >
-          <button
-            type="button"
-            onClick={() => abrir({ tipo: 'clases' })}
-            className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl border border-borde bg-superficie text-[14px] text-tinta-suave pulsable"
-          >
-            <IconoCapas className="size-[18px]" />
-            Clases
-          </button>
+          {enInicio ? (
+            <button
+              type="button"
+              onClick={() => abrir({ tipo: 'asiento' })}
+              className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl border border-borde bg-superficie text-[14px] text-tinta-suave pulsable"
+            >
+              <IconoIntercambio className="size-[18px]" />
+              Asiento
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={volverAInicio}
+              className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl border border-borde bg-superficie text-[14px] text-tinta-suave pulsable"
+            >
+              <IconoCapas className="size-[18px]" />
+              Inicio
+            </button>
+          )}
 
           <button
             type="button"
@@ -706,178 +749,6 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
     <div>
       <dt className="rotulo">{etiqueta}</dt>
       <dd className="mt-0.5 text-[14px] text-tinta">{valor}</dd>
-    </div>
-  )
-}
-
-const EJEMPLOS = ['1105', '2365', 'depreciación', 'me pagan', 'pagué el arriendo', 'presto un servicio']
-
-/** Presentación breve en la lista del móvil, donde no hay tercera columna. */
-function IntroCompacta({
-  onEjemplo,
-  onEntrenar,
-  onMapa,
-  onAsiento,
-}: {
-  onEjemplo: (texto: string) => void
-  onEntrenar: () => void
-  onMapa: () => void
-  onAsiento: () => void
-}) {
-  return (
-    <div className="border-b border-borde px-5 py-5 lg:hidden">
-      <h1 className="editorial text-[26px] text-tinta">Qué significa cada código, dígito a dígito.</h1>
-      <p className="mt-2 text-[14px] leading-relaxed text-tinta-suave">
-        Escribe un código, un nombre de cuenta o la operación que necesitas registrar.
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {EJEMPLOS.map((e) => (
-          <button
-            key={e}
-            type="button"
-            onClick={() => onEjemplo(e)}
-            className="min-h-10 rounded-lg border border-borde bg-superficie px-3 text-[13.5px] text-tinta-suave pulsable"
-          >
-            {e}
-          </button>
-        ))}
-      </div>
-
-      <EntradaMapa onMapa={onMapa} className="mt-4" />
-      <EntradaAsiento onAsiento={onAsiento} className="mt-2.5" />
-      <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-2.5" />
-    </div>
-  )
-}
-
-/** Acceso al mapa de clases desde las pantallas de inicio. */
-function EntradaMapa({ onMapa, className = '' }: { onMapa: () => void; className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onMapa}
-      className={`tactil flex w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 text-left pulsable lg:hover:border-borde-fuerte ${className}`}
-    >
-      <IconoCapas className="size-5 shrink-0 text-tinta-suave" />
-      <span className="min-w-0 flex-1">
-        <span className="block text-[15px] leading-snug text-tinta">Recorre las clases</span>
-        <span className="block truncate text-[12.5px] text-tinta-tenue">
-          Qué es cada una, sus grupos y cuándo usarlos si pagas o te pagan
-        </span>
-      </span>
-      <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
-    </button>
-  )
-}
-
-/** Acceso al asiento a partir de una situación (beta). */
-function EntradaAsiento({ onAsiento, className = '' }: { onAsiento: () => void; className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onAsiento}
-      className={`tactil flex w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 text-left pulsable lg:hover:border-borde-fuerte ${className}`}
-    >
-      <IconoIntercambio className="size-5 shrink-0 text-tinta-suave" />
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2 text-[15px] leading-snug text-tinta">
-          Hazme el asiento
-          <span className="rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.08em]" style={{ background: 'var(--color-nota)', color: 'var(--color-nota-tinta)' }}>
-            Beta
-          </span>
-        </span>
-        <span className="block truncate text-[12.5px] text-tinta-tenue">Cuenta la situación y te propongo el asiento</span>
-      </span>
-      <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
-    </button>
-  )
-}
-
-/** Acceso al entrenamiento desde las pantallas de inicio. */
-function EntradaEntrenamiento({
-  onEntrenar,
-  className = '',
-}: {
-  onEntrenar: () => void
-  className?: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onEntrenar}
-      className={`tactil flex w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 text-left pulsable lg:hover:border-borde-fuerte ${className}`}
-    >
-      <IconoBalanza className="size-5 shrink-0 text-tinta-suave" />
-      <span className="min-w-0 flex-1">
-        <span className="block text-[15px] leading-snug text-tinta">Entrena el debe y el haber</span>
-        <span className="block truncate text-[12.5px] text-tinta-tenue">
-          {EJERCICIOS.length} ejercicios, de menor a mayor dificultad
-        </span>
-      </span>
-      <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
-    </button>
-  )
-}
-
-function Bienvenida({
-  total,
-  onEjemplo,
-  onEntrenar,
-  onMapa,
-  onAsiento,
-}: {
-  total: number
-  onEjemplo: (texto: string) => void
-  onEntrenar: () => void
-  onMapa: () => void
-  onAsiento: () => void
-}) {
-  return (
-    <div className="surgir panel-scroll h-full">
-      <div className="mx-auto max-w-xl px-8 py-14">
-        <p className="rotulo">Plan Único de Cuentas</p>
-        <h1 className="editorial mt-3 text-5xl text-tinta">Qué significa cada código, dígito a dígito.</h1>
-        <p className="mt-4 text-[15px] leading-relaxed text-tinta-suave">
-          Escribe un código y verás cómo se descompone en clase, grupo, cuenta y subcuenta. Escribe un nombre y
-          encontrarás la cuenta. Escribe una operación del día a día y verás qué se debita y qué se acredita,
-          según seas tú quien paga o un cliente quien te paga.
-        </p>
-
-        <div className="mt-7">
-          <p className="rotulo mb-2.5">Prueba con</p>
-          <div className="flex flex-wrap gap-2">
-            {EJEMPLOS.map((e) => (
-              <button
-                key={e}
-                type="button"
-                onClick={() => onEjemplo(e)}
-                className="min-h-9 rounded-lg border border-borde bg-superficie px-3 text-[13px] text-tinta-suave transition-colors hover:border-borde-fuerte hover:text-tinta"
-              >
-                {e}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <EntradaMapa onMapa={onMapa} className="mt-8" />
-        <EntradaAsiento onAsiento={onAsiento} className="mt-2.5" />
-        <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-2.5" />
-
-        <dl className="mt-10 space-y-4 border-t border-borde pt-6 text-[14px]">
-          <div className="grid gap-1 sm:grid-cols-[8rem_1fr]">
-            <dt className="text-tinta-tenue">Estructura</dt>
-            <dd className="text-tinta">1 dígito clase · 2 grupo · 4 cuenta · 6 subcuenta · 7 o más auxiliar</dd>
-          </div>
-          <div className="grid gap-1 sm:grid-cols-[8rem_1fr]">
-            <dt className="text-tinta-tenue">Naturaleza</dt>
-            <dd className="text-tinta">Débito en las clases 1, 5, 6, 7 y 8 · Crédito en las clases 2, 3, 4 y 9</dd>
-          </div>
-          <div className="grid gap-1 sm:grid-cols-[8rem_1fr]">
-            <dt className="text-tinta-tenue">Catálogo</dt>
-            <dd className="text-tinta">{total} registros del Decreto 2650 de 1993</dd>
-          </div>
-        </dl>
-      </div>
     </div>
   )
 }
