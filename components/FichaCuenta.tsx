@@ -5,7 +5,9 @@ import type { Movimiento } from '@/lib/movimientos'
 import { ESTADO_FINANCIERO, nombreLegible } from '@/lib/puc'
 import LecturaCodigo from './LecturaCodigo'
 import { InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen } from './Insignias'
-import { IconoMas, IconoPapelera, IconoIntercambio } from './Iconos'
+import { IconoMas, IconoPapelera, IconoIntercambio, IconoCapas } from './Iconos'
+import { GUIA_CLASES, GUIA_GRUPOS } from '@/data/guia'
+import { FuenteOficial } from './MapaClases'
 
 export default function FichaCuenta({
   ficha,
@@ -15,6 +17,7 @@ export default function FichaCuenta({
   onVerMovimiento,
   onCrearHija,
   onEliminar,
+  onVerEnMapa,
 }: {
   ficha: Ficha
   descripcion: { texto: string; heredadaDe?: string }
@@ -23,7 +26,12 @@ export default function FichaCuenta({
   onVerMovimiento: (id: string) => void
   onCrearHija: (codigoPadre: string) => void
   onEliminar: (codigo: string) => void
+  /** Abre la clase o el grupo de esta cuenta en el mapa de clases. */
+  onVerEnMapa: (codigo: string) => void
 }) {
+  const guiaClase = ficha.nivel === 'clase' ? GUIA_CLASES[ficha.codigo] : undefined
+  const guiaGrupo = ficha.nivel === 'grupo' ? GUIA_GRUPOS[ficha.codigo] : undefined
+  const enMapa = ficha.codigo.slice(0, 2)
   return (
     <article className="surgir panel-scroll h-full overflow-y-auto">
       <div className="mx-auto max-w-2xl px-5 py-6 lg:px-8 lg:py-8">
@@ -65,10 +73,25 @@ export default function FichaCuenta({
           </p>
         )}
 
+        {(guiaClase || guiaGrupo) && (
+          <section className="mt-6">
+            <p className="rotulo mb-2">En palabras simples</p>
+            <p className="text-[16px] leading-relaxed text-tinta">{(guiaClase ?? guiaGrupo)!.simple}</p>
+            <p className="mt-2 text-[14px] leading-relaxed text-tinta-suave">
+              {guiaClase ? `Pregúntate: ${guiaClase.pregunta}` : `Cuándo se usa: ${guiaGrupo!.cuando}`}
+            </p>
+          </section>
+        )}
+
         {descripcion.texto && (
           <section className="mt-6">
-            <p className="rotulo mb-2">Qué registra</p>
-            <p className="text-[15px] leading-relaxed text-tinta">{descripcion.texto}</p>
+            <p className="rotulo mb-2">{ficha.textoOficial ? 'Qué registra · texto oficial' : 'Qué registra'}</p>
+            <div className="space-y-2.5 text-[15px] leading-relaxed text-tinta">
+              {descripcion.texto.split('\n\n').map((parrafo) => (
+                <p key={parrafo}>{parrafo}</p>
+              ))}
+            </div>
+            {ficha.textoOficial && !descripcion.heredadaDe && <FuenteOficial />}
             {descripcion.heredadaDe && (
               <p className="mt-1.5 text-[11px] text-tinta-tenue">
                 Descripción tomada de{' '}
@@ -79,6 +102,17 @@ export default function FichaCuenta({
               </p>
             )}
           </section>
+        )}
+
+        {ficha.origen === 'oficial' && (
+          <button
+            type="button"
+            onClick={() => onVerEnMapa(enMapa)}
+            className="tactil mt-5 inline-flex items-center gap-2 rounded-xl border border-borde bg-superficie px-4 text-[14px] text-tinta-suave pulsable lg:min-h-9 lg:text-[13px] lg:hover:border-borde-fuerte"
+          >
+            <IconoCapas className="size-4" />
+            {ficha.nivel === 'clase' ? 'Ver sus grupos en el mapa' : `Ver el grupo ${enMapa} en el mapa`}
+          </button>
         )}
 
         {/* Lectura del código */}
@@ -215,12 +249,19 @@ function BloqueDinamica({ titulo, items, tono }: { titulo: string; items: string
         {titulo}
       </p>
       <ul className="space-y-1.5">
-        {items.map((item) => (
-          <li key={item} className="flex gap-2.5 text-[14px] leading-relaxed text-tinta">
-            <span className="mt-[7px] size-1 shrink-0 rounded-full bg-borde-fuerte" aria-hidden />
-            {item}
-          </li>
-        ))}
+        {items.map((item, i) =>
+          // Los rótulos «§ …» separan tramos de la dinámica oficial, como «Registro de pagos».
+          item.startsWith('§ ') ? (
+            <li key={`${i}-${item}`} className="pt-2 text-[11px] font-medium uppercase tracking-[0.06em] text-tinta-tenue">
+              {item.slice(2)}
+            </li>
+          ) : (
+            <li key={`${i}-${item}`} className="flex gap-2.5 text-[14px] leading-relaxed text-tinta">
+              <span className="mt-[7px] size-1 shrink-0 rounded-full bg-borde-fuerte" aria-hidden />
+              {item}
+            </li>
+          ),
+        )}
       </ul>
     </div>
   )

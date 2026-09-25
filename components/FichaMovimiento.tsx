@@ -3,6 +3,10 @@
 import type { Movimiento, Renglon } from '@/data/movimientos'
 import type { Cuenta } from '@/lib/tipos'
 import { nombreLegible } from '@/lib/puc'
+import { movimientoPorId } from '@/lib/movimientos'
+import { REGLA_LADO } from '@/data/guia'
+import { InsigniaLado, TONO_LADO } from './Insignias'
+import { IconoChevron, IconoIntercambio } from './Iconos'
 
 /**
  * Detalle de una operación típica: qué cuentas se debitan y cuáles se acreditan.
@@ -12,20 +16,44 @@ export default function FichaMovimiento({
   movimiento,
   nombreDe,
   onIr,
+  onVerMovimiento,
 }: {
   movimiento: Movimiento
   nombreDe: (codigo: string) => Cuenta | undefined
   onIr: (codigo: string) => void
+  onVerMovimiento: (id: string) => void
 }) {
+  const regla = REGLA_LADO[movimiento.lado]
+  const espejo = movimiento.espejo ? movimientoPorId(movimiento.espejo) : undefined
   const debitos = movimiento.asiento.filter((r) => r.efecto === 'debito')
   const creditos = movimiento.asiento.filter((r) => r.efecto === 'credito')
 
   return (
     <article className="surgir panel-scroll h-full overflow-y-auto">
       <div className="mx-auto max-w-2xl px-5 py-6 lg:px-8 lg:py-8">
-        <p className="rotulo">{movimiento.categoria}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <InsigniaLado lado={movimiento.lado} />
+          <p className="rotulo">{movimiento.categoria}</p>
+        </div>
         <h2 className="editorial mt-2 text-[30px] text-tinta lg:text-4xl">{movimiento.nombre}</h2>
         <p className="mt-3 text-[15px] leading-relaxed text-tinta-suave">{movimiento.descripcion}</p>
+
+        {/* La regla de este lado: qué clase va al débito y cuál al crédito. */}
+        <section
+          className="mt-6 rounded-xl border-l-4 bg-superficie px-4 py-3.5"
+          style={{ borderColor: TONO_LADO[movimiento.lado].tinta }}
+        >
+          <p className="text-[14px] font-medium text-tinta">
+            {regla.titulo} · {regla.corto.toLowerCase()}
+          </p>
+          <p className="mt-1 text-[14px] leading-relaxed text-tinta-suave">{regla.regla}</p>
+          <dl className="mt-3 grid gap-2 text-[13.5px] leading-relaxed sm:grid-cols-[5.5rem_1fr]">
+            <dt className="font-medium" style={{ color: 'var(--color-debito-tinta)' }}>Al débito</dt>
+            <dd className="text-tinta">{regla.debito}</dd>
+            <dt className="font-medium" style={{ color: 'var(--color-credito-tinta)' }}>Al crédito</dt>
+            <dd className="text-tinta">{regla.credito}</dd>
+          </dl>
+        </section>
 
         <section className="mt-7">
           <p className="rotulo mb-2">El asiento</p>
@@ -42,6 +70,26 @@ export default function FichaMovimiento({
           >
             {movimiento.nota}
           </p>
+        )}
+
+        {espejo && (
+          <section className="mt-7">
+            <p className="rotulo mb-2">¿Y si es al revés?</p>
+            <button
+              type="button"
+              onClick={() => onVerMovimiento(espejo.id)}
+              className="tactil flex w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 text-left pulsable lg:hover:border-borde-fuerte"
+            >
+              <IconoIntercambio className="size-5 shrink-0 text-tinta-tenue" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] leading-snug text-tinta">{espejo.nombre}</span>
+                <span className="mt-1 block">
+                  <InsigniaLado lado={espejo.lado} />
+                </span>
+              </span>
+              <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
+            </button>
+          </section>
         )}
 
         <section className="mt-7 border-t border-borde pt-4" style={{ paddingBottom: 'var(--seguro-abajo)' }}>

@@ -230,34 +230,46 @@ export function aCSV(cuentas: Cuenta[]): string {
   return lineas.join('\n') + '\n'
 }
 
-function partirLinea(linea: string): string[] {
-  const campos: string[] = []
+/**
+ * Parte el texto en filas y campos. Las comillas pueden encerrar comas, punto y coma
+ * y saltos de línea: las descripciones oficiales traen varios párrafos.
+ */
+function partirCSV(texto: string): string[][] {
+  const filas: string[][] = []
+  let fila: string[] = []
   let actual = ''
   let entreComillas = false
-  for (let i = 0; i < linea.length; i++) {
-    const ch = linea[i]
+  const cerrarFila = () => {
+    fila.push(actual)
+    if (fila.some((c) => c.trim())) filas.push(fila.map((c) => c.trim()))
+    fila = []
+    actual = ''
+  }
+  for (let i = 0; i < texto.length; i++) {
+    const ch = texto[i]
     if (ch === '"') {
-      if (entreComillas && linea[i + 1] === '"') { actual += '"'; i++ }
+      if (entreComillas && texto[i + 1] === '"') { actual += '"'; i++ }
       else entreComillas = !entreComillas
     } else if ((ch === ',' || ch === ';') && !entreComillas) {
-      campos.push(actual); actual = ''
+      fila.push(actual); actual = ''
+    } else if ((ch === '\n' || ch === '\r') && !entreComillas) {
+      if (ch === '\r' && texto[i + 1] === '\n') i++
+      cerrarFila()
     } else actual += ch
   }
-  campos.push(actual)
-  return campos.map((c) => c.trim())
+  cerrarFila()
+  return filas
 }
 
-/** Convierte un CSV en borradores. Detecta el encabezado y acepta coma o punto y coma. */
 export function desdeCSV(texto: string): BorradorCuenta[] {
-  const lineas = String(texto).split(/\r?\n/).filter((l) => l.trim())
+  const lineas = partirCSV(String(texto))
   if (!lineas.length) return []
 
-  const primera = partirLinea(lineas[0]).map(normalizar)
+  const primera = lineas[0].map(normalizar)
   const tieneEncabezado = ['codigo', 'cuenta', 'code'].includes(primera[0])
   const columnas = tieneEncabezado ? primera : ['codigo', 'nombre', 'descripcion', 'naturaleza']
 
-  return lineas.slice(tieneEncabezado ? 1 : 0).map((linea) => {
-    const campos = partirLinea(linea)
+  return lineas.slice(tieneEncabezado ? 1 : 0).map((campos) => {
     const fila: Record<string, string> = {}
     columnas.forEach((col, i) => { fila[col] = campos[i] ?? '' })
     const naturaleza = normalizar(fila.naturaleza)

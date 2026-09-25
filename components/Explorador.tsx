@@ -16,6 +16,8 @@ import ListaResultados from './ListaResultados'
 import FichaCuenta from './FichaCuenta'
 import FichaMovimiento from './FichaMovimiento'
 import Entrenador from './Entrenador'
+import MapaClases from './MapaClases'
+import type { Lado } from '@/data/guia'
 import LecturaCodigo from './LecturaCodigo'
 import DialogoNuevaCuenta from './DialogoNuevaCuenta'
 import DialogoDatos, { type ResultadoImportacion } from './DialogoDatos'
@@ -23,7 +25,7 @@ import Dialogo, { botonSecundario } from './Dialogo'
 import Menu from './Menu'
 import {
   IconoBalanza, IconoCapas, IconoCerrar, IconoChevron, IconoDescarga, IconoInfo, IconoInstalar,
-  IconoLupa, IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
+  IconoFiltro, IconoLupa, IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
 } from './Iconos'
 
 const OFICIALES = datosPuc.cuentas as unknown as Cuenta[]
@@ -63,7 +65,9 @@ export default function Explorador() {
     () => buscar(catalogo, { ...filtros, q: consulta }, mostradas),
     [catalogo, filtros, consulta, mostradas],
   )
-  const movimientos = useMemo(() => buscarMovimientos(consulta), [consulta])
+  const [lado, setLado] = useState<Lado | ''>('')
+  const hayMovimientos = useMemo(() => buscarMovimientos(consulta, 1).length > 0, [consulta])
+  const movimientos = useMemo(() => buscarMovimientos(consulta, 12, lado), [consulta, lado])
 
   const lectura = useMemo(() => {
     const codigo = consulta.trim()
@@ -211,6 +215,12 @@ export default function Explorador() {
 
   const opcionesMenu = [
     {
+      etiqueta: 'Filtrar el catálogo',
+      descripcion: 'Por clase, nivel y naturaleza',
+      icono: <IconoFiltro className="size-4" />,
+      onSeleccionar: () => setHojaClases(true),
+    },
+    {
       etiqueta: 'Nueva cuenta',
       descripcion: 'Crear una cuenta propia',
       icono: <IconoMas className="size-4" />,
@@ -246,6 +256,18 @@ export default function Explorador() {
     y final, así que se lleva la pantalla entera en lugar de vivir en la columna
     de detalle.
   */
+  if (destino?.tipo === 'clases') {
+    return (
+      <MapaClases
+        catalogo={catalogo}
+        codigo={destino.codigo}
+        onAbrir={(codigo) => abrir({ tipo: 'clases', codigo })}
+        onCuenta={(codigo) => abrir({ tipo: 'cuenta', codigo })}
+        onSalir={() => abrir(null)}
+      />
+    )
+  }
+
   if (destino?.tipo === 'entrenar' || destino?.tipo === 'ejercicio') {
     return (
       <Entrenador
@@ -331,6 +353,14 @@ export default function Explorador() {
           {/* Acciones de escritorio: en móvil viven en la barra inferior. */}
           <button
             type="button"
+            onClick={() => abrir({ tipo: 'clases' })}
+            className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-borde bg-superficie px-3 py-2 text-[13px] text-tinta-suave hover:border-borde-fuerte hover:text-tinta lg:inline-flex"
+          >
+            <IconoCapas className="size-3.5" />
+            Clases
+          </button>
+          <button
+            type="button"
             onClick={() => abrir({ tipo: 'entrenar' })}
             className="hidden shrink-0 items-center gap-1.5 rounded-lg bg-tinta px-3 py-2 text-[13px] text-white hover:bg-[#3d4347] lg:inline-flex"
           >
@@ -388,6 +418,9 @@ export default function Explorador() {
           <ListaResultados
             cuentas={resultados}
             movimientos={movimientos}
+            hayMovimientos={hayMovimientos}
+            lado={lado}
+            onLado={setLado}
             seleccion={destino}
             onSeleccionar={(d) => { abrir(d); setHojaClases(false) }}
             mostradas={mostradas}
@@ -431,6 +464,7 @@ export default function Explorador() {
                   <IntroCompacta
                     onEjemplo={ejecutarBusqueda}
                     onEntrenar={() => abrir({ tipo: 'entrenar' })}
+                    onMapa={() => abrir({ tipo: 'clases' })}
                   />
                 )}
               </>
@@ -476,6 +510,7 @@ export default function Explorador() {
                 onVerMovimiento={(id) => abrir({ tipo: 'movimiento', id })}
                 onCrearHija={(padre) => { setCodigoInicial(padre); setDialogo('nueva') }}
                 onEliminar={eliminarCuenta}
+                onVerEnMapa={(codigo) => abrir({ tipo: 'clases', codigo })}
               />
             ) : movimiento ? (
               <FichaMovimiento
@@ -483,12 +518,14 @@ export default function Explorador() {
                 movimiento={movimiento}
                 nombreDe={(codigo) => catalogo.indice.get(codigo)}
                 onIr={irACuenta}
+                onVerMovimiento={(id) => abrir({ tipo: 'movimiento', id })}
               />
             ) : (
               <Bienvenida
                 total={datos.total}
                 onEjemplo={ejecutarBusqueda}
                 onEntrenar={() => abrir({ tipo: 'entrenar' })}
+                onMapa={() => abrir({ tipo: 'clases' })}
               />
             )}
           </div>
@@ -503,12 +540,11 @@ export default function Explorador() {
         >
           <button
             type="button"
-            onClick={() => setHojaClases(true)}
+            onClick={() => abrir({ tipo: 'clases' })}
             className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl border border-borde bg-superficie text-[14px] text-tinta-suave pulsable"
           >
             <IconoCapas className="size-[18px]" />
             Clases
-            {hayFiltros && <span className="size-1.5 rounded-full bg-tinta" aria-hidden />}
           </button>
 
           <button
@@ -643,15 +679,17 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   )
 }
 
-const EJEMPLOS = ['1105', '110505', '2365', 'depreciación', 'consigno el dinero', 'pago la nómina']
+const EJEMPLOS = ['1105', '2365', 'depreciación', 'me pagan', 'pagué el arriendo', 'presto un servicio']
 
 /** Presentación breve en la lista del móvil, donde no hay tercera columna. */
 function IntroCompacta({
   onEjemplo,
   onEntrenar,
+  onMapa,
 }: {
   onEjemplo: (texto: string) => void
   onEntrenar: () => void
+  onMapa: () => void
 }) {
   return (
     <div className="border-b border-borde px-5 py-5 lg:hidden">
@@ -672,8 +710,29 @@ function IntroCompacta({
         ))}
       </div>
 
-      <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-4" />
+      <EntradaMapa onMapa={onMapa} className="mt-4" />
+      <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-2.5" />
     </div>
+  )
+}
+
+/** Acceso al mapa de clases desde las pantallas de inicio. */
+function EntradaMapa({ onMapa, className = '' }: { onMapa: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onMapa}
+      className={`tactil flex w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 text-left pulsable lg:hover:border-borde-fuerte ${className}`}
+    >
+      <IconoCapas className="size-5 shrink-0 text-tinta-suave" />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] leading-snug text-tinta">Recorre las clases</span>
+        <span className="block truncate text-[12.5px] text-tinta-tenue">
+          Qué es cada una, sus grupos y cuándo usarlos si pagas o te pagan
+        </span>
+      </span>
+      <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
+    </button>
   )
 }
 
@@ -707,10 +766,12 @@ function Bienvenida({
   total,
   onEjemplo,
   onEntrenar,
+  onMapa,
 }: {
   total: number
   onEjemplo: (texto: string) => void
   onEntrenar: () => void
+  onMapa: () => void
 }) {
   return (
     <div className="surgir panel-scroll h-full">
@@ -719,7 +780,8 @@ function Bienvenida({
         <h1 className="editorial mt-3 text-5xl text-tinta">Qué significa cada código, dígito a dígito.</h1>
         <p className="mt-4 text-[15px] leading-relaxed text-tinta-suave">
           Escribe un código y verás cómo se descompone en clase, grupo, cuenta y subcuenta. Escribe un nombre y
-          encontrarás la cuenta. Escribe una operación del día a día y verás qué se debita y qué se acredita.
+          encontrarás la cuenta. Escribe una operación del día a día y verás qué se debita y qué se acredita,
+          según seas tú quien paga o un cliente quien te paga.
         </p>
 
         <div className="mt-7">
@@ -738,7 +800,8 @@ function Bienvenida({
           </div>
         </div>
 
-        <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-8" />
+        <EntradaMapa onMapa={onMapa} className="mt-8" />
+        <EntradaEntrenamiento onEntrenar={onEntrenar} className="mt-2.5" />
 
         <dl className="mt-10 space-y-4 border-t border-borde pt-6 text-[14px]">
           <div className="grid gap-1 sm:grid-cols-[8rem_1fr]">

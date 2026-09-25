@@ -6,7 +6,7 @@
  *
  * Fuente normativa: Decreto 2650 de 1993 y sus modificaciones (PUC para comerciantes).
  */
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -473,6 +473,7 @@ D(`
 136515|EDUCACIÓN|Préstamos concedidos a los trabajadores con destino a educación.
 136520|MÉDICOS, ODONTOLÓGICOS Y SIMILARES|Préstamos concedidos a los trabajadores para gastos de salud.
 136525|CALAMIDAD DOMÉSTICA|Préstamos concedidos a los trabajadores por calamidad doméstica.
+136530|RESPONSABILIDADES|Faltantes de caja, de inventarios u otros bienes a cargo del trabajador responsable.
 139905|CLIENTES|Provisión constituida sobre la cartera de clientes (deterioro).|CR
 139910|CUENTAS CORRIENTES COMERCIALES|Provisión constituida sobre cuentas corrientes comerciales.|CR
 152405|MUEBLES Y ENSERES|Costo de los muebles y enseres del área administrativa y operativa.
@@ -515,6 +516,7 @@ D(`
 237010|APORTES AL ICBF, SENA Y CAJAS DE COMPENSACIÓN|Aportes parafiscales pendientes de pago.
 237025|EMBARGOS JUDICIALES|Descuentos de nómina por embargos judiciales pendientes de consignar.
 237030|LIBRANZAS|Descuentos de nómina por libranzas pendientes de pago.
+238095|OTROS|Otras obligaciones con acreedores varios; aquí van, entre otros, los sobrantes de caja mientras se aclara su origen.
 251005|LEY LABORAL ANTERIOR|Cesantías consolidadas bajo el régimen retroactivo, anterior a la Ley 50.
 251010|LEY 50 DE 1990 Y NORMAS POSTERIORES|Cesantías consolidadas bajo el régimen anualizado.
 510506|SUELDOS|Remuneración fija pactada con los trabajadores del área administrativa.
@@ -632,6 +634,43 @@ const DINAMICA = {
   },
 }
 
+/* ─────────────────── TEXTOS OFICIALES (puc.com.co) ───────────────────
+  scripts/oficial.json guarda la descripción y la dinámica del Decreto 2650 tal como
+  las publica puc.com.co (se genera con scripts/descargar-oficial.mjs). Cuando un
+  código las tiene, sustituyen a la descripción breve de la fuente compacta y a la
+  dinámica escrita a mano; la fuente compacta queda como respaldo para los códigos
+  que el sitio no describe, como la mayoría de subcuentas.
+*/
+const RUTA_OFICIAL = join(RAIZ, 'scripts/oficial.json')
+const OFICIAL = existsSync(RUTA_OFICIAL) ? JSON.parse(readFileSync(RUTA_OFICIAL, 'utf8')).textos : {}
+
+/**
+ * Algunas páginas intercalan rótulos de sección («Registro de pagos», «3710 Pérdidas
+ * acumuladas») entre los renglones. Se reconocen porque son cortos y no terminan en
+ * puntuación ni empiezan como un renglón de la dinámica.
+ */
+const esRotulo = (l) => l === 'DINÁMICA' || (l.length < 60 && !/[.;:,]$/.test(l) && !/^(Por|Con|Al|A la|El|La|Los|Las|-)\b/.test(l))
+
+/** «Por el valor de los pagos efectuados;» o «…, y» pasan a terminar en punto. */
+const cerrarRenglon = (l) => l.replace(/(,? (y|e)|[;,])\s*$/, '').replace(/\.?$/, '.')
+
+function textoOficial(codigo) {
+  const o = OFICIAL[codigo]
+  if (!o) return null
+  const descripcion = o.descripcion.filter((l) => !esRotulo(l) && !/^Cuentas?: /.test(l)).join('\n\n')
+  // Los rótulos que parten la dinámica se conservan marcados con «§» para mostrarlos como subtítulo.
+  const renglones = (lista) => {
+    const salida = lista.map((l) => (esRotulo(l) ? `§ ${l}` : cerrarRenglon(l)))
+    // Un rótulo al final no encabeza nada en esa columna.
+    while (salida.at(-1)?.startsWith('§ ')) salida.pop()
+    return salida
+  }
+  const dinamica = o.debita.length || o.acredita.length
+    ? { debita: renglones(o.debita), acredita: renglones(o.acredita) }
+    : null
+  return { descripcion, dinamica }
+}
+
 /* ─────────────────────────── PARSEO Y SALIDA ─────────────────────────── */
 const NIVEL_POR_LONGITUD = { 1: 'clase', 2: 'grupo', 4: 'cuenta', 6: 'subcuenta' }
 const NATURALEZA_POR_CLASE = {
@@ -656,14 +695,16 @@ for (const linea of LINEAS) {
     : forzada === 'DB' ? 'debito'
     : NATURALEZA_POR_CLASE[codigo[0]]
 
+  const oficial = textoOficial(codigo)
   cuentas.push({
     codigo,
     nombre,
     nivel,
     naturaleza,
     naturalezaForzada: Boolean(forzada),
-    descripcion,
-    ...(DINAMICA[codigo] ? { dinamica: DINAMICA[codigo] } : {}),
+    descripcion: oficial?.descripcion || descripcion,
+    ...(oficial?.descripcion ? { textoOficial: true } : {}),
+    ...(oficial?.dinamica ? { dinamica: oficial.dinamica } : DINAMICA[codigo] ? { dinamica: DINAMICA[codigo] } : {}),
     origen: 'oficial',
   })
 }
@@ -681,7 +722,7 @@ cuentas.sort((a, b) => a.codigo.localeCompare(b.codigo))
 
 const salida = {
   fuente: 'Decreto 2650 de 1993 y modificaciones — Plan Único de Cuentas para comerciantes (Colombia)',
-  nota: 'Catálogo de referencia con fines didácticos. Las 9 clases, los 52 grupos y las 344 cuentas de 4 dígitos están contrastadas una a una con el catálogo publicado en puc.com.co; las subcuentas incluidas son un núcleo verificado de las de mayor uso. Amplíalo desde la aplicación o importando un CSV.',
+  nota: 'Catálogo de referencia con fines didácticos. Las 9 clases, los 52 grupos y las 344 cuentas de 4 dígitos están contrastadas una a una con el catálogo publicado en puc.com.co, y sus descripciones y dinámicas son las oficiales cuando el sitio las publica (textoOficial). Las subcuentas incluidas son un núcleo verificado de las de mayor uso. Amplíalo desde la aplicación o importando un CSV.',
   generado: 'scripts/build-seed.mjs',
   cuentas,
 }

@@ -1,17 +1,19 @@
 /** Búsqueda sobre las operaciones típicas y su relación con las cuentas. */
 import { MOVIMIENTOS, type Movimiento } from '@/data/movimientos'
+import { REGLA_LADO, type Lado } from '@/data/guia'
 import { normalizar } from './puc'
 
 const TEXTO = new Map(
   MOVIMIENTOS.map((m) => [
     m.id,
     normalizar(
-      [m.nombre, m.descripcion, m.categoria, m.palabras.join(' '), m.asiento.map((r) => `${r.codigo} ${r.concepto}`).join(' ')].join(' '),
+      [m.nombre, m.descripcion, m.categoria, REGLA_LADO[m.lado].titulo, m.palabras.join(' '), m.asiento.map((r) => `${r.codigo} ${r.concepto}`).join(' ')].join(' '),
     ),
   ]),
 )
 
-export function buscarMovimientos(consulta: string, limite = 12): Movimiento[] {
+/** Con lado, se queda solo con las operaciones de ese lado: «yo pago», «me pagan» o «sin pago». */
+export function buscarMovimientos(consulta: string, limite = 12, lado: Lado | '' = ''): Movimiento[] {
   const q = normalizar(consulta)
   if (!q) return []
 
@@ -23,7 +25,7 @@ export function buscarMovimientos(consulta: string, limite = 12): Movimiento[] {
     return 3
   }
 
-  return MOVIMIENTOS.filter((m) => (TEXTO.get(m.id) ?? '').includes(q))
+  return MOVIMIENTOS.filter((m) => (!lado || m.lado === lado) && (TEXTO.get(m.id) ?? '').includes(q))
     .sort((a, b) => puntaje(a) - puntaje(b) || a.nombre.localeCompare(b.nombre))
     .slice(0, limite)
 }

@@ -11,8 +11,16 @@ Aplicación web instalable, pensada para el móvil, que funciona sin conexión, 
 - **Busca por código o por nombre**, sin importar tildes: `depreciacion` encuentra `DEPRECIACIÓN`.
 - **Busca por movimiento.** Escribes *"consigno el dinero"* o *"pago la nómina"* y obtienes el asiento:
   qué cuentas se debitan y cuáles se acreditan, con el concepto de cada renglón.
-- **Explica cada cuenta:** qué registra, su naturaleza, en qué estado financiero se presenta y su
-  dinámica (se debita por / se acredita por), heredada del nivel superior cuando no tiene una propia.
+- **Distingue quién paga.** Cada movimiento dice si es *yo pago* (sale dinero), *me pagan* (entra
+  dinero) o *sin pago*, explica qué clase va al débito y cuál al crédito en ese caso y enlaza la misma
+  operación vista desde el otro lado: pagar honorarios ↔ prestar un servicio y cobrarlo, pagar el
+  arriendo ↔ cobrarlo, anticipo a proveedor ↔ anticipo de cliente. La búsqueda se filtra por lado.
+- **Mapa de clases.** Un mosaico con las nueve clases repartidas por prioridad de uso —los cuadros
+  grandes son 1, 2, 4 y 5— y el color de cada clase en el borde. Al entrar se ve qué es la clase en
+  palabras simples, su papel si pagas o si te pagan, su definición oficial y sus grupos; cada grupo
+  explica cuándo se usa y lista sus cuentas con su descripción y su dinámica.
+- **Explica cada cuenta con el texto oficial:** qué registra, su naturaleza, en qué estado financiero
+  se presenta y su dinámica (se debita por / se acredita por), tal como las publica el Decreto 2650.
 - **Entrena el debe y el haber.** 37 ejercicios en cinco niveles: la aplicación plantea una
   operación y entrega sus renglones sueltos para que los ubiques en su columna. Desde el nivel 3
   hay que elegir además la cuenta del PUC.
@@ -44,8 +52,9 @@ la respuesta y al menos un distractor, y que la dificultad suba nivel a nivel.
 npm install
 npm run dev          # http://localhost:3000
 npm run build && npm start
-npm test             # 37 pruebas de la lógica del catálogo y de los ejercicios
+npm test             # 40 pruebas de la lógica del catálogo, los movimientos y los ejercicios
 npm run seed         # regenera data/puc.json y los iconos de la PWA
+node scripts/descargar-oficial.mjs   # vuelve a bajar los textos oficiales de puc.com.co
 ```
 
 ## Probar desde el móvil
@@ -69,7 +78,8 @@ La interfaz se diseñó primero para la pantalla del teléfono; el escritorio es
 - Navegación por capas: lista → ficha a pantalla completa. **El botón atrás del sistema cierra la
   ficha** en lugar de salir de la aplicación, porque lo que se está viendo vive en el hash de la URL
   (`#c/1105`, `#m/pago-nomina`). De paso, la dirección se puede compartir y recargar la mantiene.
-- Barra inferior fija con lo que más se usa —Clases, Entrenar y el menú— al alcance del pulgar.
+- Barra inferior fija con lo que más se usa —Clases (el mapa), Entrenar y el menú— al alcance del
+  pulgar. Los filtros del catálogo pasan al menú.
 - Las columnas de la maqueta llevan `min-w-0`: un hijo de `grid` no baja de su contenido por
   omisión, y sin eso una descripción larga ensancha el panel y corta el texto por la derecha.
 - Áreas táctiles de 48px como mínimo (variable `--tactil`).
@@ -102,6 +112,8 @@ Para instalarla, el menú de la aplicación tiene la opción **Instalar en el te
 | --- | --- | --- |
 | Catálogo oficial | `data/puc.json`, empaquetado en el repositorio | Solo lectura |
 | Movimientos típicos | `data/movimientos.ts` | Solo lectura |
+| Guía de clases y grupos | `data/guia.ts` | Solo lectura |
+| Textos oficiales del decreto | `scripts/oficial.json` | Descargado de puc.com.co |
 | Ejercicios | `data/ejercicios.ts` | Solo lectura |
 | Tus cuentas | `localStorage` del navegador | No salen del dispositivo |
 | Tu progreso en los ejercicios | `localStorage` del navegador | No sale del dispositivo |
@@ -113,13 +125,22 @@ cambio es `lib/almacenamiento.ts`: es la única pieza que toca el almacenamiento
 
 ## Alcance del catálogo
 
-`data/puc.json` trae **508 registros**: las 9 clases, los 52 grupos, 344 cuentas y 103 subcuentas
+`data/puc.json` trae **510 registros**: las 9 clases, los 52 grupos, 344 cuentas y 105 subcuentas
 de mayor uso, con descripción.
 
 **Verificación.** Las 9 clases, los 52 grupos y las 344 cuentas de 4 dígitos se contrastaron una a
 una contra el catálogo publicado en [puc.com.co](https://puc.com.co), clase por clase. Las
 subcuentas incluidas también se verificaron cuenta por cuenta contra la misma fuente; las que no
 aparecían allí se eliminaron en lugar de dejarlas a medias.
+
+**Textos oficiales.** `scripts/descargar-oficial.mjs` baja de puc.com.co la descripción y la dinámica
+del decreto para cada código y las guarda en `scripts/oficial.json`; `npm run seed` las usa en lugar
+de los resúmenes propios. Hoy 393 códigos tienen texto oficial: las 9 clases, los 52 grupos y 332
+de las 344 cuentas (el sitio no describe 3705, 3710, 5405, 5905, 6205–6220 ni las cuentas de la
+clase 7). El resto conserva la descripción breve de la fuente compacta.
+
+La guía en lenguaje sencillo —qué es cada clase y cada grupo, cuándo se usa y qué papel juega si pagas
+o si te pagan— vive aparte, en `data/guia.ts`, para no mezclarla con el texto del decreto.
 
 El PUC completo tiene varios miles de subcuentas: aquí está un núcleo de las de mayor uso, y el
 resto se agrega desde la aplicación o importando un CSV.
@@ -147,10 +168,13 @@ lib/
   progreso.ts        ejercicios resueltos en localStorage
 data/
   puc.json           catálogo oficial (generado)
-  movimientos.ts     operaciones típicas con su asiento
+  movimientos.ts     operaciones típicas con su asiento y quién paga
+  guia.ts            las clases y grupos en palabras simples
   ejercicios.ts      ejercicios del entrenamiento, por nivel
 scripts/
-  build-seed.mjs     fuente compacta del catálogo → data/puc.json
+  build-seed.mjs     fuente compacta + textos oficiales → data/puc.json
+  descargar-oficial.mjs  descripción y dinámica oficiales desde puc.com.co
+  oficial.json       lo que baja el anterior
   build-icons.mjs    iconos PNG de la PWA
 test/                pruebas de la lógica del catálogo
 ```

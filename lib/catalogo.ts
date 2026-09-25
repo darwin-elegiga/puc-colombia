@@ -122,10 +122,16 @@ export function buscar(
       nivel: c.nivel,
       naturaleza: c.naturaleza,
       origen: c.origen,
-      resumen: c.descripcion.length > 150 ? `${c.descripcion.slice(0, 150)}…` : c.descripcion,
+      resumen: resumir(c.descripcion),
       hijos: (cat.hijosPor.get(c.codigo) ?? []).length,
     })),
   }
+}
+
+/** Primer párrafo de la descripción, recortado para las listas. */
+export function resumir(descripcion: string, largo = 150): string {
+  const primero = descripcion.split('\n\n')[0]
+  return primero.length > largo ? `${primero.slice(0, largo).trimEnd()}…` : primero
 }
 
 export interface NodoClase {

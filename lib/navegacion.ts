@@ -13,6 +13,8 @@ import { useCallback, useSyncExternalStore } from 'react'
 export type Destino =
   | { tipo: 'cuenta'; codigo: string }
   | { tipo: 'movimiento'; id: string }
+  /** Mapa de clases: sin código el mosaico de las nueve; con código, una clase o un grupo. */
+  | { tipo: 'clases'; codigo?: string }
   /** Listado del entrenamiento. */
   | { tipo: 'entrenar' }
   | { tipo: 'ejercicio'; id: string }
@@ -30,6 +32,8 @@ export function aHash(destino: Destino): string {
       return `#c/${destino.codigo}`
     case 'movimiento':
       return `#m/${destino.id}`
+    case 'clases':
+      return destino.codigo ? `#clases/${destino.codigo}` : '#clases'
     case 'entrenar':
       return '#entrenar'
     case 'ejercicio':
@@ -42,6 +46,11 @@ const ID_VALIDO = /^[a-z0-9-]{1,64}$/
 function desdeHash(hash: string): Destino {
   const valor = decodeURIComponent(hash.replace(/^#/, ''))
   if (valor === 'entrenar') return { tipo: 'entrenar' }
+  if (valor === 'clases') return { tipo: 'clases' }
+  if (valor.startsWith('clases/')) {
+    const codigo = valor.slice(7)
+    return /^\d{1,2}$/.test(codigo) ? { tipo: 'clases', codigo } : { tipo: 'clases' }
+  }
   if (valor.startsWith('c/')) {
     const codigo = valor.slice(2)
     return /^\d{1,10}$/.test(codigo) ? { tipo: 'cuenta', codigo } : null

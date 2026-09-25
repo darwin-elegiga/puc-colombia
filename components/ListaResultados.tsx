@@ -3,13 +3,17 @@
 import type { ResultadoBusqueda } from '@/lib/tipos'
 import type { Movimiento } from '@/lib/movimientos'
 import type { Destino } from '@/lib/navegacion'
-import { InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen } from './Insignias'
+import type { Lado } from '@/data/guia'
+import { InsigniaLado, InsigniaNaturaleza, InsigniaNivel, InsigniaOrigen } from './Insignias'
 import { IconoIntercambio, IconoChevron } from './Iconos'
 import { nombreLegible } from '@/lib/puc'
 
 export default function ListaResultados({
   cuentas,
   movimientos,
+  hayMovimientos,
+  lado,
+  onLado,
   seleccion,
   onSeleccionar,
   mostradas,
@@ -18,6 +22,10 @@ export default function ListaResultados({
 }: {
   cuentas: ResultadoBusqueda
   movimientos: Movimiento[]
+  /** Hay operaciones para la búsqueda aunque el filtro de lado las esconda todas. */
+  hayMovimientos: boolean
+  lado: Lado | ''
+  onLado: (lado: Lado | '') => void
   seleccion: Destino
   onSeleccionar: (destino: NonNullable<Destino>) => void
   mostradas: number
@@ -25,7 +33,7 @@ export default function ListaResultados({
   /** Contenido que se desplaza junto a la lista, como la lectura del código. */
   encabezado?: React.ReactNode
 }) {
-  const vacio = cuentas.total === 0 && movimientos.length === 0
+  const vacio = cuentas.total === 0 && !hayMovimientos
 
   return (
     <div
@@ -34,9 +42,31 @@ export default function ListaResultados({
     >
       {encabezado}
 
-      {movimientos.length > 0 && (
+      {hayMovimientos && (
         <section>
           <Encabezado titulo="Movimientos" cuenta={`${movimientos.length}`} />
+          {/* Una misma palabra —«pago», «arriendo»— sirve a los dos lados: aquí se elige cuál. */}
+          <div className="flex gap-2 overflow-x-auto border-b border-borde px-5 py-2.5" role="group" aria-label="Quién paga">
+            {LADOS.map((l) => (
+              <button
+                key={l.valor || 'todos'}
+                type="button"
+                aria-pressed={lado === l.valor}
+                onClick={() => onLado(l.valor)}
+                className={[
+                  'min-h-9 shrink-0 rounded-lg border px-3 text-[13px] transition-colors',
+                  lado === l.valor
+                    ? 'border-tinta bg-tinta text-white'
+                    : 'border-borde bg-superficie text-tinta-suave active:bg-hueso lg:hover:border-borde-fuerte',
+                ].join(' ')}
+              >
+                {l.etiqueta}
+              </button>
+            ))}
+          </div>
+          {movimientos.length === 0 && (
+            <p className="border-b border-borde px-5 py-4 text-[13px] text-tinta-tenue">Ninguna operación de este lado.</p>
+          )}
           <ul className="surgir-lista">
             {movimientos.map((m, i) => {
               const activo = seleccion?.tipo === 'movimiento' && seleccion.id === m.id
@@ -53,7 +83,8 @@ export default function ListaResultados({
                     <IconoIntercambio className="size-5 shrink-0 text-tinta-tenue" />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] leading-snug text-tinta">{m.nombre}</span>
-                      <span className="mt-0.5 block text-[12.5px] text-tinta-tenue">
+                      <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-tinta-tenue">
+                        <InsigniaLado lado={m.lado} />
                         {m.categoria} · {m.asiento.length} renglones
                       </span>
                     </span>
@@ -151,6 +182,13 @@ export default function ListaResultados({
     </div>
   )
 }
+
+const LADOS: { valor: Lado | ''; etiqueta: string }[] = [
+  { valor: '', etiqueta: 'Todos' },
+  { valor: 'pago', etiqueta: 'Yo pago' },
+  { valor: 'cobro', etiqueta: 'Me pagan' },
+  { valor: 'interno', etiqueta: 'Sin pago' },
+]
 
 function Encabezado({ titulo, cuenta }: { titulo: string; cuenta: string }) {
   return (

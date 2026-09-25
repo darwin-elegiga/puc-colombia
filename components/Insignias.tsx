@@ -1,5 +1,6 @@
 import type { Naturaleza, Nivel, Origen } from '@/lib/tipos'
 import { ETIQUETA_NIVEL } from '@/lib/puc'
+import { REGLA_LADO, type Lado } from '@/data/guia'
 
 const pildora =
   'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.06em] whitespace-nowrap lg:px-2 lg:py-0.5 lg:text-[10px]'
@@ -47,4 +48,23 @@ export function InsigniaOrigen({ origen }: { origen: Origen }) {
 /** Código de cuenta en monoespaciada, con los dígitos alineados. */
 export function Codigo({ valor, className = '' }: { valor: string; className?: string }) {
   return <span className={`tabular ${className}`}>{valor}</span>
+}
+
+/** Quién paga en un movimiento: sale dinero, entra dinero o no se mueve. */
+export const TONO_LADO: Record<Lado, { fondo: string; tinta: string }> = {
+  pago: { fondo: 'var(--color-credito)', tinta: 'var(--color-credito-tinta)' },
+  cobro: { fondo: 'var(--color-propia)', tinta: 'var(--color-propia-tinta)' },
+  interno: { fondo: 'var(--color-hueso)', tinta: 'var(--color-tinta-suave)' },
+}
+
+export function InsigniaLado({ lado }: { lado: Lado }) {
+  return (
+    <span
+      className={pildora}
+      style={{ background: TONO_LADO[lado].fondo, color: TONO_LADO[lado].tinta }}
+      title={REGLA_LADO[lado].corto}
+    >
+      {REGLA_LADO[lado].titulo}
+    </span>
+  )
 }

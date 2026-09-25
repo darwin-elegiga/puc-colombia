@@ -7,6 +7,7 @@ import {
 } from '../lib/puc'
 import { buscar, construirCatalogo, fichaDe, leerCodigo } from '../lib/catalogo'
 import { MOVIMIENTOS } from '../data/movimientos'
+import { GUIA_CLASES, GUIA_GRUPOS } from '../data/guia'
 import type { Cuenta } from '../lib/tipos'
 
 const OFICIALES = JSON.parse(readFileSync(new URL('../data/puc.json', import.meta.url), 'utf8'))
@@ -125,6 +126,8 @@ test('el CSV va y vuelve sin perder datos', () => {
   assert.equal(filas.length, 5)
   assert.equal(filas[0].codigo, catalogo.lista[0].codigo)
   assert.equal(filas[0].nombre, catalogo.lista[0].nombre)
+  // La descripción oficial de la clase 1 tiene dos párrafos: el salto de línea viaja entre comillas.
+  assert.equal(filas[0].descripcion, catalogo.lista[0].descripcion)
 })
 
 test('el CSV acepta punto y coma, comillas y falta de encabezado', () => {
@@ -189,4 +192,40 @@ test('los nombres en mayúsculas se leen como frase y conservan las siglas', () 
   )
   assert.equal(nombreLegible('DEVOLUCIONES EN VENTAS (DB)'), 'Devoluciones en ventas (DB)')
   assert.equal(nombreLegible('SENA'), 'SENA')
+})
+
+test('las descripciones y dinámicas de clases, grupos y cuentas son las del decreto', () => {
+  const oficial = JSON.parse(readFileSync(new URL('../scripts/oficial.json', import.meta.url), 'utf8')).textos
+  // Toda clase y todo grupo tienen texto oficial; las cuentas, salvo las pocas que puc.com.co no describe.
+  const sinTexto = OFICIALES.filter((c: Cuenta) => c.codigo.length <= 2 && !c.textoOficial)
+  assert.deepEqual(sinTexto.map((c: Cuenta) => c.codigo), [])
+  for (const c of OFICIALES as Cuenta[]) {
+    if (!c.textoOficial) continue
+    assert.ok(c.descripcion.startsWith(oficial[c.codigo].descripcion[0]), `${c.codigo} no coincide con el texto oficial`)
+  }
+  // 1399 describía «inversiones» por un error de copia: el decreto habla del grupo deudores.
+  assert.match(catalogo.indice.get('1399')!.descripcion, /deudores/)
+})
+
+test('cada movimiento dice quién paga y su espejo existe y mira al otro lado', () => {
+  const ids = new Set(MOVIMIENTOS.map((m) => m.id))
+  for (const m of MOVIMIENTOS) {
+    assert.ok(['pago', 'cobro', 'interno'].includes(m.lado), `${m.id} sin lado`)
+    if (!m.espejo) continue
+    assert.ok(ids.has(m.espejo), `${m.id}: el espejo ${m.espejo} no existe`)
+  }
+  // Cuando pago, sale dinero (11 al crédito) o, a crédito, nace la deuda con el proveedor (22).
+  // Cuando me pagan, entra dinero (11 al débito) o, a crédito, nace la cuenta por cobrar (13).
+  const hay = (m: (typeof MOVIMIENTOS)[number], prefijos: string[], efecto: string) =>
+    m.asiento.some((r) => prefijos.some((p) => r.codigo.startsWith(p)) && r.efecto === efecto)
+  const malPago = MOVIMIENTOS.filter((m) => m.lado === 'pago' && !hay(m, ['11', '22'], 'credito'))
+  const malCobro = MOVIMIENTOS.filter((m) => m.lado === 'cobro' && !hay(m, ['11', '1305'], 'debito'))
+  assert.deepEqual([...malPago, ...malCobro].map((m) => m.id), [])
+})
+
+test('la guía cubre las nueve clases y los 52 grupos', () => {
+  const clases = OFICIALES.filter((c: Cuenta) => c.nivel === 'clase').map((c: Cuenta) => c.codigo)
+  const grupos = OFICIALES.filter((c: Cuenta) => c.nivel === 'grupo').map((c: Cuenta) => c.codigo)
+  assert.deepEqual(clases.filter((c: string) => !GUIA_CLASES[c]), [])
+  assert.deepEqual(grupos.filter((c: string) => !GUIA_GRUPOS[c]), [])
 })

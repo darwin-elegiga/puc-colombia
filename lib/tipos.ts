@@ -19,6 +19,8 @@ export interface Cuenta {
   /** true cuando la naturaleza contradice la de su clase, como en depreciación acumulada. */
   naturalezaForzada?: boolean
   descripcion: string
+  /** true cuando descripción y dinámica son el texto del Decreto 2650 publicado en puc.com.co. */
+  textoOficial?: boolean
   dinamica?: Dinamica
   origen: Origen
   creada?: string
