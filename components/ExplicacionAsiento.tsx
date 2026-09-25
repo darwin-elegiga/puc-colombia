@@ -53,6 +53,20 @@ export default function ExplicacionAsiento({
             </span>
             <div className="min-w-0">
               <p className="text-[14.5px] leading-relaxed text-tinta">{p.porQue}</p>
+              {p.seLlama.length > 0 && (
+                <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[12px] text-tinta-suave">
+                  <span className="text-tinta-tenue">En el día a día:</span>
+                  {p.seLlama.map((a) => (
+                    <span
+                      key={a}
+                      className="rounded-full px-2 py-0.5"
+                      style={{ background: colorDe(p.codigo).fondo, color: colorDe(p.codigo).tinta }}
+                    >
+                      {a}
+                    </span>
+                  ))}
+                </p>
+              )}
               {p.oficial && (
                 <blockquote className="mt-2 border-l-2 pl-3 text-[13px] leading-relaxed text-tinta-suave" style={{ borderColor: colorDe(p.codigo).borde }}>
                   <span className="rotulo mb-0.5 block text-[10px]">

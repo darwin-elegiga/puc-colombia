@@ -9,6 +9,7 @@ import { colorDe } from '@/lib/puc'
 import { IconoMas, IconoPapelera, IconoIntercambio, IconoCapas } from './Iconos'
 import { GUIA_CLASES, GUIA_GRUPOS } from '@/data/guia'
 import { FuenteOficial } from './MapaClases'
+import { comoSeLlama } from '@/lib/explicacion'
 
 export default function FichaCuenta({
   ficha,
@@ -33,6 +34,7 @@ export default function FichaCuenta({
   const guiaClase = ficha.nivel === 'clase' ? GUIA_CLASES[ficha.codigo] : undefined
   const guiaGrupo = ficha.nivel === 'grupo' ? GUIA_GRUPOS[ficha.codigo] : undefined
   const enMapa = ficha.codigo.slice(0, 2)
+  const seLlama = comoSeLlama(ficha.codigo, [ficha.nombre], 8)
   return (
     <article className="surgir panel-scroll h-full overflow-y-auto">
       <div className="mx-auto max-w-2xl px-5 py-6 lg:px-8 lg:py-8">
@@ -64,6 +66,22 @@ export default function FichaCuenta({
             <InsigniaOrigen origen={ficha.origen} />
           </div>
         </header>
+
+        {/* Cómo se le dice en la calle: el puente entre el lenguaje de todos y el del PUC. */}
+        {seLlama.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-1.5">
+            <span className="mr-0.5 text-[12px] text-tinta-tenue">En el día a día:</span>
+            {seLlama.map((a) => (
+              <span
+                key={a}
+                className="rounded-full px-2.5 py-1 text-[12.5px]"
+                style={{ background: colorDe(ficha.codigo).fondo, color: colorDe(ficha.codigo).tinta }}
+              >
+                {a}
+              </span>
+            ))}
+          </div>
+        )}
 
         {ficha.naturalezaForzada && (
           <p

@@ -12,6 +12,7 @@
 import type { Cuenta, Dinamica, Naturaleza } from './tipos'
 import { NOMBRE_CLASE, codigosAncestros, nombreLegible, naturalezaPorClase } from './puc'
 import { normalizarTexto, palabras, raiz } from './busqueda'
+import { aliasDe } from './vocabulario'
 
 export interface RenglonAExplicar {
   codigo: string
@@ -27,6 +28,8 @@ export interface PasoExplicado extends RenglonAExplicar {
   nombre: string
   clase: string
   nombreClase: string
+  /** Cómo se le dice a la cuenta en el día a día: «arriendo», «banco», «cartera»… */
+  seLlama: string[]
   /** Naturaleza de la cuenta: la columna con la que sube su saldo. */
   naturaleza: Naturaleza
   /** true en las cuentas que restan dentro de su clase, como la depreciación acumulada. */
@@ -149,6 +152,47 @@ export function fraseOficial(frases: string[], concepto: string, contexto: strin
 const nombresDe = (codigo: string, cuentaDe: (codigo: string) => Cuenta | undefined) =>
   [codigo, ...codigosAncestros(codigo)].map((c) => cuentaDe(c)?.nombre ?? '').join(' ')
 
+/* ─────────────────────── En el día a día ─────────────────────── */
+
+/**
+ * Lo que sirve al buscador pero no se lee bien en una explicación: frases en primera
+ * persona («me prestó el banco», «le debo al proveedor»), jerga y marcas.
+ */
+const PRIMERA_PERSONA = /^(me|le|les|nos|lo|la|se|yo|mi|mis)\s|\b(debo|debemos|tengo|tenemos|hice|hicimos|pague|compre|vendi|saque|firme|preste|recibi|cobre|puse|doy)\b/
+/** Frases en pretérito: «me sobregiré», «el cliente devolvió». Se mira con tildes. */
+const PRETERITO = /\p{L}{3,}[éó](\s|$)/u
+const JERGA = /^(guita|lana|pasta|lucas|billullo|billete|cash|petty cash|plata)$/
+const MARCAS = /bancolombia|davivienda|bbva|scotiabank|colpatria|nequi|daviplata|banco de bogota|banco agrario|banco popular|banco de occidente|av villas|itau|falabella/
+
+/** Raíces de un texto, para comparar «banco» con «bancos» o un alias con el nombre oficial. */
+const firma = (texto: string) => [...raices(texto)].sort().join(' ')
+
+/**
+ * Cómo se le dice a una cuenta en el día a día, para mostrarlo junto a su nombre oficial.
+ *
+ * Toma los alias del vocabulario (lib/vocabulario.ts): primero los de la cuenta y, si
+ * es una subcuenta, los de su cuenta de 4 dígitos; así 111005 se dice «cuenta
+ * corriente», pero también «banco» (1110). Deja fuera lo que repite los nombres
+ * oficiales que se le pasan, las frases en primera persona, la jerga, las marcas y lo de más de tres
+ * palabras. Sin repetir lo que se dice igual («banco» y «bancos»).
+ */
+export function comoSeLlama(codigo: string, nombresOficiales: string[], maximo = 4): string[] {
+  // Solo el nombre de la propia cuenta: el de la madre sí aclara (111005 → «banco»).
+  const oficiales = new Set(nombresOficiales.map(firma))
+  const vistas = new Set<string>()
+  const elegidos: string[] = []
+  for (const alias of [...aliasDe(codigo), ...(codigo.length > 4 ? aliasDe(codigo.slice(0, 4)) : [])]) {
+    const texto = normalizarTexto(alias).trim()
+    const clave = firma(alias)
+    if (!clave || vistas.has(clave) || oficiales.has(clave)) continue
+    if (texto.split(/\s+/).length > 3 || PRIMERA_PERSONA.test(texto) || PRETERITO.test(alias.toLowerCase()) || JERGA.test(texto) || MARCAS.test(texto)) continue
+    vistas.add(clave)
+    elegidos.push(alias)
+    if (elegidos.length === maximo) break
+  }
+  return elegidos
+}
+
 const pesos = (n: number) => `$ ${n.toLocaleString('es-CO')}`
 
 export function explicarAsiento(
@@ -188,6 +232,7 @@ export function explicarAsiento(
       nombre,
       clase,
       nombreClase: NOMBRE_CLASE[clase] ?? '',
+      seLlama: comoSeLlama(r.codigo, cuenta ? [cuenta.nombre] : []),
       naturaleza,
       correctora,
       saldo,

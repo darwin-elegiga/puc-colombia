@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { construirCatalogo } from '../lib/catalogo'
-import { explicarAsiento, fraseOficial } from '../lib/explicacion'
+import { comoSeLlama, explicarAsiento, fraseOficial } from '../lib/explicacion'
+import { normalizarTexto } from '../lib/busqueda'
 import { MOVIMIENTOS } from '../data/movimientos'
 
 const catalogo = construirCatalogo(JSON.parse(readFileSync(new URL('../data/puc.json', import.meta.url), 'utf8')).cuentas, [])
@@ -61,4 +62,33 @@ test('con importes, los totales dicen si cuadra', () => {
   )
   assert.deepEqual(e.totales, { debito: 2_000_000, credito: 2_000_000 })
   assert.match(e.resumen, /el haber suma lo mismo/)
+})
+
+test('cada renglón dice cómo se le llama a la cuenta en el día a día', () => {
+  const [gasto, , banco] = explicar('pago-arriendo').pasos
+  assert.ok(gasto.seLlama.includes('arriendo'))
+  // Una subcuenta hereda los nombres de su cuenta de 4 dígitos, sin repetirlos.
+  assert.ok(banco.seLlama.includes('cuenta corriente'))
+  assert.ok(banco.seLlama.length <= 4)
+  assert.equal(new Set(banco.seLlama).size, banco.seLlama.length)
+})
+
+test('los nombres del día a día no repiten el oficial ni traen frases, jerga o marcas', () => {
+  const malos = catalogo.lista.flatMap((c) =>
+    comoSeLlama(c.codigo, [c.nombre], 8)
+      .filter((a) => {
+        const t = normalizarTexto(a)
+        return (
+          t === normalizarTexto(c.nombre) ||
+          t.split(/\s+/).length > 3 ||
+          /^(me|le|nos|se) /.test(t) ||
+          /\p{L}{3,}[éó](\s|$)/u.test(a.toLowerCase()) ||
+          /bancolombia|davivienda|guita|billullo/.test(t)
+        )
+      })
+      .map((a) => `${c.codigo}: ${a}`),
+  )
+  assert.deepEqual(malos, [])
+  // La madre sí aclara: una subcuenta del banco se dice «banco».
+  assert.ok(comoSeLlama('111005', ['MONEDA NACIONAL'], 8).some((a) => /^bancos?$/.test(normalizarTexto(a))))
 })
