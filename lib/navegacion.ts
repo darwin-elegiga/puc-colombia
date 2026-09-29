@@ -22,6 +22,9 @@ export type Destino =
   | { tipo: 'ejercicio'; id: string }
   /** «Hacer el asiento»: sin id el listado; con id un ejercicio, o «blanco» para la hoja en blanco. */
   | { tipo: 'practica'; id?: string }
+  /** Aulas: el panel (crear, unirse, las públicas) o un aula por su código. */
+  | { tipo: 'aulas' }
+  | { tipo: 'aula'; codigo: string }
   | null
 
 const escuchadores = new Set<() => void>()
@@ -46,6 +49,10 @@ export function aHash(destino: Destino): string {
       return `#e/${destino.id}`
     case 'practica':
       return destino.id ? `#practica/${destino.id}` : '#practica'
+    case 'aulas':
+      return '#aulas'
+    case 'aula':
+      return `#aula/${destino.codigo}`
   }
 }
 
@@ -57,6 +64,11 @@ function desdeHash(hash: string): Destino {
   if (valor === 'asiento') return { tipo: 'asiento' }
   if (valor === 'clases') return { tipo: 'clases' }
   if (valor === 'practica') return { tipo: 'practica' }
+  if (valor === 'aulas') return { tipo: 'aulas' }
+  if (valor.startsWith('aula/')) {
+    const codigo = valor.slice(5).toUpperCase()
+    return /^[A-Z0-9]{6}$/.test(codigo) ? { tipo: 'aula', codigo } : { tipo: 'aulas' }
+  }
   if (valor.startsWith('practica/')) {
     const id = valor.slice(9)
     return ID_VALIDO.test(id) ? { tipo: 'practica', id } : { tipo: 'practica' }

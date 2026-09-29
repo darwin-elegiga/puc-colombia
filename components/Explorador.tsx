@@ -15,6 +15,10 @@ import ListaResultados from './ListaResultados'
 import FichaCuenta from './FichaCuenta'
 import FichaMovimiento from './FichaMovimiento'
 import Entrenador from './Entrenador'
+import PantallaAulas from './PantallaAulas'
+import NoDisponibleEnAula from './NoDisponibleEnAula'
+import { useModoAula } from '@/lib/misAulas'
+import VistaAula from './VistaAula'
 import MapaClases from './MapaClases'
 import Inicio, { Autoria } from './Inicio'
 import AsientoBeta from './AsientoBeta'
@@ -26,7 +30,7 @@ import Dialogo, { botonSecundario } from './Dialogo'
 import Menu from './Menu'
 import {
   IconoBalanza, IconoCapas, IconoCerrar, IconoChevron, IconoDescarga, IconoInfo, IconoInstalar,
-  IconoFiltro, IconoIntercambio, IconoLupa, IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
+  IconoAula, IconoFiltro, IconoIntercambio, IconoLupa, IconoMas, IconoPuntos, IconoSinConexion, IconoSubida,
 } from './Iconos'
 
 const OFICIALES = datosPuc.cuentas as unknown as Cuenta[]
@@ -41,6 +45,8 @@ interface EventoInstalacion extends Event {
 export default function Explorador() {
   const { cuentas: propias, agregar, agregarVarias, eliminar, vaciar } = useCuentasPropias()
   const { destino, abrir, cerrar } = useDestino()
+  /** Modo aula: este dispositivo resuelve un aula como estudiante; sin IA ni movimientos. */
+  const enAula = useModoAula()
 
   // "borrador" es lo que se está escribiendo; "consulta" es lo que ya se buscó.
   // Se separan para poder teclear un código completo sin que la app reaccione a cada dígito.
@@ -231,11 +237,22 @@ export default function Explorador() {
 
   const opcionesMenu = [
     {
-      etiqueta: 'Hazme el asiento',
-      descripcion: 'Describe la situación · beta',
-      icono: <IconoBalanza className="size-4" />,
-      onSeleccionar: () => abrir({ tipo: 'asiento' }),
+      etiqueta: 'Aulas',
+      descripcion: 'Crear, unirse e historial',
+      icono: <IconoAula className="size-4" />,
+      onSeleccionar: () => abrir({ tipo: 'aulas' }),
     },
+    // En modo aula la IA no se ofrece.
+    ...(enAula
+      ? []
+      : [
+          {
+            etiqueta: 'Hazme el asiento',
+            descripcion: 'Describe la situación · beta',
+            icono: <IconoBalanza className="size-4" />,
+            onSeleccionar: () => abrir({ tipo: 'asiento' }),
+          },
+        ]),
     {
       etiqueta: 'Filtrar el catálogo',
       descripcion: 'Por clase, nivel y naturaleza',
@@ -278,6 +295,20 @@ export default function Explorador() {
     y final, así que se lleva la pantalla entera en lugar de vivir en la columna
     de detalle.
   */
+  const bloqueadoPorAula =
+    enAula &&
+    (destino?.tipo === 'asiento' || destino?.tipo === 'movimiento' || destino?.tipo === 'entrenar' ||
+      destino?.tipo === 'ejercicio' || destino?.tipo === 'practica')
+  if (bloqueadoPorAula) {
+    return (
+      <NoDisponibleEnAula
+        aula={enAula}
+        onVolverAlAula={() => abrir({ tipo: 'aula', codigo: enAula.codigo })}
+        onCatalogo={cerrar}
+      />
+    )
+  }
+
   if (destino?.tipo === 'asiento') {
     return (
       <AsientoBeta
@@ -299,6 +330,16 @@ export default function Explorador() {
         onSalir={() => abrir(null)}
       />
     )
+  }
+
+  if (destino?.tipo === 'aulas') {
+    return <PantallaAulas onAbrir={(codigo) => abrir({ tipo: 'aula', codigo })} onSalir={() => abrir(null)} />
+  }
+
+  if (destino?.tipo === 'aula') {
+    // Con key: pasar de #aula/A a #aula/B monta una vista nueva, sin mezclar estados.
+    // «Volver» retrocede en el historial: se llega al aula desde la burbuja, el panel o un enlace.
+    return <VistaAula key={destino.codigo} codigo={destino.codigo} catalogo={catalogo} onVolver={cerrar} />
   }
 
   if (destino?.tipo === 'entrenar' || destino?.tipo === 'ejercicio' || destino?.tipo === 'practica') {
@@ -326,9 +367,10 @@ export default function Explorador() {
           onEscribir={setBorrador}
           onBuscar={ejecutarBusqueda}
           onClase={(codigo) => abrir({ tipo: 'clases', codigo })}
-          onAsiento={() => abrir({ tipo: 'asiento' })}
-          onEntrenar={() => abrir({ tipo: 'entrenar' })}
+          onAsiento={enAula ? undefined : () => abrir({ tipo: 'asiento' })}
+          onEntrenar={enAula ? undefined : () => abrir({ tipo: 'entrenar' })}
           campo={campoBusqueda}
+          soloCuentas={Boolean(enAula)}
           sinConexion={sinConexion}
           menu={
             <Menu
@@ -395,7 +437,7 @@ export default function Explorador() {
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="Código, cuenta o movimiento"
+              placeholder={enAula ? 'Código o cuenta' : 'Código, cuenta o movimiento'}
               aria-label="Buscar en el catálogo"
               className="min-h-12 w-full rounded-xl border border-borde bg-superficie pl-12 pr-11 text-tinta outline-none placeholder:text-tinta-tenue focus:border-borde-fuerte lg:min-h-10 lg:rounded-lg"
             />
@@ -425,14 +467,16 @@ export default function Explorador() {
             <IconoCapas className="size-3.5" />
             Clases
           </button>
-          <button
-            type="button"
-            onClick={() => abrir({ tipo: 'entrenar' })}
-            className="hidden shrink-0 items-center gap-1.5 rounded-lg bg-tinta px-3 py-2 text-[13px] text-white hover:bg-[#3d4347] lg:inline-flex"
-          >
-            <IconoBalanza className="size-3.5" />
-            Entrenar
-          </button>
+          {!enAula && (
+            <button
+              type="button"
+              onClick={() => abrir({ tipo: 'entrenar' })}
+              className="hidden shrink-0 items-center gap-1.5 rounded-lg bg-tinta px-3 py-2 text-[13px] text-white hover:bg-[#3d4347] lg:inline-flex"
+            >
+              <IconoBalanza className="size-3.5" />
+              Entrenar
+            </button>
+          )}
           <Menu
             etiqueta="Más opciones"
             opciones={opcionesMenu}
@@ -483,8 +527,9 @@ export default function Explorador() {
         >
           <ListaResultados
             cuentas={resultados}
-            movimientos={movimientos}
-            hayMovimientos={hayMovimientos}
+            movimientos={enAula ? [] : movimientos}
+            hayMovimientos={enAula ? false : hayMovimientos}
+            sinIA={Boolean(enAula)}
             consulta={consulta}
             localResuelve={movimientosCompletos || resultados.completa}
             cuentaDe={(codigo) => catalogo.indice.get(codigo)}
@@ -569,7 +614,8 @@ export default function Explorador() {
                 movimientos={
                   // En clases y grupos la lista sería casi todo el catálogo de operaciones:
                   // solo se muestra a partir del nivel de cuenta, donde es informativa.
-                  ficha.nivel === 'clase' || ficha.nivel === 'grupo' ? [] : movimientosDeCuenta(ficha.codigo)
+                  // En modo aula no se muestran: serían la solución del ejercicio.
+                  enAula || ficha.nivel === 'clase' || ficha.nivel === 'grupo' ? [] : movimientosDeCuenta(ficha.codigo)
                 }
                 onIr={irACuenta}
                 onVerMovimiento={(id) => abrir({ tipo: 'movimiento', id })}
@@ -588,7 +634,7 @@ export default function Explorador() {
             ) : (
               <div className="grid h-full place-items-center px-8 text-center">
                 <p className="max-w-xs text-[14px] leading-relaxed text-tinta-tenue">
-                  Elige una cuenta o una operación de la lista para ver su ficha.
+                  {enAula ? 'Elige una cuenta de la lista para ver su ficha.' : 'Elige una cuenta o una operación de la lista para ver su ficha.'}
                 </p>
               </div>
             )}
@@ -605,7 +651,7 @@ export default function Explorador() {
           className="z-30 flex shrink-0 items-stretch gap-2 border-t border-borde bg-lienzo px-3 pt-2 lg:hidden"
           style={{ paddingBottom: 'calc(0.5rem + var(--seguro-abajo))' }}
         >
-          {enInicio ? (
+          {enInicio && enAula ? null : enInicio ? (
             <button
               type="button"
               onClick={() => abrir({ tipo: 'asiento' })}
@@ -625,14 +671,25 @@ export default function Explorador() {
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => abrir({ tipo: 'entrenar' })}
-            className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl bg-tinta text-[14px] text-white active:bg-[#3d4347]"
-          >
-            <IconoBalanza className="size-[18px]" />
-            Entrenar
-          </button>
+          {enAula ? (
+            <button
+              type="button"
+              onClick={() => abrir({ tipo: 'aula', codigo: enAula.codigo })}
+              className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl bg-tinta text-[14px] text-white active:bg-[#3d4347]"
+            >
+              <IconoAula className="size-[18px]" />
+              Volver al aula
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => abrir({ tipo: 'entrenar' })}
+              className="tactil flex flex-1 items-center justify-center gap-2 rounded-xl bg-tinta text-[14px] text-white active:bg-[#3d4347]"
+            >
+              <IconoBalanza className="size-[18px]" />
+              Entrenar
+            </button>
+          )}
 
           <Menu
             etiqueta="Más opciones"

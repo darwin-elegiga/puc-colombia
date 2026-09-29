@@ -93,3 +93,4 @@ typings/
 
 # Vercel
 .vercel
+.env*

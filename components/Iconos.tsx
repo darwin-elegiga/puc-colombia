@@ -162,3 +162,15 @@ export function IconoReiniciar({ className = 'size-4' }: Props) {
     </svg>
   )
 }
+
+/** Un aula: dos personas. */
+export function IconoAula({ className = 'size-4' }: Props) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={`${base} ${className}`}>
+      <circle cx="7.5" cy="7" r="2.6" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M2.8 16c.6-2.6 2.4-4 4.7-4s4.1 1.4 4.7 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="13.8" cy="7.6" r="2.1" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M13.9 11.8c1.7.1 3 1.3 3.4 3.3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}

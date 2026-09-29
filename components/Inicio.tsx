@@ -6,6 +6,8 @@ import { Mosaico, ResumenDebeHaber } from './MapaClases'
 import { IconoBalanza, IconoChevron, IconoIntercambio, IconoLupa, IconoSinConexion } from './Iconos'
 
 const EJEMPLOS = ['pagué el arriendo', 'me pagaron una factura', 'nómina', '1105']
+/** En modo aula solo se buscan cuentas y códigos. */
+const EJEMPLOS_CUENTAS = ['bancos', 'proveedores', 'IVA', '1105']
 
 /**
  * Portada: el buscador, las nueve clases y por dónde aumenta cada una, nada más.
@@ -25,19 +27,23 @@ export default function Inicio({
   menu,
   sinConexion,
   campo,
+  soloCuentas = false,
 }: {
   catalogo: Catalogo
   borrador: string
   onEscribir: (texto: string) => void
   onBuscar: (texto: string) => void
   onClase: (codigo: string) => void
-  onAsiento: () => void
-  onEntrenar: () => void
+  /** Sin ellos (modo aula) no se muestran esos accesos. */
+  onAsiento?: () => void
+  onEntrenar?: () => void
   /** El menú de opciones, que en escritorio va arriba a la derecha. */
   menu: React.ReactNode
   sinConexion: boolean
   /** El campo de búsqueda, para el atajo «/» del teclado. */
   campo: React.RefObject<HTMLInputElement | null>
+  /** Modo aula: los ejemplos y el campo no invitan a buscar operaciones. */
+  soloCuentas?: boolean
 }) {
   // Al volver de una clase se sigue leyendo por donde se iba.
   const scroll = useScrollRecordado<HTMLDivElement>('inicio')
@@ -53,12 +59,16 @@ export default function Inicio({
             <span className="text-[12px] text-tinta-tenue">Colombia</span>
           </p>
           <div className="hidden items-center gap-1 lg:flex">
-            <Acceso onClick={onAsiento} icono={<IconoIntercambio className="size-3.5" />}>
-              Hazme el asiento <Beta />
-            </Acceso>
-            <Acceso onClick={onEntrenar} icono={<IconoBalanza className="size-3.5" />}>
-              Entrenar
-            </Acceso>
+            {onAsiento && (
+              <Acceso onClick={onAsiento} icono={<IconoIntercambio className="size-3.5" />}>
+                Hazme el asiento <Beta />
+              </Acceso>
+            )}
+            {onEntrenar && (
+              <Acceso onClick={onEntrenar} icono={<IconoBalanza className="size-3.5" />}>
+                Entrenar
+              </Acceso>
+            )}
             {menu}
           </div>
         </header>
@@ -94,13 +104,13 @@ export default function Inicio({
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="Una operación, una cuenta o un código"
+              placeholder={soloCuentas ? "Una cuenta o un código" : "Una operación, una cuenta o un código"}
               aria-label="Buscar en el catálogo"
               className="min-h-14 w-full rounded-2xl border border-borde bg-superficie pl-12 pr-4 text-tinta shadow-[0_1px_2px_rgba(0,0,0,0.03)] outline-none placeholder:text-tinta-tenue focus:border-borde-fuerte lg:text-[16px]"
             />
           </form>
           <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-            {EJEMPLOS.map((e) => (
+            {(soloCuentas ? EJEMPLOS_CUENTAS : EJEMPLOS).map((e) => (
               <button
                 key={e}
                 type="button"
@@ -126,12 +136,16 @@ export default function Inicio({
 
         {/* En el móvil estos accesos van en la barra inferior. */}
         <nav className="mt-8 hidden justify-center gap-6 text-[13px] text-tinta-suave lg:flex">
-          <button type="button" onClick={onAsiento} className="inline-flex items-center gap-1 hover:text-tinta">
-            Cuéntame qué pasó y te propongo el asiento <IconoChevron className="size-3.5" />
-          </button>
-          <button type="button" onClick={onEntrenar} className="inline-flex items-center gap-1 hover:text-tinta">
-            Entrena el debe y el haber <IconoChevron className="size-3.5" />
-          </button>
+          {onAsiento && (
+            <button type="button" onClick={onAsiento} className="inline-flex items-center gap-1 hover:text-tinta">
+              Cuéntame qué pasó y te propongo el asiento <IconoChevron className="size-3.5" />
+            </button>
+          )}
+          {onEntrenar && (
+            <button type="button" onClick={onEntrenar} className="inline-flex items-center gap-1 hover:text-tinta">
+              Entrena el debe y el haber <IconoChevron className="size-3.5" />
+            </button>
+          )}
         </nav>
 
         <footer className="mt-12 text-center lg:mt-16">

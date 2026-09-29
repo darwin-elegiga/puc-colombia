@@ -5,7 +5,10 @@ import type { Catalogo } from '@/lib/catalogo'
 import {
   conRenglonLibre, corregir, estaVacia, type Correccion, type EjercicioAsiento, type Fila, type LineaSolucion,
 } from '@/lib/practica'
-import HojaAsiento, { pesos } from './HojaAsiento'
+import HojaAsiento from './HojaAsiento'
+import Enunciado from './Enunciado'
+import { formatoNota, formatoTiempo } from '@/lib/aulas'
+import type { EjercicioDeClase } from '@/lib/misAulas'
 import TextoPlegado from './TextoPlegado'
 import { IconoChevron, IconoVisto } from './Iconos'
 
@@ -27,6 +30,7 @@ export default function PracticaAsiento({
   onVolver,
   onSiguiente,
   onAnotar,
+  enClase,
 }: {
   catalogo: Catalogo
   ejercicio: EjercicioAsiento
@@ -34,6 +38,8 @@ export default function PracticaAsiento({
   onVolver: () => void
   onSiguiente?: (() => void) | null
   onAnotar?: (perfecto: boolean) => void
+  /** Si el ejercicio viene de un aula: lo que se envió allí, con su nota. */
+  enClase?: EjercicioDeClase
 }) {
   const [filas, setFilas] = useState<Fila[]>(() => conRenglonLibre([]))
   const [correccion, setCorreccion] = useState<Correccion | null>(null)
@@ -73,37 +79,26 @@ export default function PracticaAsiento({
 
       <div className="panel-scroll min-h-0 flex-1">
         <div className="mx-auto max-w-2xl px-3 py-6 sm:px-5 lg:px-8 lg:py-8">
-          {/* ─────────── Enunciado ─────────── */}
-          <div className="px-2 sm:px-0">
-            <p className="rotulo">{ejercicio.grupo}</p>
-            <h1 className="editorial mt-2 text-[26px] leading-tight text-tinta lg:text-4xl">
-              {ejercicio.titulo}
-            </h1>
+          <Enunciado grupo={ejercicio.grupo} titulo={ejercicio.titulo} enunciado={ejercicio.enunciado} datos={ejercicio.datos} />
 
-            {ejercicio.origen === 'entrenamiento' && (
-              <p className="mt-3 text-[15px] leading-relaxed text-pretty text-tinta-suave">{ejercicio.enunciado}</p>
-            )}
-
-            {ejercicio.origen === 'operacion' && (
-              <section className="mt-4">
-                <p className="rotulo mb-2">Datos</p>
-                <dl className="overflow-hidden rounded-xl border border-borde bg-superficie">
-                  {ejercicio.datos.map((d) => (
-                    <div key={d.texto} className="flex items-baseline justify-between gap-3 border-b border-borde px-3.5 py-2.5 last:border-b-0">
-                      <dt className="min-w-0 text-[13.5px] leading-snug text-tinta-suave">{d.texto}</dt>
-                      <dd className={`shrink-0 text-right text-[13.5px] font-medium text-tinta ${d.importe !== undefined ? 'tabular' : ''}`}>
-                        {d.importe !== undefined ? pesos(d.importe) : d.etiqueta}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="mt-2 text-[13px] leading-relaxed text-tinta-tenue">
-                  Calcula los valores que faltan y registra el asiento completo.
-                </p>
-              </section>
-            )}
-
-          </div>
+          {enClase?.entrega && (
+            <details className="group mt-4 overflow-hidden rounded-xl border border-borde bg-superficie">
+              <summary className="tactil flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                <span className="min-w-0 flex-1 text-[14px] text-tinta">
+                  En clase: {enClase.entrega.calificacion ? `nota ${formatoNota(enClase.entrega.calificacion.nota)}` : 'sin nota'} ·{' '}
+                  <span className="tabular">{formatoTiempo(enClase.entrega.segundos)}</span>
+                </span>
+                <span className="text-[12.5px] text-tinta-suave">Ver lo que enviaste</span>
+                <IconoChevron className="size-4 text-tinta-tenue transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="border-t border-borde p-2">
+                {enClase.entrega.calificacion?.comentario && (
+                  <p className="px-2 pb-2 text-[14px] leading-relaxed text-tinta-suave">«{enClase.entrega.calificacion.comentario}»</p>
+                )}
+                <HojaAsiento filas={enClase.entrega.filas} onCambiar={() => {}} catalogo={catalogo} bloqueada />
+              </div>
+            </details>
+          )}
 
           {/* ─────────── Hoja ─────────── */}
           <section className="mt-5">

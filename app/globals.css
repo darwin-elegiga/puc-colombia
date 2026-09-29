@@ -199,3 +199,11 @@ input[type="search"]::-webkit-search-cancel-button {
 dialog::backdrop {
   background: rgba(47, 52, 55, 0.32);
 }
+
+/* Con la burbuja del aula a la vista (AvisoAulas), el final de cada panel deja sitio
+   para que no tape los últimos renglones ni los botones. */
+body.con-burbuja .panel-scroll::after {
+  content: '';
+  display: block;
+  height: 5rem;
+}

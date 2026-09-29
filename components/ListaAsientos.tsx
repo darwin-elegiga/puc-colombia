@@ -3,6 +3,8 @@
 import { useMemo } from 'react'
 import { EJERCICIOS_ASIENTO, claveProgreso, gruposDeAsiento } from '@/lib/practica'
 import type { Progreso } from '@/lib/progreso'
+import { formatoNota } from '@/lib/aulas'
+import { useDeMisClases } from '@/lib/misAulas'
 import { IconoChevron, IconoMas, IconoVisto } from './Iconos'
 
 /**
@@ -19,6 +21,7 @@ export default function ListaAsientos({
   onAbrir: (id: string) => void
 }) {
   const grupos = useMemo(() => gruposDeAsiento(), [])
+  const clases = useDeMisClases()
   const hecho = (id: string) => Boolean(progreso[claveProgreso(id)]?.resuelto)
   const resueltos = EJERCICIOS_ASIENTO.filter((e) => hecho(e.id)).length
   const pendiente = EJERCICIOS_ASIENTO.find((e) => !hecho(e.id))
@@ -47,6 +50,36 @@ export default function ListaAsientos({
         </span>
         <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
       </button>
+
+      {/* ─────────── De mis clases ─────────── */}
+      {clases.length > 0 && (
+        <section className="mt-6">
+          <div className="mb-2 flex items-baseline justify-between gap-3">
+            <p className="rotulo">De mis clases</p>
+            <p className="text-[12px] text-tinta-tenue">En este dispositivo</p>
+          </div>
+          <ul className="overflow-hidden rounded-xl border border-borde bg-superficie">
+            {clases.map((c) => (
+              <li key={c.id} className="border-b border-borde last:border-b-0">
+                <button type="button" onClick={() => onAbrir(`clase-${c.id}`)} className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left pulsable">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[14.5px] text-tinta">{c.ejercicio.titulo}</span>
+                    <span className="block truncate text-[12.5px] text-tinta-tenue">
+                      {c.nombreAula} · {new Date(c.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                    </span>
+                  </span>
+                  {c.entrega?.calificacion && (
+                    <span className="tabular shrink-0 rounded-md px-2 py-1 text-[13.5px] font-medium" style={{ background: 'var(--color-hueso)' }}>
+                      {formatoNota(c.entrega.calificacion.nota)}
+                    </span>
+                  )}
+                  <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* ─────────── Progreso ─────────── */}
       <section className="mt-4 rounded-xl border border-borde bg-superficie px-4 py-4">

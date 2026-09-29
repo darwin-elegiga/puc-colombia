@@ -9,6 +9,7 @@ import ListaAsientos from './ListaAsientos'
 import PracticaAsiento from './PracticaAsiento'
 import HojaEnBlanco from './HojaEnBlanco'
 import { claveProgreso, ejercicioAsientoPorId, siguienteAsiento } from '@/lib/practica'
+import { ejercicioDeClasePorId } from '@/lib/misAulas'
 import Dialogo, { botonPrimario, botonSecundario } from './Dialogo'
 import { IconoChevron, IconoReiniciar, IconoVisto } from './Iconos'
 
@@ -53,6 +54,23 @@ export default function Entrenador({
   const abierto = ejercicioId ? ejercicioPorId(ejercicioId) : undefined
 
   if (practicaId === 'blanco') return <HojaEnBlanco catalogo={catalogo} onVolver={onVolverALista} />
+  // Un ejercicio de «De mis clases»: se practica de nuevo y se ve lo que se envió en clase.
+  const deClase = practicaId?.startsWith('clase-') ? ejercicioDeClasePorId(practicaId.slice(6)) : undefined
+  if (deClase) {
+    const e = deClase.ejercicio
+    return (
+      <PracticaAsiento
+        key={practicaId}
+        catalogo={catalogo}
+        ejercicio={{
+          id: `clase-${deClase.id}`, origen: e.datos.length ? 'operacion' : 'entrenamiento', grupo: `${deClase.nombreAula} · con ${deClase.docente}`,
+          titulo: e.titulo, enunciado: e.enunciado, datos: e.datos, solucion: e.solucion ?? [], explicacion: e.explicacion ?? '',
+        }}
+        enClase={deClase}
+        onVolver={onVolverALista}
+      />
+    )
+  }
   const practica = practicaId ? ejercicioAsientoPorId(practicaId) : undefined
   if (practica) {
     const siguiente = siguienteAsiento(practica.id)

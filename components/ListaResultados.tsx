@@ -26,6 +26,7 @@ export default function ListaResultados({
   mostradas,
   onVerMas,
   encabezado,
+  sinIA = false,
 }: {
   cuentas: ResultadoBusqueda
   movimientos: Movimiento[]
@@ -44,12 +45,14 @@ export default function ListaResultados({
   onVerMas: () => void
   /** Contenido que se desplaza junto a la lista, como la lectura del código. */
   encabezado?: React.ReactNode
+  /** Modo aula: no se ofrece la búsqueda con IA. */
+  sinIA?: boolean
 }) {
   // En el móvil la lista se esconde al abrir un detalle: al volver, sigue donde estaba.
   const scroll = useScrollRecordado<HTMLDivElement>(`resultados:${consulta}`)
   const vacio = cuentas.total === 0 && !hayMovimientos
   // La IA se ofrece para texto libre, no para códigos: un código ya se lee dígito a dígito.
-  const conIA = consulta.trim().length >= 3 && !/^\d+$/.test(consulta.trim())
+  const conIA = !sinIA && consulta.trim().length >= 3 && !/^\d+$/.test(consulta.trim())
 
   return (
     <div
@@ -206,9 +209,15 @@ export default function ListaResultados({
           <div className="px-6 pb-6 pt-14 text-center">
             <p className="text-[15px] text-tinta-suave">Ningún resultado en el catálogo.</p>
             <p className="mt-1.5 text-[13px] leading-relaxed text-tinta-tenue">
-              Prueba con un código, un nombre de cuenta o una operación como
-              <br />
-              &laquo;pagué el arriendo&raquo;.
+              {sinIA ? (
+                'Prueba con un código o el nombre de una cuenta.'
+              ) : (
+                <>
+                  Prueba con un código, un nombre de cuenta o una operación como
+                  <br />
+                  &laquo;pagué el arriendo&raquo;.
+                </>
+              )}
             </p>
           </div>
         )}
