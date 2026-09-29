@@ -122,15 +122,16 @@ export function notaDelQuiz(ejercicios: EjercicioDeAula[], respuestas: Respuesta
 
 /**
  * Valida las respuestas de un quiz: solo de ejercicios del quiz. Un renglón que no vale
- * (un código con letras, un importe con decimales) se descarta en vez de rechazar el
- * quiz entero: el envío automático al acabarse el tiempo no puede perderse por uno.
+ * (un código con letras, un importe con decimales, sin importe) se descarta en vez de
+ * rechazar el quiz entero: el envío automático al acabarse el tiempo no puede perderse por uno.
  */
 export function validarRespuestas(entrada: unknown, ids: string[]): Respuestas | null {
   if (!entrada || typeof entrada !== 'object' || Array.isArray(entrada)) return null
   const respuestas: Respuestas = {}
   for (const [id, filas] of Object.entries(entrada as Record<string, unknown>)) {
     if (!ids.includes(id) || !Array.isArray(filas)) return null
-    const validas = filas.slice(0, MAX_FILAS).flatMap((f) => validarFilas([f]) ?? [])
+    // Sin importe no hay asiento: un código suelto contaría como renglón de más.
+    const validas = filas.slice(0, MAX_FILAS).flatMap((f) => validarFilas([f]) ?? []).filter((f) => f.debe ?? f.haber)
     if (validas.length) respuestas[id] = validas
   }
   return respuestas

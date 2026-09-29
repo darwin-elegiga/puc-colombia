@@ -252,7 +252,7 @@ test('entregas no válidas: se rechaza la forma, pero un renglón malo no tumba 
   await s.entregar(codigo, luis2, { respuestas: {} })
   const vista = (await s.estado(codigo, docente)) as VistaDocente
   const deLuis = vista.entregas.find((e) => e.estudianteId === luis.id)!
-  assert.deepEqual(deLuis.respuestas[ej1], [...respuesta, { codigo: '2408', debe: null, haber: null }], 'el importe 0 es un renglón sin importe')
+  assert.deepEqual(deLuis.respuestas[ej1], respuesta, 'se descartan los renglones malos y los que no tienen importe')
   assert.equal(deLuis.respuestas[ej2].length, 40)
 })
 
