@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import type { Catalogo } from '@/lib/catalogo'
 import { MARGEN_ENVIO_MS, formatoNota, formatoTiempo, type Respuestas, type VistaEstudiante } from '@/lib/aulas'
-import { conRenglonLibre, estaVacia, type Fila } from '@/lib/practica'
+import { conRenglonLibre, corregir, estaVacia, type Fila } from '@/lib/practica'
 import { apiAulas, ErrorRed, guardarBorrador, leerBorrador, type MiAula } from '@/lib/misAulas'
 import HojaAsiento from './HojaAsiento'
 import Enunciado from './Enunciado'
@@ -150,20 +150,36 @@ export default function AulaEstudiante({
           )}
         </section>
 
+        {(entrega || enviado) && (
+          <Seguimiento enviado calificado={Boolean(calificacion)} soluciones={vista.aula.solucionPublicada} />
+        )}
+
         {calificacion ? (
-          <section className="mt-4 rounded-xl border border-borde bg-superficie px-4 py-4">
-            <p className="rotulo">Tu nota</p>
-            <p className="tabular mt-1 text-[34px] leading-none text-tinta">
+          // Llegó la nota: tarjeta verde, distinta de la espera.
+          <section
+            className="surgir mt-4 rounded-xl px-4 py-4"
+            style={{ background: 'var(--color-sube)', color: 'var(--color-sube-tinta)' }}
+          >
+            <p className="flex items-baseline justify-between gap-3 text-[12px] font-medium uppercase tracking-[0.06em]">
+              Llegó tu nota
+              <span className="normal-case tracking-normal opacity-80">
+                {new Date(calificacion.fecha).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}
+              </span>
+            </p>
+            <p className="tabular mt-1.5 text-[38px] leading-none text-tinta">
               {formatoNota(calificacion.nota)}
               <span className="text-[16px] text-tinta-tenue"> / 5</span>
             </p>
-            {calificacion.comentario && <p className="mt-2 text-[14.5px] leading-relaxed text-tinta-suave">{calificacion.comentario}</p>}
+            {calificacion.comentario && <p className="mt-2 text-[14.5px] leading-relaxed text-tinta">«{calificacion.comentario}»</p>}
           </section>
         ) : (
           (entrega || enviado) && (
-            <p className="mt-4 px-2 text-[13.5px] text-tinta-tenue sm:px-0">
-              {vista.aula.docente} te pondrá la nota cuando lo revise. Te llegará aquí.
-            </p>
+            <section className="mt-4 flex items-center gap-3 rounded-xl border border-dashed border-borde-fuerte bg-superficie px-4 py-3.5">
+              <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-borde-fuerte border-t-transparent motion-reduce:animate-none" aria-hidden />
+              <p className="text-[13.5px] leading-relaxed text-tinta-suave">
+                Esperando la nota de {vista.aula.docente}. Te llegará aquí sola, sin recargar.
+              </p>
+            </section>
           )
         )}
 
@@ -171,38 +187,47 @@ export default function AulaEstudiante({
           {ejercicios.map((ej, i) => {
             const mias = entrega?.respuestas[ej.id] ?? []
             const nota = calificacion?.porEjercicio?.[ej.id]
+            const solucion = ej.solucionPublicada ? ej.solucion ?? [] : []
+            // Con la solución publicada, cada renglón propio se marca bien o mal.
+            const marcas = solucion.length && mias.length ? corregir(solucion, mias).estados : undefined
             return (
               <li key={ej.id}>
                 <div className="flex items-baseline justify-between gap-3 px-2 sm:px-0">
                   <p className="rotulo">Ejercicio {i + 1}</p>
-                  {nota !== undefined && <p className="tabular text-[13px] text-tinta-suave">{formatoNota(nota)} / 5</p>}
+                  {nota !== undefined && (
+                    <p
+                      className="tabular rounded-md px-2 py-0.5 text-[13px] font-medium"
+                      style={{ background: 'var(--color-sube)', color: 'var(--color-sube-tinta)' }}
+                    >
+                      {formatoNota(nota)} / 5
+                    </p>
+                  )}
                 </div>
                 <Enunciado grupo={ej.grupo} titulo={ej.titulo} enunciado={ej.enunciado} datos={ej.datos} />
                 {entrega && (
-                  <>
-                    <p className="rotulo mb-2 mt-4 px-2 sm:px-0">Tu respuesta</p>
+                  <Bloque tono="respuesta" titulo="Tu respuesta" detalle={marcas ? 'verde: bien · rojo: revisar' : undefined}>
                     {mias.length ? (
-                      <HojaAsiento filas={mias} onCambiar={() => {}} catalogo={catalogo} bloqueada />
+                      <HojaAsiento filas={mias} onCambiar={() => {}} catalogo={catalogo} estados={marcas} bloqueada />
                     ) : (
-                      <p className="px-2 text-[13.5px] text-tinta-tenue sm:px-0">No escribiste nada en este ejercicio.</p>
+                      <p className="px-1 py-2 text-[13.5px] text-tinta-suave">No escribiste nada en este ejercicio.</p>
                     )}
-                  </>
+                  </Bloque>
                 )}
-                {ej.solucionPublicada && (Boolean(ej.solucion?.length) || Boolean(ej.explicacion)) && (
-                  <>
+                {ej.solucionPublicada && (solucion.length > 0 || Boolean(ej.explicacion)) && (
+                  <Bloque tono="solucion" titulo={solucion.length ? 'Solución' : 'Explicación'}>
                     {/* Un ejercicio propio puede no tener solución: entonces solo la explicación, si la hay. */}
-                    {ej.solucion && ej.solucion.length > 0 && (
-                      <>
-                        <p className="rotulo mb-2 mt-4 px-2 sm:px-0">Solución</p>
-                        <HojaAsiento filas={aFilas(ej.solucion)} onCambiar={() => {}} catalogo={catalogo} bloqueada />
-                      </>
-                    )}
+                    {solucion.length > 0 && <HojaAsiento filas={aFilas(solucion)} onCambiar={() => {}} catalogo={catalogo} bloqueada />}
                     {ej.explicacion && (
-                      <div className="mt-3 px-2 text-[14.5px] leading-relaxed text-tinta-suave sm:px-0">
+                      <div className={`px-1 text-[14.5px] leading-relaxed text-tinta ${solucion.length ? 'mt-3' : ''}`}>
                         <TextoPlegado texto={ej.explicacion} />
                       </div>
                     )}
-                  </>
+                  </Bloque>
+                )}
+                {entrega && !ej.solucionPublicada && (
+                  <p className="mt-2 px-2 text-[12.5px] text-tinta-tenue sm:px-0">
+                    La solución aparecerá aquí cuando {vista.aula.docente} la publique.
+                  </p>
                 )}
               </li>
             )
@@ -324,5 +349,63 @@ export default function AulaEstudiante({
         {error && <p className="mt-2 text-center text-[13px]" style={{ color: 'var(--color-baja-tinta)' }}>{error}</p>}
       </div>
     </>
+  )
+}
+
+/** En qué va el quiz enviado: enviado → calificado → soluciones. */
+function Seguimiento({ enviado, calificado, soluciones }: { enviado: boolean; calificado: boolean; soluciones: boolean }) {
+  const pasos = [
+    { texto: 'Enviado', hecho: enviado },
+    { texto: 'Calificado', hecho: calificado },
+    { texto: 'Soluciones', hecho: soluciones },
+  ]
+  return (
+    <ol className="mt-4 grid grid-cols-3 gap-1.5 px-2 sm:px-0" aria-label="Estado del quiz">
+      {pasos.map((p) => (
+        <li
+          key={p.texto}
+          className="flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 text-[12.5px] font-medium"
+          style={
+            p.hecho
+              ? { background: 'var(--color-sube)', color: 'var(--color-sube-tinta)' }
+              : { background: 'var(--color-hueso)', color: 'var(--color-tinta-tenue)' }
+          }
+        >
+          <span aria-hidden>{p.hecho ? '✓' : '·'}</span>
+          {p.texto}
+          <span className="sr-only">{p.hecho ? ' (listo)' : ' (pendiente)'}</span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+/** Un bloque con fondo de color: la respuesta del estudiante (ámbar) o la solución (verde). */
+function Bloque({
+  tono,
+  titulo,
+  detalle,
+  children,
+}: {
+  tono: 'respuesta' | 'solucion'
+  titulo: string
+  detalle?: string
+  children: React.ReactNode
+}) {
+  const color =
+    tono === 'respuesta'
+      ? { fondo: 'var(--color-nota)', tinta: 'var(--color-nota-tinta)' }
+      : { fondo: 'var(--color-sube)', tinta: 'var(--color-sube-tinta)' }
+  return (
+    <section className="mt-3 rounded-xl p-2 pt-2.5" style={{ background: color.fondo }}>
+      <p
+        className="mb-2 flex items-baseline justify-between gap-3 px-1 text-[11.5px] font-medium uppercase tracking-[0.06em]"
+        style={{ color: color.tinta }}
+      >
+        {titulo}
+        {detalle && <span className="normal-case tracking-normal opacity-80">{detalle}</span>}
+      </p>
+      {children}
+    </section>
   )
 }
