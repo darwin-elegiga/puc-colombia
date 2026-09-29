@@ -14,6 +14,7 @@ import HojaAsiento from './HojaAsiento'
 import Enunciado from './Enunciado'
 import EditorEjercicio from './EditorEjercicio'
 import { IconoChevron, IconoLupa } from './Iconos'
+import Cargando from './Cargando'
 
 /** Tiempos que se ofrecen al empezar el quiz, en minutos (null: sin límite). */
 const TIEMPOS: (number | null)[] = [null, 10, 15, 20, 30, 45, 60, 90]
@@ -36,8 +37,11 @@ export default function AulaDocente({
   catalogo: Catalogo
   /** El aula ya no existe en el servidor: se muestra la copia del dispositivo, sin acciones. */
   soloCopia: boolean
-  /** Pide el estado al servidor; se espera para que el cargador siga hasta ver el cambio. */
-  onCambio: () => void | Promise<void>
+  /**
+   * Pide el estado al servidor. Con la versión de antes de la acción, insiste hasta ver una
+   * más nueva; se espera para que el cargador siga hasta ver el cambio.
+   */
+  onCambio: (desde?: number) => void | Promise<void>
 }) {
   const [eligiendo, setEligiendo] = useState(false)
   /** A quién se está calificando: se guarda el id, no la copia, para ver siempre lo último. */
@@ -72,15 +76,17 @@ export default function AulaDocente({
   const enlace = typeof window === 'undefined' ? '' : `${window.location.origin}/#aula/${aula.codigo}`
   const entregaEnCalificacion = vista.entregas.find((e) => e.estudianteId === calificando)
 
-  const hacer = async (accion: string, datos: Record<string, unknown> = {}) => {
+  /** `marca` distingue el botón que la lanzó cuando hay varios de la misma acción (quitar o añadir uno). */
+  const hacer = async (accion: string, datos: Record<string, unknown> = {}, marca = accion) => {
     setOcupado(true)
-    setEnCurso(accion)
+    setEnCurso(marca)
     setAviso(null)
     setOfrecerCerrarEntrada(false)
+    const antes = vista.version
     try {
       await apiAulas.accion(aula.codigo, aula.clave, accion, datos)
       // El cargador sigue hasta tener el estado nuevo: sin ese hueco no parece que «no hace nada».
-      await onCambio()
+      await onCambio(antes)
       return true
     } catch (e) {
       setAviso((e as Error).message)
@@ -165,7 +171,7 @@ export default function AulaDocente({
           disabled={ocupado}
           className="mt-1 min-h-9 px-1 text-[13px] font-medium text-tinta underline"
         >
-          Cerrar la entrada ahora
+          {enCurso === 'entrada' ? <Cargando texto="Cerrando la entrada…" /> : 'Cerrar la entrada ahora'}
         </button>
       )}
 
@@ -204,12 +210,12 @@ export default function AulaDocente({
                       <div className="px-4 pb-4">
                         <button
                           type="button"
-                          onClick={() => hacer('quitar', { ejercicio: ej.id })}
+                          onClick={() => hacer('quitar', { ejercicio: ej.id }, `quitar:${ej.id}`)}
                           disabled={ocupado}
                           className="min-h-9 text-[13px] font-medium disabled:opacity-40"
                           style={{ color: 'var(--color-baja-tinta)' }}
                         >
-                          Quitar del quiz
+                          {enCurso === `quitar:${ej.id}` ? <Cargando texto="Quitando…" /> : 'Quitar del quiz'}
                         </button>
                       </div>
                     )}
@@ -427,6 +433,7 @@ export default function AulaDocente({
                         }
                       })}
                       onBlur={() => { if (!enCurso) setConfirmar(null) }}
+                      disabled={ocupado}
                       className="min-h-9 rounded-lg px-3 text-[13px] font-medium"
                       style={{ background: 'var(--color-baja)', color: 'var(--color-baja-tinta)' }}
                     >
@@ -448,12 +455,12 @@ export default function AulaDocente({
         )}
         {abierta && (
           <label className="mt-3 flex min-h-11 items-center justify-between gap-3 px-1 text-[14px] text-tinta">
-            Cerrar la entrada a nuevas personas
+            {enCurso === 'entrada' ? <Cargando texto="Guardando…" /> : 'Cerrar la entrada a nuevas personas'}
             <input
               type="checkbox"
               checked={vista.aula.entradaCerrada}
               onChange={(e) => hacer('entrada', { cerrada: e.target.checked })}
-              disabled={enCurso === 'entrada'}
+              disabled={ocupado}
               className="size-5 accent-[var(--color-tinta)]"
             />
           </label>
@@ -468,6 +475,7 @@ export default function AulaDocente({
               autoFocus
               onClick={confirmado(() => hacer('cerrar'))}
               onBlur={() => { if (!enCurso) setConfirmar(null) }}
+              disabled={ocupado}
               className="tactil w-full rounded-xl text-[15px] font-medium"
               style={{ background: 'var(--color-baja)', color: 'var(--color-baja-tinta)' }}
             >
@@ -484,6 +492,7 @@ export default function AulaDocente({
       <SelectorEjercicio
         abierto={eligiendo}
         ocupado={ocupado}
+        agregando={enCurso?.startsWith('agregar:') ? enCurso.slice('agregar:'.length) : null}
         error={eligiendo ? aviso : null}
         yaEnElQuiz={vista.ejercicios.map((e) => e.origenId)}
         lleno={vista.ejercicios.length >= MAX_EJERCICIOS}
@@ -494,7 +503,7 @@ export default function AulaDocente({
         }}
         onElegir={(e) => {
           // Un doble toque no lo añade dos veces; el selector sigue abierto para añadir más.
-          if (!ocupado) void hacer('agregar', { ejercicio: e.id })
+          if (!ocupado) void hacer('agregar', { ejercicio: e.id }, `agregar:${e.id}`)
         }}
       />
 
@@ -598,7 +607,7 @@ function CalificarQuiz({
               disabled={!valida || ocupado}
               onClick={() => onEmitir(aNumero(nota), comentario, Object.fromEntries(ejercicios.map((e) => [e.id, aNumero(notas[e.id])])))}
             >
-              {entrega.calificacion ? 'Corregir la nota' : 'Emitir la nota'}
+              {ocupado ? <Cargando texto="Guardando la nota…" /> : entrega.calificacion ? 'Corregir la nota' : 'Emitir la nota'}
             </button>
           </>
         )
@@ -760,7 +769,7 @@ function NotaDeEjercicio({
                   disabled={ia.pensando}
                   className="mt-1 flex min-h-10 items-center text-[13px] font-medium text-tinta-suave transition-colors hover:text-tinta disabled:opacity-50"
                 >
-                  {ia.pensando ? 'La IA está revisando…' : 'Sugerir nota con IA (beta)'}
+                  {ia.pensando ? <Cargando texto="La IA está revisando…" /> : 'Sugerir nota con IA (beta)'}
                 </button>
               )}
               {ia.error && <p className="text-[13px]" style={{ color: 'var(--color-baja-tinta)' }}>{ia.error}</p>}
@@ -783,6 +792,7 @@ function NotaDeEjercicio({
 function SelectorEjercicio({
   abierto,
   ocupado,
+  agregando,
   error,
   yaEnElQuiz,
   lleno,
@@ -792,6 +802,8 @@ function SelectorEjercicio({
 }: {
   abierto: boolean
   ocupado: boolean
+  /** El ejercicio que se está añadiendo ahora, para su cargador. */
+  agregando: string | null
   error: string | null
   /** Ids de origen de los ejercicios que ya están en el quiz. */
   yaEnElQuiz: string[]
@@ -886,7 +898,7 @@ function SelectorEjercicio({
                       >
                         <span className="min-w-0 flex-1 text-[14px] leading-snug text-tinta">{e.titulo}</span>
                         <span className="shrink-0 text-[12px] text-tinta-tenue">
-                          {puesto ? '✓ En el quiz' : `${e.solucion.length} renglones`}
+                          {agregando === e.id ? <Cargando texto="Añadiendo…" /> : puesto ? '✓ En el quiz' : `${e.solucion.length} renglones`}
                         </span>
                       </button>
                     </li>
@@ -898,15 +910,5 @@ function SelectorEjercicio({
         })}
       </div>
     </Dialogo>
-  )
-}
-
-/** Rueda y texto para un botón con su acción en marcha. */
-function Cargando({ texto }: { texto: string }) {
-  return (
-    <span role="status" className="inline-flex items-center justify-center gap-2">
-      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" aria-hidden />
-      {texto}
-    </span>
   )
 }

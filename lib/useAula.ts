@@ -8,6 +8,8 @@ import { apiAulas, ErrorRed, guardarCopiaDocente, guardarDeMisClases, leerCopiaD
 const INTERVALO_MS = 3000
 const INTERVALO_QUIETO_MS = 10_000
 const QUIETO_TRAS = 20
+/** Tras una acción, cuánto se insiste como mucho en ver el estado nuevo. */
+const ESPERA_CAMBIO_MS = 6000
 
 /**
  * Mantiene al día la vista de un aula: pregunta cada pocos segundos, solo con la
@@ -97,12 +99,23 @@ export function useAula(aula: MiAula | undefined) {
   /**
    * Tras una acción propia: se pide el estado completo sin esperar al siguiente turno. Si
    * hay una consulta en vuelo (que pudo leer antes del cambio), se repite al terminar.
+   * Con `desde` (la versión de antes de la acción), se insiste hasta ver una más nueva: la
+   * lectura justo después de escribir puede llegar aún con el estado anterior, y el botón
+   * volvería a su texto de antes durante unos segundos.
    */
-  const actualizarYa = useCallback(async () => {
-    version.current = undefined
-    sinCambios.current = 0
-    await refrescar()
-  }, [refrescar])
+  const actualizarYa = useCallback(
+    async (desde?: number) => {
+      const limite = Date.now() + ESPERA_CAMBIO_MS
+      for (;;) {
+        version.current = undefined
+        sinCambios.current = 0
+        await refrescar()
+        if (desde === undefined || (version.current ?? 0) > desde || detenido.current || Date.now() > limite) return
+        await new Promise((r) => setTimeout(r, 400))
+      }
+    },
+    [refrescar],
+  )
 
   useEffect(() => {
     if (!aula) return

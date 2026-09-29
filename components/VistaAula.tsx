@@ -8,6 +8,7 @@ import { useAula } from '@/lib/useAula'
 import AulaDocente from './AulaDocente'
 import AulaEstudiante from './AulaEstudiante'
 import { IconoChevron, IconoSinConexion } from './Iconos'
+import Cargando from './Cargando'
 
 /**
  * Un aula abierta en pantalla completa. Si este dispositivo ya está dentro (lo recuerda
@@ -87,7 +88,7 @@ export default function VistaAula({ codigo, catalogo, onVolver }: { codigo: stri
                 disabled={uniendo || !nombre.trim()}
                 className="tactil mt-3 w-full rounded-xl bg-tinta text-[15px] text-white transition-opacity disabled:opacity-30"
               >
-                {uniendo ? 'Entrando…' : 'Entrar'}
+                {uniendo ? <Cargando texto="Entrando…" /> : 'Entrar'}
               </button>
               {errorUnion && <p className="mt-2 text-[13.5px]" style={{ color: 'var(--color-baja-tinta)' }}>{errorUnion}</p>}
             </section>

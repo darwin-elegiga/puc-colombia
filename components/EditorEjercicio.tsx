@@ -7,6 +7,7 @@ import { conRenglonLibre, estaVacia, sumas, type Fila } from '@/lib/practica'
 import { proponerSolucionIA } from '@/lib/misAulas'
 import HojaAsiento from './HojaAsiento'
 import { botonPrimario, botonSecundario } from './Dialogo'
+import Cargando from './Cargando'
 
 const campo =
   'w-full rounded-xl border border-borde bg-superficie px-3.5 text-tinta outline-none placeholder:text-tinta-tenue focus:border-borde-fuerte'
@@ -100,7 +101,7 @@ export default function EditorEjercicio({
           disabled={faltaEnunciado || pensando}
           className="min-h-9 rounded-lg px-2 text-[13px] font-medium text-tinta-suave transition-colors hover:text-tinta disabled:opacity-40"
         >
-          {pensando ? 'La IA está pensando…' : 'Proponer con IA (beta)'}
+          {pensando ? <Cargando texto="La IA está pensando…" /> : 'Proponer con IA (beta)'}
         </button>
       </div>
       <p className="mt-1 px-2 text-[12.5px] leading-relaxed text-tinta-tenue sm:px-0">
@@ -139,7 +140,7 @@ export default function EditorEjercicio({
           onClick={() => onAgregar({ titulo: tituloDe(titulo, enunciado.trim()), enunciado: enunciado.trim(), filas: escritas, explicacion: explicacion.trim() })}
           className={botonPrimario}
         >
-          {ocupado ? 'Añadiendo…' : 'Añadir al quiz'}
+          {ocupado ? <Cargando texto="Añadiendo…" /> : 'Añadir al quiz'}
         </button>
       </div>
       {!listo && (

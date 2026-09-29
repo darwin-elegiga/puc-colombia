@@ -8,6 +8,7 @@ import { apiAulas, ErrorRed, guardarBorrador, leerBorrador, type MiAula } from '
 import HojaAsiento from './HojaAsiento'
 import Enunciado from './Enunciado'
 import TextoPlegado from './TextoPlegado'
+import Cargando from './Cargando'
 
 const aFilas = (lineas: { codigo: string; columna: 'debe' | 'haber'; importe: number }[]): Fila[] =>
   lineas.map((l) => ({ codigo: l.codigo, debe: l.columna === 'debe' ? l.importe : null, haber: l.columna === 'haber' ? l.importe : null }))
@@ -31,7 +32,7 @@ export default function AulaEstudiante({
   /** Reloj del servidor menos el del dispositivo. */
   desfase: number
   /** Pide el estado al servidor tras enviar. */
-  onCambio: () => void
+  onCambio: (desde?: number) => void | Promise<void>
 }) {
   const { ejercicios, entrega } = vista
   /** Lo escrito en esta sesión; lo demás sale del borrador guardado en el dispositivo. */
@@ -78,13 +79,13 @@ export default function AulaEstudiante({
       const respuestas = Object.fromEntries(ejercicios.map((e) => [e.id, filasDe(e.id).filter((f) => !estaVacia(f))]))
       await apiAulas.accion(aula.codigo, aula.clave, 'entregar', { respuestas })
       setEnviado(true)
-      onCambio()
+      void onCambio(vista.version)
       return true
     } catch (e) {
       setError((e as Error).message)
       // 409: ya estaba enviado, o se acabó el plazo; la vista lo dirá. Sin red, se reintenta.
       if (e instanceof ErrorRed && e.estado === 409) {
-        onCambio()
+        void onCambio()
         return true
       }
       return false
@@ -296,7 +297,7 @@ export default function AulaEstudiante({
       </div>
 
       <section className="mt-4">
-        <HojaAsiento key={ej.id} filas={filasDe(ej.id)} onCambiar={(f) => cambiar(ej.id, f)} catalogo={catalogo} />
+        <HojaAsiento key={ej.id} filas={filasDe(ej.id)} onCambiar={(f) => cambiar(ej.id, f)} catalogo={catalogo} sinCuadre />
       </section>
 
       <div className="mt-4 grid grid-cols-2 gap-2 px-2 sm:px-0">
@@ -331,7 +332,7 @@ export default function AulaEstudiante({
             className="tactil w-full rounded-xl bg-tinta text-[15px] text-white disabled:opacity-50"
           >
             {enviando
-              ? 'Enviando…'
+              ? <Cargando texto="Enviando el quiz…" />
               : faltan > 0
                 ? `Sí, enviar con ${faltan} sin responder: no podrás cambiarlo`
                 : 'Sí, enviar el quiz: no podrás cambiarlo'}
@@ -343,7 +344,7 @@ export default function AulaEstudiante({
             disabled={enviando || (conRespuesta === 0 && !agotado)}
             className="tactil w-full rounded-xl bg-tinta text-[15px] text-white transition-opacity active:bg-[#3d4347] disabled:opacity-30"
           >
-            {enviando ? 'Enviando…' : conRespuesta === 0 ? 'Escribe al menos un asiento' : 'Enviar el quiz'}
+            {enviando ? <Cargando texto="Enviando el quiz…" /> : conRespuesta === 0 ? 'Escribe al menos un asiento' : 'Enviar el quiz'}
           </button>
         )}
         {error && <p className="mt-2 text-center text-[13px]" style={{ color: 'var(--color-baja-tinta)' }}>{error}</p>}

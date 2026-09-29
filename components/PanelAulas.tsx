@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { MAX_NOMBRE, MAX_NOMBRE_AULA, normalizarCodigo, type AulaPublica } from '@/lib/aulas'
 import { apiAulas, guardarMiNombre, leerMiNombre, limpiarBorradores, useMisAulas, vigentes } from '@/lib/misAulas'
 import { IconoChevron, IconoPapelera } from './Iconos'
+import Cargando from './Cargando'
 
 const campo =
   'min-h-12 w-full rounded-xl border border-borde bg-superficie px-3.5 text-tinta outline-none placeholder:text-tinta-tenue focus:border-borde-fuerte'
@@ -173,7 +174,7 @@ export default function PanelAulas({ onAbrir }: { onAbrir: (codigo: string) => v
           ))}
         </div>
         <button type="button" onClick={crear} disabled={creando || !nombre.trim() || !nombreAula.trim()} className={`${primario} mt-3`}>
-          {creando ? 'Creando…' : !nombre.trim() ? 'Escribe tu nombre arriba' : 'Crear el aula'}
+          {creando ? <Cargando texto="Creando el aula…" /> : !nombre.trim() ? 'Escribe tu nombre arriba' : 'Crear el aula'}
         </button>
         {error && <p className="mt-2 text-[13px]" style={{ color: 'var(--color-baja-tinta)' }}>{error}</p>}
       </section>

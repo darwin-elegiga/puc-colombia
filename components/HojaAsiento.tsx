@@ -43,6 +43,7 @@ export default function HojaAsiento({
   catalogo,
   estados,
   bloqueada = false,
+  sinCuadre = false,
 }: {
   filas: Fila[]
   onCambiar: (filas: Fila[]) => void
@@ -51,6 +52,8 @@ export default function HojaAsiento({
   estados?: (Estado | null)[]
   /** Solo lectura: para mostrar la solución. */
   bloqueada?: boolean
+  /** Sin el aviso de si cuadra: en un quiz no se le da la pista al estudiante mientras lo hace. */
+  sinCuadre?: boolean
 }) {
   const celdas = useRef(new Map<string, HTMLInputElement>())
   const [buscando, setBuscando] = useState<number | null>(null)
@@ -221,7 +224,7 @@ export default function HojaAsiento({
         </span>
         <span className="tabular truncate px-2 py-2.5 text-right font-medium text-tinta">{total.haber.toLocaleString('es-CO')}</span>
       </div>
-      {hayAlgo && (
+      {hayAlgo && !sinCuadre && (
         <p
           className="border-t border-borde px-3 py-2 text-[12.5px] font-medium"
           style={{

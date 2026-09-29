@@ -207,3 +207,9 @@ body.con-burbuja .panel-scroll::after {
   display: block;
   height: 5rem;
 }
+
+/* Un botón con su acción en marcha se ve activo aunque esté deshabilitado: el cargador debe leerse. */
+button:disabled:has([data-cargando]) {
+  opacity: 1;
+  cursor: progress;
+}
