@@ -10,6 +10,8 @@ import { IconoMas, IconoPapelera, IconoIntercambio, IconoCapas } from './Iconos'
 import { GUIA_CLASES, GUIA_GRUPOS } from '@/data/guia'
 import { FuenteOficial } from './MapaClases'
 import { comoSeLlama } from '@/lib/explicacion'
+import { TablaDebeHaber } from './DebeHaber'
+import TextoPlegado from './TextoPlegado'
 
 export default function FichaCuenta({
   ficha,
@@ -106,10 +108,8 @@ export default function FichaCuenta({
         {descripcion.texto && (
           <section className="mt-6">
             <p className="rotulo mb-2">{ficha.textoOficial ? 'Qué registra · texto oficial' : 'Qué registra'}</p>
-            <div className="space-y-2.5 text-[15px] leading-relaxed text-tinta">
-              {descripcion.texto.split('\n\n').map((parrafo) => (
-                <p key={parrafo}>{parrafo}</p>
-              ))}
+            <div className="text-[15px] leading-relaxed text-tinta">
+              <TextoPlegado texto={descripcion.texto} />
             </div>
             {ficha.textoOficial && !descripcion.heredadaDe && <FuenteOficial />}
             {descripcion.heredadaDe && (
@@ -147,7 +147,7 @@ export default function FichaCuenta({
         {ficha.dinamica && (
           <section className="mt-7">
             <div className="mb-2 flex items-baseline justify-between gap-3">
-              <p className="rotulo">Dinámica</p>
+              <p className="rotulo">Dinámica · debe y haber</p>
               {ficha.dinamica.heredadaDe && (
                 <p className="text-[11px] text-tinta-tenue">
                   Regla general de{' '}
@@ -157,10 +157,13 @@ export default function FichaCuenta({
                 </p>
               )}
             </div>
-            <div className="grid gap-3 lg:grid-cols-2">
-              <BloqueDinamica titulo="Se debita por" items={ficha.dinamica.debita} tono="debito" />
-              <BloqueDinamica titulo="Se acredita por" items={ficha.dinamica.acredita} tono="credito" />
-            </div>
+            <TablaDebeHaber
+              codigo={ficha.codigo}
+              naturaleza={ficha.naturaleza}
+              debita={ficha.dinamica.debita}
+              acredita={ficha.dinamica.acredita}
+              pie={<PorQueAumenta ficha={ficha} />}
+            />
           </section>
         )}
 
@@ -256,33 +259,18 @@ export default function FichaCuenta({
   )
 }
 
-function BloqueDinamica({ titulo, items, tono }: { titulo: string; items: string[]; tono: 'debito' | 'credito' }) {
+/** Por qué la cuenta aumenta por su columna: la regla de su clase, o la de las contrapartidas. */
+function PorQueAumenta({ ficha }: { ficha: Ficha }) {
+  const guia = GUIA_CLASES[ficha.codigo[0]]
+  const columna = ficha.naturaleza === 'debito' ? 'debe' : 'haber'
+  const texto = ficha.naturalezaForzada
+    ? `Es una cuenta de contrapartida: resta del saldo de la clase ${ficha.codigo[0]} en lugar de sumarle, así que se comporta al revés que su clase y aumenta por el ${columna}.`
+    : guia?.porque
+  if (!texto) return null
   return (
-    <div className="rounded-xl border border-borde bg-superficie p-4">
-      <p
-        className="mb-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.06em]"
-        style={{
-          background: tono === 'debito' ? 'var(--color-debito)' : 'var(--color-credito)',
-          color: tono === 'debito' ? 'var(--color-debito-tinta)' : 'var(--color-credito-tinta)',
-        }}
-      >
-        {titulo}
-      </p>
-      <ul className="space-y-1.5">
-        {items.map((item, i) =>
-          // Los rótulos «§ …» separan tramos de la dinámica oficial, como «Registro de pagos».
-          item.startsWith('§ ') ? (
-            <li key={`${i}-${item}`} className="pt-2 text-[11px] font-medium uppercase tracking-[0.06em] text-tinta-tenue">
-              {item.slice(2)}
-            </li>
-          ) : (
-            <li key={`${i}-${item}`} className="flex gap-2.5 text-[14px] leading-relaxed text-tinta">
-              <span className="mt-[7px] size-1 shrink-0 rounded-full bg-borde-fuerte" aria-hidden />
-              {item}
-            </li>
-          ),
-        )}
-      </ul>
-    </div>
+    <>
+      <p className="text-[13px] font-medium text-tinta">¿Por qué aumenta por el {columna}?</p>
+      <p className="mt-1 text-[14px] leading-relaxed text-tinta-suave">{texto}</p>
+    </>
   )
 }

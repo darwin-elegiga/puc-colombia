@@ -33,6 +33,11 @@
   --color-nota-tinta: #956400;
   --color-propia: #edf3ec;
   --color-propia-tinta: #346538;
+  /* Por dónde sube (+) y baja (−) el saldo en el debe y el haber. */
+  --color-sube: #e6f2e7;
+  --color-sube-tinta: #2f6b36;
+  --color-baja: #fbe9e8;
+  --color-baja-tinta: #a8322d;
 
   --font-sans: var(--font-geist-sans), "SF Pro Display", "Helvetica Neue", sans-serif;
   --font-mono: var(--font-geist-mono), "SF Mono", monospace;

@@ -1,12 +1,15 @@
 'use client'
 
 import type { Catalogo } from '@/lib/catalogo'
-import { hijosDe, resumir } from '@/lib/catalogo'
+import { dinamicaDe, hijosDe, resumir } from '@/lib/catalogo'
+import { useScrollRecordado } from '@/lib/scroll'
 import { ESTADO_FINANCIERO, PALETA_CLASE, nombreLegible } from '@/lib/puc'
 import { GUIA_CLASES, GUIA_GRUPOS, REGLA_LADO, type GuiaClase } from '@/data/guia'
 import type { Cuenta } from '@/lib/tipos'
 import { InsigniaLado, InsigniaNaturaleza } from './Insignias'
 import { IconoChevron } from './Iconos'
+import { InsigniaEfecto, TablaDebeHaber, efectoEn } from './DebeHaber'
+import TextoPlegado from './TextoPlegado'
 
 /**
  * Mapa de clases: se navega de lo general a lo particular.
@@ -34,6 +37,8 @@ export default function MapaClases({
 }) {
   const actual = codigo ? catalogo.indice.get(codigo) : undefined
   const clase = actual ? catalogo.indice.get(actual.codigo[0]) : undefined
+  // Cada clase y cada grupo recuerdan su posición: al volver de una cuenta se sigue leyendo.
+  const scroll = useScrollRecordado<HTMLDivElement>(`mapa:${codigo ?? 'mosaico'}`)
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-lienzo">
@@ -54,7 +59,7 @@ export default function MapaClases({
         </span>
       </header>
 
-      <div key={codigo ?? 'mosaico'} className="surgir panel-scroll min-h-0 flex-1">
+      <div key={codigo ?? 'mosaico'} ref={scroll} className="surgir panel-scroll min-h-0 flex-1">
         <div className="mx-auto max-w-5xl px-4 py-6 lg:px-8 lg:py-10" style={{ paddingBottom: 'calc(var(--seguro-abajo) + 2rem)' }}>
           {!actual ? (
             <Mosaico catalogo={catalogo} onAbrir={onAbrir} />
@@ -228,7 +233,9 @@ function VistaClase({
         </section>
       )}
 
-      <DefinicionOficial cuenta={clase} />
+      {guia && <DebeHaber codigo={clase.codigo} guia={guia} />}
+
+      <DefinicionOficial key={clase.codigo} cuenta={clase} />
 
       <section className="mt-8">
         <div className="mb-3 flex items-baseline justify-between gap-3">
@@ -270,6 +277,99 @@ function VistaClase({
         </div>
       </section>
     </>
+  )
+}
+
+/* ─────────────────────────── Debe y haber ─────────────────────────── */
+
+/** Por qué la clase aumenta por su columna, bajo la tabla. */
+function Porque({ aumenta, texto }: { aumenta: 'debito' | 'credito'; texto: string }) {
+  return (
+    <>
+      <p className="text-[13px] font-medium text-tinta">¿Por qué aumenta por el {aumenta === 'debito' ? 'debe' : 'haber'}?</p>
+      <p className="mt-1 text-[14px] leading-relaxed text-tinta-suave">{texto}</p>
+    </>
+  )
+}
+
+/** La «T» de la clase con los casos en lenguaje sencillo de la guía. */
+function DebeHaber({ codigo, guia }: { codigo: string; guia: GuiaClase }) {
+  const alDebe = guia.aumenta === 'debito' ? guia.subeCuando : guia.bajaCuando
+  const alHaber = guia.aumenta === 'credito' ? guia.subeCuando : guia.bajaCuando
+  return (
+    <section className="mt-7">
+      <p className="rotulo mb-2">En el debe y en el haber</p>
+      <TablaDebeHaber
+        codigo={codigo}
+        naturaleza={guia.aumenta}
+        debita={alDebe}
+        acredita={alHaber}
+        pie={<Porque aumenta={guia.aumenta} texto={guia.porque} />}
+      />
+    </section>
+  )
+}
+
+/** La «T» del grupo con su dinámica oficial, propia o la de su clase. */
+function DebeHaberGrupo({ catalogo, grupo }: { catalogo: Catalogo; grupo: Cuenta }) {
+  const dinamica = dinamicaDe(catalogo, grupo)
+  const guiaClase = GUIA_CLASES[grupo.codigo[0]]
+  if (!dinamica) return null
+  return (
+    <section className="mt-7">
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <p className="rotulo">En el debe y en el haber</p>
+        {dinamica.heredadaDe && <p className="text-[11px] text-tinta-tenue">Regla general de la clase {dinamica.heredadaDe}</p>}
+      </div>
+      <TablaDebeHaber
+        codigo={grupo.codigo}
+        naturaleza={grupo.naturaleza}
+        debita={dinamica.debita}
+        acredita={dinamica.acredita}
+        pie={guiaClase && !grupo.naturalezaForzada && <Porque aumenta={guiaClase.aumenta} texto={guiaClase.porque} />}
+      />
+    </section>
+  )
+}
+
+/** Las nueve clases de un vistazo: en qué columna sube y baja cada una. */
+export function ResumenDebeHaber({ catalogo, onAbrir }: { catalogo: Catalogo; onAbrir: (codigo: string) => void }) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-borde bg-superficie">
+      <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-borde bg-hueso px-4 py-2 text-[12px] text-tinta-tenue sm:gap-x-6">
+        <span>Clase</span>
+        <span className="w-24 text-center">Debe</span>
+        <span className="w-24 text-center">Haber</span>
+      </div>
+      <ul>
+        {Object.keys(GUIA_CLASES).sort().map((c) => {
+          const guia = GUIA_CLASES[c]
+          const cuenta = catalogo.indice.get(c)
+          if (!cuenta) return null
+          return (
+            <li key={c} className="border-b border-borde last:border-b-0">
+              <button
+                type="button"
+                onClick={() => onAbrir(c)}
+                className="grid w-full grid-cols-[1fr_auto_auto] items-center gap-x-3 px-4 py-2.5 text-left pulsable sm:gap-x-6"
+              >
+                <span className="flex min-w-0 items-baseline gap-2.5">
+                  <span className="tabular text-[15px]" style={{ color: PALETA_CLASE[c].tinta }}>{c}</span>
+                  <span className="truncate text-[14px] text-tinta">{nombreLegible(cuenta.nombre)}</span>
+                </span>
+                <span className="flex w-24 justify-center"><InsigniaEfecto efecto={efectoEn(guia.aumenta, 'debito')} /></span>
+                <span className="flex w-24 justify-center"><InsigniaEfecto efecto={efectoEn(guia.aumenta, 'credito')} /></span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="border-t border-borde px-4 py-3 text-[13px] leading-relaxed text-tinta-suave">
+        Todo sale de la ecuación <span className="font-medium text-tinta">Activo = Pasivo + Patrimonio</span>: lo que
+        está a la izquierda (activos) sube por el debe; lo que está a la derecha (pasivos y patrimonio), por el haber.
+        Los ingresos aumentan el patrimonio y suben por el haber; los gastos y costos lo reducen y suben por el debe.
+      </p>
+    </section>
   )
 }
 
@@ -334,7 +434,9 @@ function VistaGrupo({
         </section>
       )}
 
-      <DefinicionOficial cuenta={grupo} />
+      <DebeHaberGrupo catalogo={catalogo} grupo={grupo} />
+
+      <DefinicionOficial key={grupo.codigo} cuenta={grupo} />
 
       <section className="mt-8">
         <div className="mb-3 flex items-baseline justify-between gap-3">
@@ -393,15 +495,14 @@ const minuscula = (texto: string) => texto.charAt(0).toLowerCase() + texto.slice
 
 /* ─────────────────────────── Texto oficial ─────────────────────────── */
 
+/** Plegada al entrar: un resumen corto y, a petición, el texto completo del decreto. */
 function DefinicionOficial({ cuenta }: { cuenta: Cuenta }) {
   if (!cuenta.descripcion) return null
   return (
     <section className="mt-7">
       <p className="rotulo mb-2">Definición oficial</p>
-      <div className="space-y-2.5 rounded-xl bg-hueso px-4 py-3.5 text-[14px] leading-relaxed text-tinta">
-        {cuenta.descripcion.split('\n\n').map((parrafo) => (
-          <p key={parrafo}>{parrafo}</p>
-        ))}
+      <div className="rounded-xl bg-hueso px-4 pb-1.5 pt-3.5 text-[14px] leading-relaxed text-tinta">
+        <TextoPlegado texto={cuenta.descripcion} />
       </div>
       {cuenta.textoOficial && <FuenteOficial />}
     </section>

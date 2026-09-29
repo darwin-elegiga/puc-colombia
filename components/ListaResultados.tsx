@@ -10,6 +10,7 @@ import { IconoIntercambio, IconoChevron } from './Iconos'
 import BusquedaIA from './BusquedaIA'
 import type { Cuenta } from '@/lib/tipos'
 import { nombreLegible } from '@/lib/puc'
+import { useScrollRecordado } from '@/lib/scroll'
 
 export default function ListaResultados({
   cuentas,
@@ -44,19 +45,109 @@ export default function ListaResultados({
   /** Contenido que se desplaza junto a la lista, como la lectura del código. */
   encabezado?: React.ReactNode
 }) {
+  // En el móvil la lista se esconde al abrir un detalle: al volver, sigue donde estaba.
+  const scroll = useScrollRecordado<HTMLDivElement>(`resultados:${consulta}`)
   const vacio = cuentas.total === 0 && !hayMovimientos
   // La IA se ofrece para texto libre, no para códigos: un código ya se lee dígito a dígito.
   const conIA = consulta.trim().length >= 3 && !/^\d+$/.test(consulta.trim())
 
   return (
     <div
+      ref={scroll}
       className="panel-scroll h-full"
       style={{ paddingBottom: 'calc(var(--seguro-abajo) + 1rem)' }}
     >
       {encabezado}
 
-      {hayMovimientos && (
+      {/* Primero las cuentas; las operaciones van debajo, al final de los códigos. */}
+      {(cuentas.total > 0 || !hayMovimientos) && (
         <section>
+          <Encabezado
+            titulo="Cuentas"
+            cuenta={
+              cuentas.total > cuentas.resultados.length
+                ? `${cuentas.resultados.length} de ${cuentas.total.toLocaleString('es-CO')}`
+                : cuentas.total.toLocaleString('es-CO')
+            }
+            accion={
+              hayMovimientos ? (
+                // El hash de la URL guarda la navegación: se desplaza sin tocarlo.
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('resultados-movimientos')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="text-[12px] text-tinta-suave underline underline-offset-2"
+                >
+                  Ir a movimientos
+                </button>
+              ) : undefined
+            }
+          />
+
+          <ul className="surgir-lista">
+            {cuentas.resultados.map((c, i) => {
+              const activo = seleccion?.tipo === 'cuenta' && seleccion.codigo === c.codigo
+              return (
+                <li key={c.codigo} style={{ '--i': i } as React.CSSProperties}>
+                  <button
+                    type="button"
+                    onClick={() => onSeleccionar({ tipo: 'cuenta', codigo: c.codigo })}
+                    className={[
+                      'flex w-full items-start gap-3 border-b border-borde px-5 py-3.5 text-left pulsable',
+                      activo ? 'bg-superficie' : '',
+                    ].join(' ')}
+                    style={franjaClase(c.codigo)}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-baseline gap-2.5">
+                        <Codigo valor={c.codigo} className="text-[15px] font-medium" />
+                        <span className="min-w-0 flex-1 truncate text-[15px] text-tinta">
+                          {nombreLegible(c.nombre)}
+                        </span>
+                      </span>
+
+                      {/* Sin `block`: pisaba el display:-webkit-box de line-clamp y el resumen no se recortaba a dos líneas. */}
+                      {c.resumen && (
+                        <span className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-tinta-suave">
+                          {c.resumen}
+                        </span>
+                      )}
+
+                      <span className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <InsigniaClase codigo={c.codigo} />
+                        <InsigniaNivel nivel={c.nivel} />
+                        <InsigniaNaturaleza naturaleza={c.naturaleza} />
+                        <InsigniaOrigen origen={c.origen} />
+                        {c.hijos > 0 && (
+                          <span className="text-[11px] uppercase tracking-[0.06em] text-tinta-tenue">
+                            {c.hijos} {c.hijos === 1 ? 'subnivel' : 'subniveles'}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+
+                    <IconoChevron className="mt-1 size-4 shrink-0 text-tinta-tenue lg:hidden" />
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+
+          {cuentas.total > mostradas && (
+            <div className="px-5 py-4">
+              <button
+                type="button"
+                onClick={onVerMas}
+                className="min-h-12 w-full rounded-lg border border-borde bg-superficie text-[14px] text-tinta-suave pulsable"
+              >
+                Ver más — quedan {(cuentas.total - mostradas).toLocaleString('es-CO')}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {hayMovimientos && (
+        <section id="resultados-movimientos">
           <Encabezado titulo="Movimientos" cuenta={`${movimientos.length}`} />
           {/* Una misma palabra —«pago», «arriendo»— sirve a los dos lados: aquí se elige cuál. */}
           <div className="flex gap-2 overflow-x-auto border-b border-borde px-5 py-2.5" role="group" aria-label="Quién paga">
@@ -111,76 +202,6 @@ export default function ListaResultados({
       )}
 
       <section>
-        <Encabezado
-          titulo="Cuentas"
-          cuenta={
-            cuentas.total > cuentas.resultados.length
-              ? `${cuentas.resultados.length} de ${cuentas.total.toLocaleString('es-CO')}`
-              : cuentas.total.toLocaleString('es-CO')
-          }
-        />
-
-        <ul className="surgir-lista">
-          {cuentas.resultados.map((c, i) => {
-            const activo = seleccion?.tipo === 'cuenta' && seleccion.codigo === c.codigo
-            return (
-              <li key={c.codigo} style={{ '--i': i } as React.CSSProperties}>
-                <button
-                  type="button"
-                  onClick={() => onSeleccionar({ tipo: 'cuenta', codigo: c.codigo })}
-                  className={[
-                    'flex w-full items-start gap-3 border-b border-borde px-5 py-3.5 text-left pulsable',
-                    activo ? 'bg-superficie' : '',
-                  ].join(' ')}
-                  style={franjaClase(c.codigo)}
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-baseline gap-2.5">
-                      <Codigo valor={c.codigo} className="text-[15px] font-medium" />
-                      <span className="min-w-0 flex-1 truncate text-[15px] text-tinta">
-                        {nombreLegible(c.nombre)}
-                      </span>
-                    </span>
-
-                    {/* Sin `block`: pisaba el display:-webkit-box de line-clamp y el resumen no se recortaba a dos líneas. */}
-                    {c.resumen && (
-                      <span className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-tinta-suave">
-                        {c.resumen}
-                      </span>
-                    )}
-
-                    <span className="mt-2 flex flex-wrap items-center gap-1.5">
-                      <InsigniaClase codigo={c.codigo} />
-                      <InsigniaNivel nivel={c.nivel} />
-                      <InsigniaNaturaleza naturaleza={c.naturaleza} />
-                      <InsigniaOrigen origen={c.origen} />
-                      {c.hijos > 0 && (
-                        <span className="text-[11px] uppercase tracking-[0.06em] text-tinta-tenue">
-                          {c.hijos} {c.hijos === 1 ? 'subnivel' : 'subniveles'}
-                        </span>
-                      )}
-                    </span>
-                  </span>
-
-                  <IconoChevron className="mt-1 size-4 shrink-0 text-tinta-tenue lg:hidden" />
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-
-        {cuentas.total > mostradas && (
-          <div className="px-5 py-4">
-            <button
-              type="button"
-              onClick={onVerMas}
-              className="min-h-12 w-full rounded-lg border border-borde bg-superficie text-[14px] text-tinta-suave pulsable"
-            >
-              Ver más — quedan {(cuentas.total - mostradas).toLocaleString('es-CO')}
-            </button>
-          </div>
-        )}
-
         {vacio && (
           <div className="px-6 pb-6 pt-14 text-center">
             <p className="text-[15px] text-tinta-suave">Ningún resultado en el catálogo.</p>
@@ -232,11 +253,14 @@ const LADOS: { valor: Lado | ''; etiqueta: string }[] = [
   { valor: 'interno', etiqueta: 'Sin pago' },
 ]
 
-function Encabezado({ titulo, cuenta }: { titulo: string; cuenta: string }) {
+function Encabezado({ titulo, cuenta, accion }: { titulo: string; cuenta: string; accion?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b border-borde bg-lienzo/95 px-5 py-2.5 backdrop-blur">
       <p className="rotulo">{titulo}</p>
-      <p className="text-[12px] text-tinta-tenue">{cuenta}</p>
+      <p className="flex items-baseline gap-3 text-[12px] text-tinta-tenue">
+        {accion}
+        <span>{cuenta}</span>
+      </p>
     </header>
   )
 }

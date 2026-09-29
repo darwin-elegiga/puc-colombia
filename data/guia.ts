@@ -15,6 +15,12 @@ export interface GuiaClase {
   pregunta: string
   /** Con qué columna aumenta el saldo. */
   aumenta: 'debito' | 'credito'
+  /** Casos en que el saldo sube (van a la columna de `aumenta`). */
+  subeCuando: string[]
+  /** Casos en que el saldo baja (van a la columna contraria). */
+  bajaCuando: string[]
+  /** Por qué aumenta por esa columna: la ecuación contable, sin tecnicismos. */
+  porque: string
   /** Qué papel juega la clase cuando tú pagas (sale dinero). */
   siPagas: string
   /** Qué papel juega cuando un cliente u otro tercero te paga (entra dinero). */
@@ -28,6 +34,20 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Lo que la empresa tiene o le deben: dinero, cuentas por cobrar, mercancía, equipos.',
     pregunta: '¿Es algo que tengo o que me van a pagar?',
     aumenta: 'debito',
+    subeCuando: [
+      'Entra dinero a caja o bancos: cobras, vendes de contado, te prestan.',
+      'Compras mercancía, un equipo o cualquier bien que va a durar.',
+      'Vendes a crédito: nace una cuenta por cobrar al cliente.',
+      'Entregas un anticipo a un proveedor o a un empleado.',
+    ],
+    bajaCuando: [
+      'Sale dinero de caja o bancos: pagas algo.',
+      'El cliente te paga lo que debía: la cuenta por cobrar se cancela.',
+      'Vendes la mercancía o das de baja un equipo.',
+      'Los equipos pierden valor con el uso: la depreciación (1592) se lleva al haber.',
+    ],
+    porque:
+      'En la ecuación contable, Activo = Pasivo + Patrimonio, los activos están a la izquierda, y la columna izquierda del asiento es el debe. Por eso lo que la empresa tiene sube por el debe y baja por el haber.',
     siPagas:
       'El dinero sale del grupo 11 (caja o bancos), que se acredita. Si a cambio recibes un bien que dura —mercancía (14), un equipo (15)— o entregas un anticipo (1330), ese activo se debita.',
     siTePagan:
@@ -38,6 +58,21 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Lo que la empresa debe a otros: bancos, proveedores, empleados, la DIAN.',
     pregunta: '¿Es algo que tengo que pagar más adelante?',
     aumenta: 'credito',
+    subeCuando: [
+      'Compras a crédito: nace la deuda con el proveedor.',
+      'Te prestan dinero: nace la obligación con el banco.',
+      'Causas sueldos, servicios o impuestos que pagarás después.',
+      'Cobras IVA o practicas una retención: ese dinero es de la DIAN.',
+      'Un cliente te paga por anticipado algo que aún no entregas.',
+    ],
+    bajaCuando: [
+      'Pagas la deuda al proveedor, total o parcialmente.',
+      'Abonas al préstamo del banco.',
+      'Declaras y pagas el IVA o la retención.',
+      'Entregas lo que el cliente había pagado por anticipado.',
+    ],
+    porque:
+      'Los pasivos están a la derecha de la ecuación (Activo = Pasivo + Patrimonio), y la columna derecha es el haber. Son una fuente de los recursos: alguien te prestó o te fió, y esa deuda crece por el haber.',
     siPagas:
       'Pagar una deuda la cancela: la cuenta del pasivo (2205 proveedores, 2505 salarios, 2408 IVA…) se debita. Si al pagarle a un proveedor le retienes impuesto, lo retenido es un pasivo con la DIAN (2365) y se acredita.',
     siTePagan:
@@ -48,6 +83,18 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Lo que es de los dueños: sus aportes y las utilidades que se han quedado en la empresa.',
     pregunta: '¿Viene de los socios o es la ganancia acumulada?',
     aumenta: 'credito',
+    subeCuando: [
+      'Los socios aportan capital.',
+      'La empresa gana dinero y, al cierre, la utilidad pasa al patrimonio.',
+      'Se apartan utilidades como reserva.',
+    ],
+    bajaCuando: [
+      'Se decretan dividendos o participaciones para los socios.',
+      'La empresa pierde dinero en el año.',
+      'Se reduce o se devuelve capital a los socios.',
+    ],
+    porque:
+      'También está a la derecha de la ecuación: es lo que la empresa les debe a sus dueños. Como el pasivo, explica de dónde salieron los recursos, así que crece por el haber.',
     siPagas:
       'Cuando la empresa paga dividendos, primero se decretan (debita 3705 contra 2360) y el pago cancela el pasivo 2360. El patrimonio no se toca al pagar gastos normales: eso va a la clase 5.',
     siTePagan:
@@ -58,6 +105,18 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Lo que la empresa gana: ventas, servicios prestados, intereses y otros ingresos.',
     pregunta: '¿Me pagan (o me deben) porque vendí o presté un servicio?',
     aumenta: 'credito',
+    subeCuando: [
+      'Vendes mercancía o prestas un servicio, de contado o a crédito.',
+      'El banco te abona intereses.',
+      'Recibes un arriendo, una comisión u otro ingreso ocasional.',
+    ],
+    bajaCuando: [
+      'Un cliente te devuelve mercancía (4175 devoluciones en ventas).',
+      'Anulas o rebajas una venta ya registrada.',
+      'Al cierre del año el saldo se cancela contra 5905 ganancias y pérdidas.',
+    ],
+    porque:
+      'Un ingreso aumenta la utilidad, y la utilidad es de los dueños: es patrimonio. Si el patrimonio crece por el haber, lo que lo hace crecer también va al haber.',
     siPagas:
       'Casi nunca aparece cuando pagas. La excepción son las devoluciones en ventas (4175): si le devuelves dinero a un cliente, esa cuenta se debita.',
     siTePagan:
@@ -68,6 +127,18 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Lo que la empresa gasta para funcionar: sueldos, arriendo, servicios, honorarios, intereses.',
     pregunta: '¿Pago algo que se consume y no vuelvo a vender?',
     aumenta: 'debito',
+    subeCuando: [
+      'Pagas o causas sueldos, arriendo, servicios públicos u honorarios.',
+      'El banco te cobra intereses o comisiones.',
+      'Registras la depreciación de los equipos de oficina.',
+    ],
+    bajaCuando: [
+      'Te reintegran o te devuelven un gasto.',
+      'Corriges un gasto registrado de más.',
+      'Al cierre del año el saldo se cancela contra 5905 ganancias y pérdidas.',
+    ],
+    porque:
+      'Un gasto reduce la utilidad y, con ella, el patrimonio. Si el patrimonio baja por el debe, lo que lo reduce va al debe: por eso el gasto crece por el debe.',
     siPagas:
       'Es la clase del lado de quien paga. El gasto se debita (51 administración, 52 ventas, 53 financieros) y el banco o la cuenta por pagar se acredita.',
     siTePagan:
@@ -78,6 +149,16 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Lo que cuesta lo que vendiste: la mercancía o el servicio que entregaste al cliente.',
     pregunta: '¿Es el costo de algo que ya vendí?',
     aumenta: 'debito',
+    subeCuando: [
+      'Vendes mercancía: lo que te costó sale del inventario y pasa al costo.',
+      'Con inventario periódico, compras mercancía (62 compras).',
+    ],
+    bajaCuando: [
+      'El cliente devuelve mercancía y esta vuelve al inventario.',
+      'Al cierre del año el saldo se cancela contra 5905 ganancias y pérdidas.',
+    ],
+    porque:
+      'Igual que el gasto, el costo resta de la utilidad y reduce el patrimonio. Por eso crece por el debe, frente al ingreso de la venta, que crece por el haber.',
     siPagas:
       'No se debita al pagar, sino al vender: la mercancía sale del inventario (1435) y pasa al costo (61). Con inventario periódico las compras se llevan a 62 al momento de comprar.',
     siTePagan:
@@ -88,6 +169,16 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Lo que cuesta fabricar o prestar el servicio mientras está en proceso.',
     pregunta: '¿Es materia prima, mano de obra o gasto de la planta?',
     aumenta: 'debito',
+    subeCuando: [
+      'Consumes materia prima en la fábrica.',
+      'Causas la nómina de los operarios de planta.',
+      'Pagas servicios, mantenimiento o depreciación de la planta.',
+    ],
+    bajaCuando: [
+      'Al terminar la producción, el costo acumulado pasa al inventario de productos terminados (1430) o al costo de ventas (6).',
+    ],
+    porque:
+      'Es un costo que se va acumulando: los recursos que consume la producción se suman por el debe hasta que el producto está listo, y entonces el total sale por el haber hacia el inventario.',
     siPagas:
       'Si fabricas, lo que pagas por materia prima, operarios de planta o servicios de la fábrica se debita aquí en lugar de en gastos (5).',
     siTePagan: 'No interviene al cobrar. Al cerrar el mes su saldo pasa a inventarios (14) o al costo de ventas (6).',
@@ -97,6 +188,15 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Anotaciones de control de derechos posibles: bienes en garantía, demandas a favor, diferencias fiscales.',
     pregunta: '¿Es un derecho que quizá se concrete, o solo quiero llevar su control?',
     aumenta: 'debito',
+    subeCuando: [
+      'Registras un derecho posible: una demanda a favor, bienes que entregaste en garantía.',
+      'Anotas diferencias fiscales o bienes que quieres controlar.',
+    ],
+    bajaCuando: [
+      'El derecho se concreta, se pierde o ya no hace falta controlarlo.',
+    ],
+    porque:
+      'No cambian el balance: son solo de control. Se anotan por el debe y, para que el asiento cuadre, se acredita su contrapartida «por contra» (84–86).',
     siPagas: 'No intervienen: no mueven dinero ni cambian el balance. Se registran contra su contrapartida (84–86).',
     siTePagan: 'Tampoco intervienen. Se revelan en las notas a los estados financieros.',
     prioridad: 3,
@@ -105,6 +205,14 @@ export const GUIA_CLASES: Record<string, GuiaClase> = {
     simple: 'Anotaciones de control de obligaciones posibles: bienes recibidos de terceros, demandas en contra.',
     pregunta: '¿Es una obligación que quizá se concrete, o solo quiero llevar su control?',
     aumenta: 'credito',
+    subeCuando: [
+      'Registras una obligación posible: una demanda en contra, bienes de terceros que tienes en custodia o garantía.',
+    ],
+    bajaCuando: [
+      'La obligación se concreta, se extingue o devuelves el bien.',
+    ],
+    porque:
+      'Son el espejo de la clase 8: solo de control. Se anotan por el haber y, para que el asiento cuadre, se debita su contrapartida «por contra» (94–96).',
     siPagas: 'No intervienen: no mueven dinero ni cambian el balance. Se registran contra su contrapartida (94–96).',
     siTePagan: 'Tampoco intervienen. Se revelan en las notas a los estados financieros.',
     prioridad: 3,

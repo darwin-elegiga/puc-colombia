@@ -1,13 +1,14 @@
 'use client'
 
 import type { Catalogo } from '@/lib/catalogo'
-import { Mosaico } from './MapaClases'
+import { useScrollRecordado } from '@/lib/scroll'
+import { Mosaico, ResumenDebeHaber } from './MapaClases'
 import { IconoBalanza, IconoChevron, IconoIntercambio, IconoLupa, IconoSinConexion } from './Iconos'
 
 const EJEMPLOS = ['pagué el arriendo', 'me pagaron una factura', 'nómina', '1105']
 
 /**
- * Portada: el buscador y las nueve clases, nada más.
+ * Portada: el buscador, las nueve clases y por dónde aumenta cada una, nada más.
  *
  * Todo lo demás —resultados, fichas, asiento, entrenamiento— está a un toque, pero
  * no se muestra hasta que se pide. Al buscar, el Explorador cambia a la vista de
@@ -38,8 +39,10 @@ export default function Inicio({
   /** El campo de búsqueda, para el atajo «/» del teclado. */
   campo: React.RefObject<HTMLInputElement | null>
 }) {
+  // Al volver de una clase se sigue leyendo por donde se iba.
+  const scroll = useScrollRecordado<HTMLDivElement>('inicio')
   return (
-    <div className="panel-scroll min-h-0 flex-1">
+    <div ref={scroll} className="panel-scroll min-h-0 flex-1">
       <div
         className="mx-auto max-w-5xl px-4 lg:px-8"
         style={{ paddingTop: 'calc(var(--seguro-arriba) + 1rem)', paddingBottom: '2rem' }}
@@ -113,6 +116,12 @@ export default function Inicio({
         {/* ─────────── Las nueve clases ─────────── */}
         <section className="mt-10 lg:mt-14">
           <Mosaico catalogo={catalogo} onAbrir={onClase} completo={false} />
+        </section>
+
+        {/* ─────────── Debe y haber de cada clase ─────────── */}
+        <section className="mt-8">
+          <p className="rotulo mb-2.5">Por dónde aumenta cada clase</p>
+          <ResumenDebeHaber catalogo={catalogo} onAbrir={onClase} />
         </section>
 
         {/* En el móvil estos accesos van en la barra inferior. */}
