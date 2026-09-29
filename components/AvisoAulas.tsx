@@ -47,8 +47,9 @@ export default function AvisoAulas() {
   }, [])
 
   // Las aulas en las que este dispositivo es estudiante (aunque se haya ocultado la
-  // burbuja): una comprobación ligera al montar, cada minuto y al volver a la pestaña. Si
-  // el docente la cerró, caducó o sacaron a este estudiante, deja de condicionar la app.
+  // burbuja): una comprobación ligera al montar, cada 15 s y al volver a la app. Si el
+  // docente la cerró, caducó o sacaron a este estudiante, deja de condicionar la app enseguida.
+  // Con la versión conocida, cada comprobación sin cambios cuesta un solo comando.
   // Se salta el aula que está abierta en pantalla: su vista ya la consulta.
   const comoEstudiante = vigentes(aulas, ahora).filter((a) => a.rol === 'estudiante')
   const aComprobar = comoEstudiante
@@ -85,12 +86,21 @@ export default function AvisoAulas() {
       }
     }
     const primera = setTimeout(comprobar, 0)
-    const t = setInterval(comprobar, 60_000)
-    document.addEventListener('visibilitychange', comprobar)
+    const t = setInterval(comprobar, 15_000)
+    // «focus» y «visibilitychange» llegan juntos al volver: una sola comprobación.
+    let ultima = 0
+    const alVolver = () => {
+      if (Date.now() - ultima < 2000) return
+      ultima = Date.now()
+      comprobar()
+    }
+    document.addEventListener('visibilitychange', alVolver)
+    window.addEventListener('focus', alVolver)
     return () => {
       clearTimeout(primera)
       clearInterval(t)
-      document.removeEventListener('visibilitychange', comprobar)
+      document.removeEventListener('visibilitychange', alVolver)
+      window.removeEventListener('focus', alVolver)
     }
   }, [aComprobar])
 
