@@ -65,14 +65,18 @@ export async function sugerirNotaIA(ejercicio: EjercicioDeAula, filas: Fila[]): 
     .map((d) => `  ${d.texto}: ${d.importe !== undefined ? d.importe : d.etiqueta}`)
     .join('\n')
 
+  // Un ejercicio propio puede no tener solución: entonces se califica solo contra el enunciado.
+  const sinSolucion = solucion.length === 0
   const usuario = [
     `Ejercicio: ${ejercicio.titulo}`,
     `Enunciado: ${ejercicio.enunciado}`,
     datos ? `Datos:\n${datos}` : '',
-    `Solución de referencia:\n${renglones(referencia)}`,
+    sinSolucion
+      ? 'No hay solución de referencia: decide tú cuál es el asiento correcto según el enunciado y califica la respuesta contra él. Deja «observacion» vacía.'
+      : `Solución de referencia:\n${renglones(referencia)}`,
     `Respuesta del estudiante:\n${renglones(filas)}`,
-    `Corrección automática (ok, importe, columna, cuenta, sobra):\n${marcas}`,
-    local.faltan.length ? `Renglones de la solución que no escribió: ${local.faltan.map((l) => l.codigo).join(', ')}` : '',
+    sinSolucion ? '' : `Corrección automática (ok, importe, columna, cuenta, sobra):\n${marcas}`,
+    !sinSolucion && local.faltan.length ? `Renglones de la solución que no escribió: ${local.faltan.map((l) => l.codigo).join(', ')}` : '',
   ]
     .filter(Boolean)
     .join('\n\n')

@@ -21,9 +21,11 @@ function leerDescartados(): string[] {
  * Lo flotante de las aulas, montado una sola vez sobre toda la aplicación (app/page.tsx):
  *  - si este dispositivo está en un aula vigente, la burbuja abajo a la derecha
  *    (BurbujaAula) en cualquier pantalla del catálogo, para volver a ella;
- *  - si no, en la portada, la pastilla con la última aula pública abierta, para unirse.
- * Nada de esto aparece dentro de las pantallas de aulas. Cada aviso se descarta con la
- * «×» durante la sesión. Las públicas se consultan cada 30 s solo con la pantalla visible.
+ *  - si no, en el catálogo (portada, resultados, fichas, mapa), la pastilla con la primera
+ *    aula pública abierta que no sea propia ni se haya descartado, para unirse.
+ * Nada de esto aparece dentro de las aulas ni en las tareas a pantalla completa. Cada aviso
+ * se descarta con la «×» durante la sesión. Las públicas se consultan cada 10 s (y al volver
+ * a la app) preguntando solo por la versión de la lista; si no cambió, cuesta un comando.
  */
 export default function AvisoAulas() {
   const { destino, abrir } = useDestino()
@@ -34,7 +36,9 @@ export default function AvisoAulas() {
   const [descartados, setDescartados] = useState<string[]>(leerDescartados)
   const mia = vigentes(aulas, ahora).find((a) => !descartados.includes(a.codigo))
 
-  const enPortada = destino === null
+  /** Pantallas del catálogo: la portada, los resultados, las fichas y el mapa de clases. Las
+      tareas a pantalla completa (entrenar, practicar, el asiento con IA) no se interrumpen. */
+  const enCatalogo = destino === null || destino.tipo === 'cuenta' || destino.tipo === 'movimiento' || destino.tipo === 'clases'
 
   // El reloj corre siempre: la burbuja desaparece sola cuando el aula caduca.
   useEffect(() => {
@@ -90,32 +94,56 @@ export default function AvisoAulas() {
     }
   }, [aComprobar])
 
-  // Sin aula propia: las públicas, solo en la portada (el panel de aulas ya las consulta).
+  // Sin aula propia: las públicas, en cualquier pantalla del catálogo (el panel de aulas ya
+  // las consulta). Cada 10 s y al volver a la app se pregunta solo por la versión de la lista:
+  // si no cambió, el servidor responde con un comando; si cambió, llega la lista nueva.
+  const versionPublicas = useRef<number | undefined>(undefined)
   useEffect(() => {
-    if (mia || !enPortada) return
+    if (mia || !enCatalogo) return
     let vivo = true
-    // La primera carga siempre; las siguientes, solo con la pantalla visible.
     const cargar = (siempre = false) => {
       if (!siempre && document.visibilityState !== 'visible') return
       apiAulas
-        .publicas()
-        .then((l) => vivo && setPublicas(l))
-        .catch(() => vivo && setPublicas([]))
+        .publicasDesde(versionPublicas.current)
+        .then((r) => {
+          if (!vivo) return
+          versionPublicas.current = r.version
+          if ('aulas' in r) setPublicas(r.aulas)
+        })
+        .catch(() => undefined)
     }
     cargar(true)
-    const reloj = setInterval(cargar, 30000)
+    const reloj = setInterval(cargar, 10_000)
+    // «focus» y «visibilitychange» llegan juntos al volver: una sola consulta.
+    let ultima = 0
+    const alVolver = () => {
+      if (Date.now() - ultima < 2000) return
+      ultima = Date.now()
+      cargar()
+    }
+    document.addEventListener('visibilitychange', alVolver)
+    window.addEventListener('focus', alVolver)
     return () => {
       vivo = false
       clearInterval(reloj)
+      document.removeEventListener('visibilitychange', alVolver)
+      window.removeEventListener('focus', alVolver)
     }
-  }, [mia, enPortada])
+  }, [mia, enCatalogo])
 
-  // Con la burbuja a la vista, las pantallas dejan espacio al final para que no tape nada.
+  // La invitación a un aula pública ajena, en el catálogo: la primera que no sea propia ni
+  // se haya descartado.
+  // Sin las caducadas: la lista guardada puede ser de hace un rato.
+  const publica = publicas.find(
+    (p) => p.expira > ahora && !descartados.includes(p.codigo) && !aulas.some((a) => a.codigo === p.codigo),
+  )
+
+  // Con la burbuja o la pastilla a la vista, las pantallas dejan espacio al final para que no tapen nada.
+  const flotanteVisible = mia ? destino?.tipo !== 'aula' && destino?.tipo !== 'aulas' : Boolean(enCatalogo && publica)
   useEffect(() => {
-    const visible = Boolean(mia) && destino?.tipo !== 'aula' && destino?.tipo !== 'aulas'
-    document.body.classList.toggle('con-burbuja', visible)
+    document.body.classList.toggle('con-burbuja', flotanteVisible)
     return () => document.body.classList.remove('con-burbuja')
-  }, [mia, destino])
+  }, [flotanteVisible])
 
   const descartar = (codigo: string) => {
     const lista = [...descartados, codigo]
@@ -141,11 +169,8 @@ export default function AvisoAulas() {
     )
   }
 
-  // La invitación a un aula pública ajena, solo en la portada: la primera que no sea
-  // propia ni se haya descartado.
-  const publica = publicas.find((p) => !descartados.includes(p.codigo) && !aulas.some((a) => a.codigo === p.codigo))
   const aviso =
-    enPortada && publica
+    enCatalogo && publica
       ? { codigo: publica.codigo, rotulo: `Quiz abierto · con ${publica.docente}`, titulo: publica.nombre, accion: 'Unirme' }
       : null
   if (!aviso) return null

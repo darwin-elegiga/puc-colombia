@@ -55,7 +55,8 @@ export interface Almacen {
   soltar(clave: string, ficha: string): Promise<void>
   zadd(clave: string, puntaje: number, miembro: string): Promise<void>
   zrangePorPuntaje(clave: string, min: number, max: number): Promise<string[]>
-  zremPorPuntaje(clave: string, min: number, max: number): Promise<void>
+  /** Devuelve cuántos quitó. */
+  zremPorPuntaje(clave: string, min: number, max: number): Promise<number>
   zrem(clave: string, miembro: string): Promise<void>
 }
 
@@ -121,7 +122,9 @@ export function almacenEnMemoria(reloj: () => number = Date.now): Almacen {
     },
     async zremPorPuntaje(clave, min, max) {
       const z = zset(clave)
-      for (const [m, p] of z) if (p >= min && p <= max) z.delete(m)
+      let quitados = 0
+      for (const [m, p] of z) if (p >= min && p <= max) quitados += Number(z.delete(m))
+      return quitados
     },
     async zrem(clave, miembro) { zset(clave).delete(miembro) },
   }
@@ -182,6 +185,8 @@ const k = {
   ia: (c: string) => `aula:${c}:ia`,
   usoIA: (c: string) => `aula:${c}:ia:usos`,
   publicas: 'aulas:publicas',
+  /** Sube cada vez que se abre, cierra o cierra la entrada un aula pública: consultarlo cuesta un comando. */
+  versionPublicas: 'aulas:publicas:version',
 }
 
 const json = <T>(texto: string | null): T | null => (texto ? (JSON.parse(texto) as T) : null)
@@ -206,6 +211,8 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
   }
 
   const guardarAula = (aula: Aula) => almacen.set(k.aula(aula.codigo), JSON.stringify(aula), aula.expira)
+  /** Aviso barato para todos los dispositivos: la lista de aulas públicas cambió. */
+  const cambioPublicas = () => almacen.incr(k.versionPublicas, reloj() + 365 * DURACION_MS)
 
   /**
    * Anota un cambio. El docente lo ve siempre; los estudiantes solo si les afecta a todos
@@ -301,20 +308,30 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
       await cambio(aula, { alumnos: true })
       if (aula.publica) {
         await almacen.zadd(k.publicas, expira, codigo)
+        await cambioPublicas()
       }
       return { codigo, clave: `docente.${secreto}`, aula: resumen(aula) }
     },
 
+    /** La versión de la lista de aulas públicas: si no cambió, el navegador no pide la lista. */
+    async versionPublicas(): Promise<number> {
+      return Number((await almacen.get(k.versionPublicas)) ?? 0)
+    },
+
     async publicas(): Promise<AulaPublica[]> {
       const ahora = reloj()
-      await almacen.zremPorPuntaje(k.publicas, 0, ahora)
+      // Las que caducaron salen de la lista: quien la tenga guardada debe enterarse.
+      if (await almacen.zremPorPuntaje(k.publicas, 0, ahora)) await cambioPublicas()
       const codigos = await almacen.zrangePorPuntaje(k.publicas, ahora, Number.MAX_SAFE_INTEGER)
       const lista: AulaPublica[] = []
       for (const codigo of codigos.reverse()) {
         if (lista.length >= 20) break
         const aula = json<Aula>(await almacen.get(k.aula(codigo)))
         if (!aula || aula.estado !== 'abierta' || aula.entradaCerrada) continue
-        lista.push({ codigo, nombre: aula.nombre, docente: aula.docente, miembros: await almacen.hlen(k.miembros(codigo)), creada: aula.creada })
+        lista.push({
+          codigo, nombre: aula.nombre, docente: aula.docente, miembros: await almacen.hlen(k.miembros(codigo)),
+          creada: aula.creada, expira: aula.expira,
+        })
       }
       return lista
     },
@@ -560,6 +577,7 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
       aula.estado = 'cerrada'
       await guardarAula(aula)
       await almacen.zrem(k.publicas, codigo)
+      if (aula.publica) await cambioPublicas()
       await cambio(aula, { alumnos: true })
     }),
 
@@ -567,6 +585,8 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
       const aula = await soloDocente(codigo, cred)
       aula.entradaCerrada = entrada.cerrada === true
       await guardarAula(aula)
+      // Después de guardar: quien lea la versión nueva debe ver ya la lista nueva.
+      if (aula.publica) await cambioPublicas()
       await cambio(aula)
     }),
 

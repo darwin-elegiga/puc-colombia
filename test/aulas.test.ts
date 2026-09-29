@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   DURACION_MS, codigoValido, formatoTiempo, generarCodigo, limpiarNombre, nombreUnico, notaSugerida, normalizarCodigo,
-  notaDelQuiz, validarFilas, validarNota, validarRespuestas, type VistaDocente, type VistaEstudiante,
+  notaDelQuiz, validarFilas, validarNota, validarPropio, validarRespuestas, type VistaDocente, type VistaEstudiante,
 } from '../lib/aulas'
 import { MAX_EJERCICIOS } from '../lib/aulas'
 import {
@@ -424,4 +424,29 @@ test('dos ejercicios añadidos a la vez quedan los dos', async () => {
   ])
   assert.notEqual(a.id, b.id)
   assert.equal(((await s.estado(codigo, docente)) as VistaDocente).ejercicios.length, 2)
+})
+
+test('un ejercicio propio puede ser solo el enunciado: sin nota automática ni promedio que lo castigue', () => {
+  const soloEnunciado = validarPropio({ enunciado: 'Registra la compra de papelería que hiciste ayer.', filas: [] })
+  assert.ok(typeof soloEnunciado !== 'string', String(soloEnunciado))
+  assert.equal(typeof validarPropio({ enunciado: 'Registra la compra de papelería.' }), 'object')
+  assert.equal(typeof validarPropio({ enunciado: 'Registra la compra.', filas: [{ codigo: '5195', debe: 100, haber: null }] }), 'string')
+  const ejs = [
+    { id: 'ej1', solucion: [{ codigo: '1105', columna: 'debe', importe: 100, concepto: '' }, { codigo: '4135', columna: 'haber', importe: 100, concepto: '' }] },
+    { id: 'ej2', solucion: [] },
+  ] as unknown as Parameters<typeof notaDelQuiz>[0]
+  const r = notaDelQuiz(ejs, { ej1: [{ codigo: '1105', debe: 100, haber: null }, { codigo: '4135', debe: null, haber: 100 }], ej2: [] })
+  assert.equal(r.porEjercicio.ej2, null)
+  assert.equal(r.promedio, 5, 'el ejercicio sin solución no baja el promedio automático')
+  assert.equal(notaDelQuiz([ejs[1]], {}).promedio, null)
+})
+
+test('un aula pública que caduca sube la versión de la lista y lleva su caducidad', async () => {
+  const { s, avanzar } = await montar()
+  const [publica] = await s.publicas()
+  assert.ok(publica.expira > publica.creada)
+  const antes = await s.versionPublicas()
+  avanzar(DURACION_MS + 1)
+  assert.equal((await s.publicas()).length, 0)
+  assert.ok((await s.versionPublicas()) > antes)
 })

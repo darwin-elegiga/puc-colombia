@@ -46,7 +46,9 @@ export default function EditorEjercicio({
   const faltaEnunciado = enunciado.trim().length < 8
   // Como en el servidor (validarPropio): cada renglón de la solución lleva código e importe.
   const incompletos = escritas.some((f) => !f.codigo || !(f.debe ?? f.haber))
-  const listo = !faltaEnunciado && escritas.length >= 2 && !incompletos && total.cuadra
+  // La solución es opcional: sin ella, el ejercicio es solo el enunciado y se califica a mano.
+  const sinSolucion = escritas.length === 0
+  const listo = !faltaEnunciado && (sinSolucion || (escritas.length >= 2 && !incompletos && total.cuadra))
 
   const proponer = async () => {
     setPensando(true)
@@ -91,7 +93,7 @@ export default function EditorEjercicio({
       </label>
 
       <div className="mt-5 flex items-center justify-between gap-3 px-2 sm:px-0">
-        <p className="rotulo">Solución</p>
+        <p className="rotulo">Solución (opcional)</p>
         <button
           type="button"
           onClick={proponer}
@@ -101,6 +103,10 @@ export default function EditorEjercicio({
           {pensando ? 'La IA está pensando…' : 'Proponer con IA (beta)'}
         </button>
       </div>
+      <p className="mt-1 px-2 text-[12.5px] leading-relaxed text-tinta-tenue sm:px-0">
+        Si la escribes, cada entrega se corrige sola. Si la dejas vacía, el ejercicio es solo el enunciado y lo calificas tú
+        (o con la IA).
+      </p>
       <div className="mt-2">
         <HojaAsiento filas={filas} onCambiar={setFilas} catalogo={catalogo} />
       </div>
@@ -141,7 +147,7 @@ export default function EditorEjercicio({
           {faltaEnunciado
             ? 'Escribe el enunciado.'
             : escritas.length < 2
-              ? 'La solución necesita al menos dos renglones.'
+              ? 'La solución necesita al menos dos renglones (o déjala vacía).'
               : incompletos
                 ? 'Cada renglón de la solución necesita código e importe.'
                 : 'La solución debe cuadrar para añadirlo.'}

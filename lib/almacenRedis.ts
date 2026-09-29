@@ -84,7 +84,7 @@ function almacenUpstash(url: string, token: string): Almacen {
       return redis.zrange<string[]>(clave, min, max, { byScore: true })
     },
     async zremPorPuntaje(clave, min, max) {
-      await redis.zremrangebyscore(clave, min, max)
+      return redis.zremrangebyscore(clave, min, max)
     },
     async zrem(clave, miembro) {
       await redis.zrem(clave, miembro)

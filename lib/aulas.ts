@@ -108,15 +108,23 @@ export const notaSugerida = (c: Pick<Correccion, 'aciertos' | 'total' | 'estados
   return total ? Math.round((c.aciertos / total) * 50) / 10 : 0
 }
 
-/** La nota de un ejercicio: la de su corrección automática. */
-export const notaDeEjercicio = (solucion: LineaSolucion[], filas: Fila[]) => notaSugerida(corregir(solucion, filas))
+/**
+ * La nota de un ejercicio: la de su corrección automática. Un ejercicio propio sin
+ * solución (solo enunciado) no tiene nota automática: null, la pone el docente.
+ */
+export const notaDeEjercicio = (solucion: LineaSolucion[], filas: Fila[]) =>
+  solucion.length ? notaSugerida(corregir(solucion, filas)) : null
 
-/** Nota de cada ejercicio y su promedio: la nota sugerida del quiz. */
+/**
+ * Nota de cada ejercicio y su promedio: la nota sugerida del quiz. Los ejercicios sin
+ * solución no entran en el promedio automático (null en porEjercicio); si ninguno la
+ * tiene, el promedio es null y el docente califica a mano.
+ */
 export function notaDelQuiz(ejercicios: EjercicioDeAula[], respuestas: Respuestas) {
-  const porEjercicio: Record<string, number> = {}
+  const porEjercicio: Record<string, number | null> = {}
   for (const e of ejercicios) porEjercicio[e.id] = notaDeEjercicio(e.solucion ?? [], respuestas[e.id] ?? [])
-  const notas = Object.values(porEjercicio)
-  const promedio = notas.length ? Math.round((notas.reduce((s, n) => s + n, 0) / notas.length) * 10) / 10 : 0
+  const notas = Object.values(porEjercicio).filter((n): n is number => n !== null)
+  const promedio = notas.length ? Math.round((notas.reduce((s, n) => s + n, 0) / notas.length) * 10) / 10 : null
   return { porEjercicio, promedio }
 }
 
@@ -285,6 +293,8 @@ export interface AulaPublica {
   docente: string
   miembros: number
   creada: number
+  /** Para dejar de ofrecerla al caducar, aunque la lista guardada no se haya refrescado. */
+  expira: number
 }
 
 /** Copia de un ejercicio de la aplicación para lanzarlo en un aula. */
@@ -322,13 +332,16 @@ export function validarPropio(entrada: unknown): EjercicioPropio | string {
   const texto = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+\n/g, '\n').trim().slice(0, max) : '')
   const enunciado = texto(e.enunciado, MAX_ENUNCIADO)
   if (enunciado.length < 8) return 'Escribe el enunciado del ejercicio.'
-  const filas = validarFilas(e.filas)
-  if (!filas || filas.length < 2) return 'La solución necesita al menos dos renglones.'
+  const filas = e.filas === undefined || e.filas === null ? [] : validarFilas(e.filas)
+  if (!filas) return 'La solución tiene renglones que no son válidos.'
+  const titulo = tituloDe(e.titulo, enunciado)
+  // La solución es opcional: un ejercicio puede ser solo el enunciado y lo califica el docente.
+  if (filas.length === 0) return { titulo, enunciado, filas, explicacion: texto(e.explicacion, MAX_ENUNCIADO) }
+  if (filas.length < 2) return 'La solución necesita al menos dos renglones (o déjala vacía).'
   if (filas.some((f) => !f.codigo || !(f.debe ?? f.haber))) return 'Cada renglón de la solución necesita código e importe.'
   const debe = filas.reduce((s, f) => s + (f.debe ?? 0), 0)
   const haber = filas.reduce((s, f) => s + (f.haber ?? 0), 0)
   if (debe !== haber) return 'La solución no cuadra: el debe y el haber deben sumar lo mismo.'
-  const titulo = tituloDe(e.titulo, enunciado)
   return { titulo, enunciado, filas, explicacion: texto(e.explicacion, MAX_ENUNCIADO) }
 }
 

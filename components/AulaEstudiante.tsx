@@ -188,10 +188,15 @@ export default function AulaEstudiante({
                     )}
                   </>
                 )}
-                {ej.solucionPublicada && ej.solucion && (
+                {ej.solucionPublicada && (Boolean(ej.solucion?.length) || Boolean(ej.explicacion)) && (
                   <>
-                    <p className="rotulo mb-2 mt-4 px-2 sm:px-0">Solución</p>
-                    <HojaAsiento filas={aFilas(ej.solucion)} onCambiar={() => {}} catalogo={catalogo} bloqueada />
+                    {/* Un ejercicio propio puede no tener solución: entonces solo la explicación, si la hay. */}
+                    {ej.solucion && ej.solucion.length > 0 && (
+                      <>
+                        <p className="rotulo mb-2 mt-4 px-2 sm:px-0">Solución</p>
+                        <HojaAsiento filas={aFilas(ej.solucion)} onCambiar={() => {}} catalogo={catalogo} bloqueada />
+                      </>
+                    )}
                     {ej.explicacion && (
                       <div className="mt-3 px-2 text-[14.5px] leading-relaxed text-tinta-suave sm:px-0">
                         <TextoPlegado texto={ej.explicacion} />

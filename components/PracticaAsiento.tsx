@@ -168,6 +168,15 @@ export default function PracticaAsiento({
       </div>
 
       {/* ─────────── Acciones ─────────── */}
+      {/* Un ejercicio de clase sin solución (solo enunciado): se practica, pero no hay con qué comprobar. */}
+      {ejercicio.solucion.length === 0 ? (
+        <footer
+          className="z-20 shrink-0 border-t border-borde bg-lienzo px-4 pt-3 text-center text-[13px] leading-relaxed text-tinta-tenue"
+          style={{ paddingBottom: 'calc(0.75rem + var(--seguro-abajo))' }}
+        >
+          Este ejercicio no tiene solución de referencia: lo califica tu docente.
+        </footer>
+      ) : (
       <footer
         className="z-20 shrink-0 border-t border-borde bg-lienzo px-4 pt-3"
         style={{ paddingBottom: 'calc(0.75rem + var(--seguro-abajo))' }}
@@ -204,6 +213,7 @@ export default function PracticaAsiento({
           )}
         </div>
       </footer>
+      )}
     </div>
   )
 }

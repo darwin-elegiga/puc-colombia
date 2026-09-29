@@ -25,7 +25,8 @@ export function useAula(aula: MiAula | undefined) {
   /** Reloj del servidor menos el del dispositivo: el tiempo en pantalla no depende del móvil. */
   const [desfase, setDesfase] = useState(0)
   const version = useRef<number | undefined>(undefined)
-  const enCurso = useRef(false)
+  /** La consulta en vuelo (con sus repeticiones), para no lanzar otra a la vez. */
+  const enCurso = useRef<Promise<void> | null>(null)
   /** Consultas seguidas sin cambios: con muchas, se espacian. */
   const sinCambios = useRef(0)
   /** Se pidió el estado completo mientras había una consulta en vuelo: se repite al terminar. */
@@ -72,21 +73,25 @@ export function useAula(aula: MiAula | undefined) {
   const refrescar = useCallback(async () => {
     if (!aula || detenido.current) return
     if (enCurso.current) {
+      // Quien espera (el cargador de una acción) espera también a la repetición.
       repetir.current = true
-      return
+      return enCurso.current
     }
-    enCurso.current = true
-    try {
-      await consultar()
-      // Lo pedido durante la consulta: estado completo, que la anterior pudo leer antes del cambio.
-      while (repetir.current && !detenido.current) {
-        repetir.current = false
-        version.current = undefined
+    const bucle = (async () => {
+      try {
         await consultar()
+        // Lo pedido durante la consulta: estado completo, que la anterior pudo leer antes del cambio.
+        while (repetir.current && !detenido.current) {
+          repetir.current = false
+          version.current = undefined
+          await consultar()
+        }
+      } finally {
+        enCurso.current = null
       }
-    } finally {
-      enCurso.current = false
-    }
+    })()
+    enCurso.current = bucle
+    return bucle
   }, [aula, consultar])
 
   /**

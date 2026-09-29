@@ -272,6 +272,11 @@ async function pedir<T>(ruta: string, opciones: RequestInit & { clave?: string }
 
 export const apiAulas = {
   publicas: () => pedir<{ aulas: AulaPublica[] }>('/api/aulas').then((r) => r.aulas),
+  /** Con la versión conocida: si la lista no cambió, { sinCambios } sin pedirla entera. */
+  publicasDesde: (version?: number) =>
+    pedir<{ aulas: AulaPublica[]; version: number } | { sinCambios: true; version: number }>(
+      `/api/aulas${version !== undefined ? `?v=${version}` : ''}`,
+    ),
   crear: (datos: { nombre: string; docente: string; publica: boolean }) =>
     pedir<{ codigo: string; clave: string; aula: AulaResumen }>('/api/aulas', { method: 'POST', body: JSON.stringify(datos) }),
   unirse: (codigo: string, nombre: string) =>

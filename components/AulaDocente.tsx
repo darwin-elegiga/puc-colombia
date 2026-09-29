@@ -36,7 +36,8 @@ export default function AulaDocente({
   catalogo: Catalogo
   /** El aula ya no existe en el servidor: se muestra la copia del dispositivo, sin acciones. */
   soloCopia: boolean
-  onCambio: () => void
+  /** Pide el estado al servidor; se espera para que el cargador siga hasta ver el cambio. */
+  onCambio: () => void | Promise<void>
 }) {
   const [eligiendo, setEligiendo] = useState(false)
   /** A quién se está calificando: se guarda el id, no la copia, para ver siempre lo último. */
@@ -55,6 +56,9 @@ export default function AulaDocente({
   /** Tras sacar a alguien con la entrada abierta: se ofrece cerrarla. */
   const [ofrecerCerrarEntrada, setOfrecerCerrarEntrada] = useState(false)
   const [ocupado, setOcupado] = useState(false)
+  /** La acción en marcha: su botón muestra un cargador hasta que llega el estado nuevo. */
+  const [enCurso, setEnCurso] = useState<string | null>(null)
+  const empezando = enCurso === 'empezar'
   const [limite, setLimite] = useState<number | null>(null)
   /** Ejercicio propio que se está escribiendo (vacío para uno nuevo). */
   const [escribiendo, setEscribiendo] = useState<EjercicioPropio | null>(null)
@@ -70,17 +74,20 @@ export default function AulaDocente({
 
   const hacer = async (accion: string, datos: Record<string, unknown> = {}) => {
     setOcupado(true)
+    setEnCurso(accion)
     setAviso(null)
     setOfrecerCerrarEntrada(false)
     try {
       await apiAulas.accion(aula.codigo, aula.clave, accion, datos)
-      onCambio()
+      // El cargador sigue hasta tener el estado nuevo: sin ese hueco no parece que «no hace nada».
+      await onCambio()
       return true
     } catch (e) {
       setAviso((e as Error).message)
       return false
     } finally {
       setOcupado(false)
+      setEnCurso(null)
       setConfirmar(null)
     }
   }
@@ -186,7 +193,9 @@ export default function AulaDocente({
                   <summary className="tactil flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
                     <span className="tabular w-5 shrink-0 text-[13px] text-tinta-tenue">{i + 1}</span>
                     <span className="min-w-0 flex-1 truncate text-[14.5px] text-tinta">{ej.titulo}</span>
-                    <span className="shrink-0 text-[12px] text-tinta-tenue">{ej.solucion?.length ?? 0} renglones</span>
+                    <span className="shrink-0 text-[12px] text-tinta-tenue">
+                      {ej.solucion?.length ? `${ej.solucion.length} renglones` : 'Solo enunciado'}
+                    </span>
                     <IconoChevron className="size-4 shrink-0 text-tinta-tenue transition-transform group-open:rotate-90" />
                   </summary>
                   <div className="border-t border-borde">
@@ -235,12 +244,21 @@ export default function AulaDocente({
               </select>
             </label>
 
-            {confirmar === 'empezar' ? (
+            {empezando ? (
+              <p
+                role="status"
+                className="mt-3 flex min-h-12 items-center justify-center gap-2.5 rounded-xl text-[15px] font-medium"
+                style={{ background: 'var(--color-sube)', color: 'var(--color-sube-tinta)' }}
+              >
+                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" aria-hidden />
+                Empezando el quiz…
+              </p>
+            ) : confirmar === 'empezar' ? (
               <button
                 type="button"
                 autoFocus
                 onClick={confirmado(() => hacer('empezar', { limiteMin: limite }))}
-                onBlur={() => setConfirmar(null)}
+                onBlur={() => { if (!enCurso) setConfirmar(null) }}
                 disabled={ocupado}
                 className="tactil mt-3 w-full rounded-xl bg-tinta text-[15px] text-white"
               >
@@ -263,6 +281,32 @@ export default function AulaDocente({
       {/* ─────────── Envíos ─────────── */}
       {estado !== 'preparando' && (
         <section className="mt-6">
+          {/* Deja claro el cambio de etapa: ya no se prepara, se recibe. */}
+          <div
+            className="mb-4 flex items-center gap-3 rounded-xl px-4 py-3"
+            style={
+              estado === 'en-curso'
+                ? { background: 'var(--color-sube)', color: 'var(--color-sube-tinta)' }
+                : { background: 'var(--color-hueso)', color: 'var(--color-tinta-suave)' }
+            }
+          >
+            <span className="relative flex size-2.5 shrink-0" aria-hidden>
+              {estado === 'en-curso' && (
+                <span className="absolute inline-flex size-full rounded-full opacity-60 motion-safe:animate-ping" style={{ background: 'currentColor' }} />
+              )}
+              <span className="relative inline-flex size-2.5 rounded-full" style={{ background: 'currentColor' }} />
+            </span>
+            <span className="min-w-0 flex-1 text-[14px] font-medium">
+              {estado === 'en-curso' ? 'Quiz en curso' : 'Quiz cerrado'}
+              <span className="block text-[12.5px] font-normal opacity-80">
+                {estado === 'en-curso'
+                  ? `${vista.ejercicios.length} ${vista.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'} · ${
+                      vista.aula.limiteMin ? `${vista.aula.limiteMin} min por estudiante` : 'sin límite de tiempo'
+                    }`
+                  : 'Ya no se aceptan envíos'}
+              </span>
+            </span>
+          </div>
           <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
             <p className="rotulo">Envíos</p>
             {activos.length > 0 && (
@@ -281,6 +325,7 @@ export default function AulaDocente({
               <ul className="overflow-hidden rounded-xl border border-borde bg-superficie">
                 {vista.entregas.map((e) => {
                   const sugerida = notaDelQuiz(vista.ejercicios, e.respuestas).promedio
+                  const aMano = vista.ejercicios.filter((ej) => !ej.solucion?.length).length
                   return (
                     <li key={e.estudianteId} className="border-b border-borde last:border-b-0">
                       <button
@@ -294,7 +339,7 @@ export default function AulaDocente({
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[14.5px] text-tinta">{e.nombre}</span>
                           <span className="tabular block text-[12.5px] text-tinta-tenue">
-                            {formatoTiempo(e.segundos)} · sugerida {formatoNota(sugerida)}
+                            {formatoTiempo(e.segundos)} · {sugerida === null ? 'califícalo tú' : `sugerida ${formatoNota(sugerida)}${aMano ? ` · ${aMano} a mano` : ''}`}
                           </span>
                         </span>
                         {e.calificacion ? (
@@ -319,26 +364,38 @@ export default function AulaDocente({
 
           {!soloCopia &&
             (vista.aula.solucionPublicada ? (
-              <p className="mt-3 px-1 text-[13px] font-medium" style={{ color: 'var(--color-sube-tinta)' }}>
+              <p className="mt-4 px-1 text-[13px] font-medium" style={{ color: 'var(--color-sube-tinta)' }}>
                 ✓ Soluciones publicadas: las tienen todos en su dispositivo
               </p>
-            ) : confirmar === 'publicar' ? (
+            ) : (
+              <div className="mt-5 rounded-xl border border-dashed border-borde-fuerte bg-superficie p-4">
+                <p className="text-[14px] font-medium text-tinta">Al terminar</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-tinta-suave">
+                  Cuando hayas calificado, publica las soluciones: cada estudiante las guarda en su dispositivo con su nota.
+                </p>
+            {confirmar === 'publicar' ? (
               <button
                 type="button"
                 autoFocus
                 onClick={confirmado(() => hacer('publicar'))}
-                onBlur={() => setConfirmar(null)}
+                onBlur={() => { if (!enCurso) setConfirmar(null) }}
                 disabled={ocupado}
                 className="tactil mt-3 w-full rounded-xl bg-tinta text-[15px] text-white"
               >
-                {estado === 'en-curso' && resolviendo > 0
-                  ? 'Sí, publicar: quien no ha enviado ya no podrá enviar'
-                  : 'Sí, enviar las soluciones a todos'}
+                {enCurso === 'publicar' ? (
+                  <Cargando texto="Publicando las soluciones…" />
+                ) : estado === 'en-curso' && resolviendo > 0 ? (
+                  'Sí, publicar: quien no ha enviado ya no podrá enviar'
+                ) : (
+                  'Sí, enviar las soluciones a todos'
+                )}
               </button>
             ) : (
               <button type="button" onClick={() => setConfirmar('publicar')} className={`${botonSecundario} mt-3 w-full`}>
                 Publicar las soluciones
               </button>
+            )}
+              </div>
             ))}
         </section>
       )}
@@ -369,11 +426,11 @@ export default function AulaDocente({
                           setOfrecerCerrarEntrada(true)
                         }
                       })}
-                      onBlur={() => setConfirmar(null)}
+                      onBlur={() => { if (!enCurso) setConfirmar(null) }}
                       className="min-h-9 rounded-lg px-3 text-[13px] font-medium"
                       style={{ background: 'var(--color-baja)', color: 'var(--color-baja-tinta)' }}
                     >
-                      Sacar del aula
+                      {enCurso === 'expulsar' ? <Cargando texto="Sacando…" /> : 'Sacar del aula'}
                     </button>
                   ) : (
                     <button
@@ -396,6 +453,7 @@ export default function AulaDocente({
               type="checkbox"
               checked={vista.aula.entradaCerrada}
               onChange={(e) => hacer('entrada', { cerrada: e.target.checked })}
+              disabled={enCurso === 'entrada'}
               className="size-5 accent-[var(--color-tinta)]"
             />
           </label>
@@ -409,11 +467,11 @@ export default function AulaDocente({
               type="button"
               autoFocus
               onClick={confirmado(() => hacer('cerrar'))}
-              onBlur={() => setConfirmar(null)}
+              onBlur={() => { if (!enCurso) setConfirmar(null) }}
               className="tactil w-full rounded-xl text-[15px] font-medium"
               style={{ background: 'var(--color-baja)', color: 'var(--color-baja-tinta)' }}
             >
-              Sí, cerrar el aula: no se aceptan más envíos
+              {enCurso === 'cerrar' ? <Cargando texto="Cerrando el aula…" /> : 'Sí, cerrar el aula: no se aceptan más envíos'}
             </button>
           ) : (
             <button type="button" onClick={() => setConfirmar('cerrar')} className={`${botonSecundario} w-full`}>
@@ -496,26 +554,33 @@ function CalificarQuiz({
   onEmitir: (nota: number, comentario: string, porEjercicio: Record<string, number>) => void
 }) {
   const automaticas = useMemo(() => notaDelQuiz(ejercicios, entrega.respuestas).porEjercicio, [ejercicios, entrega])
+  // Sin nota guardada ni automática (ejercicio sin solución), el campo empieza vacío: la pone el docente.
   const [notas, setNotas] = useState<Record<string, string>>(() =>
-    Object.fromEntries(ejercicios.map((e) => [e.id, formatoNota(entrega.calificacion?.porEjercicio?.[e.id] ?? automaticas[e.id])])),
+    Object.fromEntries(
+      ejercicios.map((e) => {
+        const n = entrega.calificacion?.porEjercicio?.[e.id] ?? automaticas[e.id]
+        return [e.id, n === null || n === undefined ? '' : formatoNota(n)]
+      }),
+    ),
   )
   /** La nota del quiz escrita a mano; null mientras sigue siendo el promedio. */
   const [manual, setManual] = useState<string | null>(() => {
     const c = entrega.calificacion
     if (!c) return null
     // Si la emitida era el promedio de las de cada ejercicio, sigue recalculándose.
-    const guardadas = ejercicios.map((e) => c.porEjercicio?.[e.id] ?? automaticas[e.id])
+    const guardadas = ejercicios.map((e) => c.porEjercicio?.[e.id] ?? automaticas[e.id] ?? 0)
     const promedio = guardadas.length ? Math.round((guardadas.reduce((s, n) => s + n, 0) / guardadas.length) * 10) / 10 : 0
     return c.nota === promedio ? null : formatoNota(c.nota)
   })
   const [comentario, setComentario] = useState(entrega.calificacion?.comentario ?? '')
 
   const todasValidas = ejercicios.every((e) => notaValida(notas[e.id] ?? ''))
+  /** Null mientras falte la nota de algún ejercicio. */
   const promedio =
     todasValidas && ejercicios.length
       ? Math.round((ejercicios.reduce((s, e) => s + aNumero(notas[e.id]), 0) / ejercicios.length) * 10) / 10
-      : 0
-  const nota = manual ?? formatoNota(promedio)
+      : null
+  const nota = manual ?? (promedio === null ? '' : formatoNota(promedio))
   const valida = todasValidas && notaValida(nota)
 
   return (
@@ -581,7 +646,11 @@ function CalificarQuiz({
                 inputMode="decimal"
                 className="tabular min-h-12 w-24 rounded-xl border border-borde bg-superficie px-3 text-center text-[20px] text-tinta outline-none focus:border-borde-fuerte"
               />
-              <span className="text-[13px] text-tinta-tenue">Promedio de los ejercicios: {formatoNota(promedio)}</span>
+              <span className="text-[13px] text-tinta-tenue">
+                {promedio === null
+                  ? 'Pon la nota de cada ejercicio (los que no tienen solución van a mano).'
+                  : `Promedio de los ejercicios: ${formatoNota(promedio)}`}
+              </span>
             </span>
           </label>
           {manual !== null && (
@@ -618,13 +687,15 @@ function NotaDeEjercicio({
   numero: number
   ejercicio: EjercicioDeAula
   filas: Fila[]
-  automatica: number
+  /** null si el ejercicio no tiene solución: no hay nota automática. */
+  automatica: number | null
   nota: string
   soloLectura: boolean
   catalogo: Catalogo
   onNota: (nota: string) => void
   onSugerirIA: () => Promise<NotaIA>
 }) {
+  const conSolucion = Boolean(ejercicio.solucion?.length)
   const correccion = useMemo(() => corregir(ejercicio.solucion ?? [], filas), [ejercicio, filas])
   const [ia, setIa] = useState<{ pensando: boolean; comentario?: string; observacion?: string; error?: string }>({ pensando: false })
 
@@ -647,7 +718,11 @@ function NotaDeEjercicio({
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[14px] text-tinta">{ejercicio.titulo}</span>
             <span className="tabular block text-[12px] text-tinta-tenue">
-              {filas.length ? `${correccion.aciertos} de ${correccion.total} renglones bien` : 'Sin respuesta'} · automática {formatoNota(automatica)}
+              {!filas.length
+                ? 'Sin respuesta'
+                : conSolucion
+                  ? `${correccion.aciertos} de ${correccion.total} renglones bien · automática ${formatoNota(automatica ?? 0)}`
+                  : 'Sin solución: califícalo tú'}
             </span>
           </span>
           <span className="tabular shrink-0 rounded-md px-2 py-1 text-[14px] font-medium" style={{ background: 'var(--color-hueso)' }}>
@@ -657,7 +732,7 @@ function NotaDeEjercicio({
         </summary>
         <div className="border-t border-borde px-1 pb-3 pt-2">
           {filas.length > 0 ? (
-            <HojaAsiento filas={filas} onCambiar={() => {}} catalogo={catalogo} estados={correccion.estados} bloqueada />
+            <HojaAsiento filas={filas} onCambiar={() => {}} catalogo={catalogo} estados={conSolucion ? correccion.estados : undefined} bloqueada />
           ) : (
             <p className="px-2 py-2 text-[13px] text-tinta-tenue">No escribió nada en este ejercicio.</p>
           )}
@@ -673,7 +748,7 @@ function NotaDeEjercicio({
                   className="tabular min-h-10 w-16 rounded-lg border border-borde bg-superficie px-2 text-center text-[16px] text-tinta outline-none focus:border-borde-fuerte"
                 />
               </label>
-              {nota !== formatoNota(automatica) && (
+              {automatica !== null && nota !== formatoNota(automatica) && (
                 <button type="button" onClick={() => onNota(formatoNota(automatica))} className="min-h-9 text-[13px] font-medium text-tinta-suave underline">
                   Volver a la automática
                 </button>
@@ -777,7 +852,7 @@ function SelectorEjercicio({
                     className="flex min-h-12 min-w-0 flex-1 items-center gap-3 px-5 py-2.5 text-left pulsable disabled:opacity-50"
                   >
                     <span className="min-w-0 flex-1 truncate text-[14px] text-tinta">{m.titulo}</span>
-                    <span className="shrink-0 text-[12px] text-tinta-tenue">{m.filas.length} renglones</span>
+                    <span className="shrink-0 text-[12px] text-tinta-tenue">{m.filas.length ? `${m.filas.length} renglones` : 'Solo enunciado'}</span>
                   </button>
                   <button
                     type="button"
@@ -823,5 +898,15 @@ function SelectorEjercicio({
         })}
       </div>
     </Dialogo>
+  )
+}
+
+/** Rueda y texto para un botón con su acción en marcha. */
+function Cargando({ texto }: { texto: string }) {
+  return (
+    <span role="status" className="inline-flex items-center justify-center gap-2">
+      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" aria-hidden />
+      {texto}
+    </span>
   )
 }
