@@ -46,7 +46,9 @@ export async function POST(peticion: Request, { params }: Contexto) {
         case 'unirse':
           await servicio.limitar(`unirse:${ipDe(peticion)}`, 30, 10 * 60_000)
           return servicio.unirse(codigo, { nombre: cuerpo.nombre })
-        case 'lanzar': return servicio.lanzar(codigo, credencial, { ejercicio: cuerpo.ejercicio, propio: cuerpo.propio })
+        case 'agregar': return servicio.agregar(codigo, credencial, { ejercicio: cuerpo.ejercicio, propio: cuerpo.propio })
+        case 'quitar': return servicio.quitar(codigo, credencial, { ejercicio: cuerpo.ejercicio })
+        case 'empezar': return servicio.empezar(codigo, credencial, { limiteMin: cuerpo.limiteMin })
         case 'sugerir': {
           // Beta: solo cuando el docente lo pide; la corrección local es la sugerencia por defecto.
           if (!process.env.GEMINI_API_KEY) return Response.json({ error: 'La IA no está configurada' }, { status: 503 })
@@ -67,13 +69,12 @@ export async function POST(peticion: Request, { params }: Contexto) {
             )
           }
         }
-        case 'entregar': return servicio.entregar(codigo, credencial, { ejercicio: cuerpo.ejercicio, filas: cuerpo.filas })
+        case 'entregar': return servicio.entregar(codigo, credencial, { respuestas: cuerpo.respuestas })
         case 'calificar':
           return servicio.calificar(codigo, credencial, {
-            ejercicio: cuerpo.ejercicio, estudiante: cuerpo.estudiante, nota: cuerpo.nota, comentario: cuerpo.comentario,
-            enviada: cuerpo.enviada,
+            estudiante: cuerpo.estudiante, nota: cuerpo.nota, comentario: cuerpo.comentario, porEjercicio: cuerpo.porEjercicio,
           })
-        case 'publicar': return servicio.publicarSolucion(codigo, credencial, { ejercicio: cuerpo.ejercicio })
+        case 'publicar': return servicio.publicarSolucion(codigo, credencial)
         case 'cerrar': return servicio.cerrar(codigo, credencial)
         case 'entrada': return servicio.cerrarEntrada(codigo, credencial, { cerrada: cuerpo.cerrada })
         case 'expulsar': return servicio.expulsar(codigo, credencial, { estudiante: cuerpo.estudiante })
@@ -82,7 +83,7 @@ export async function POST(peticion: Request, { params }: Contexto) {
     }
     const resultado = await hecho()
     if (resultado instanceof Response) return resultado
-    if (resultado === undefined && !['publicar', 'cerrar', 'entrada', 'expulsar'].includes(String(cuerpo.accion))) {
+    if (resultado === undefined && !['quitar', 'empezar', 'publicar', 'cerrar', 'entrada', 'expulsar'].includes(String(cuerpo.accion))) {
       return Response.json({ error: 'Acción desconocida.' }, { status: 400 })
     }
     return Response.json(resultado ?? { ok: true }, { headers: sinCache })

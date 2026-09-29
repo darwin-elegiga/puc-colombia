@@ -34,7 +34,7 @@ export default function NoDisponibleEnAula({
           </span>
           <p className="mt-4 text-[18px] text-tinta">No disponible durante el aula</p>
           <p className="mt-2 text-[14px] leading-relaxed text-tinta-suave">
-            Mientras estás en «{aula.nombreAula}», la IA, los movimientos y el entrenamiento se apagan para que resuelvas
+            Mientras estás en el quiz «{aula.nombreAula}», la IA, los movimientos y el entrenamiento se apagan para que resuelvas
             por tu cuenta. El catálogo de cuentas sigue abierto para consultar códigos.
           </p>
           <div className="mt-6 grid gap-2">

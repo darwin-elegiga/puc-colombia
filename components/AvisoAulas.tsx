@@ -52,6 +52,8 @@ export default function AvisoAulas() {
     .map((a) => `${a.codigo}|${a.clave}`)
     .join(',')
   const versiones = useRef(new Map<string, number>())
+  /** Aulas en las que el quiz está en curso y este estudiante aún no lo envió: la burbuja lo marca. */
+  const [pendientes, setPendientes] = useState<string[]>([])
   useEffect(() => {
     if (!aComprobar) return
     const lista = aComprobar.split(',').map((x) => {
@@ -66,7 +68,12 @@ export default function AvisoAulas() {
           .estado(codigo, clave, versiones.current.get(codigo))
           .then((v) => {
             versiones.current.set(codigo, v.version)
-            if ('aula' in v && v.aula.estado === 'cerrada') marcarAulaTerminada(codigo)
+            if (!('aula' in v)) return
+            if (v.aula.estado === 'cerrada') marcarAulaTerminada(codigo)
+            if (v.rol === 'estudiante') {
+              const falta = v.quiz.estado === 'en-curso' && !v.quiz.enviado
+              setPendientes((p) => (falta ? (p.includes(codigo) ? p : [...p, codigo]) : p.filter((c) => c !== codigo)))
+            }
           })
           .catch((e: ErrorRed) => {
             if (e.estado === 404 || e.estado === 403 || e.estado === 401) marcarAulaTerminada(codigo)
@@ -127,6 +134,7 @@ export default function AvisoAulas() {
       <BurbujaAula
         etiqueta={mia.nombreAula}
         rol={mia.rol}
+        pendiente={mia.rol === 'estudiante' && pendientes.includes(mia.codigo)}
         onAbrir={() => onAbrir(mia.codigo)}
         onDescartar={() => descartar(mia.codigo)}
       />
@@ -138,7 +146,7 @@ export default function AvisoAulas() {
   const publica = publicas.find((p) => !descartados.includes(p.codigo) && !aulas.some((a) => a.codigo === p.codigo))
   const aviso =
     enPortada && publica
-      ? { codigo: publica.codigo, rotulo: `Aula abierta · con ${publica.docente}`, titulo: publica.nombre, accion: 'Unirme' }
+      ? { codigo: publica.codigo, rotulo: `Quiz abierto · con ${publica.docente}`, titulo: publica.nombre, accion: 'Unirme' }
       : null
   if (!aviso) return null
 

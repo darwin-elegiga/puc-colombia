@@ -101,7 +101,8 @@ export default function HojaAsiento({
 
   const importe = (texto: string) => {
     const digitos = texto.replace(/\D/g, '').slice(0, 13)
-    return digitos ? Number(digitos) : null
+    // Un 0 no es un importe: se trata como celda vacía (y así se ve), no como un renglón inválido.
+    return digitos && Number(digitos) > 0 ? Number(digitos) : null
   }
 
   const registrar = (i: number, celda: Celda) => (el: HTMLInputElement | null) => {

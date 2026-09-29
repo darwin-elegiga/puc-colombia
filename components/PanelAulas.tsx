@@ -77,8 +77,9 @@ export default function PanelAulas({ onAbrir }: { onAbrir: (codigo: string) => v
   return (
     <>
       <p className="mt-3 text-[15px] leading-relaxed text-pretty text-tinta-suave">
-        Quien crea el aula la dirige: lanza el ejercicio, ve las entregas y califica. Los demás entran con el código
-        y su nombre, sin cuentas. Las aulas duran 24 horas.
+        Cada aula es un quiz. Quien la crea prepara los ejercicios, lo empieza, recibe los quizzes enviados y los
+        califica. Los demás entran con el código y su nombre, sin cuentas, y envían el quiz una sola vez. Las aulas
+        duran 24 horas.
       </p>
 
       {/* ─────────── Tus aulas ─────────── */}
@@ -92,7 +93,7 @@ export default function PanelAulas({ onAbrir }: { onAbrir: (codigo: string) => v
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] text-tinta">{a.nombreAula}</span>
                     <span className="block text-[12.5px] text-tinta-tenue">
-                      {a.rol === 'docente' ? 'La diriges tú' : `Con ${a.docente}`} · <span className="tabular">{a.codigo}</span> · quedan {quedan(a.expira)}
+                      {a.rol === 'docente' ? 'La diriges tú' : `Quiz de ${a.docente}`} · <span className="tabular">{a.codigo}</span> · quedan {quedan(a.expira)}
                     </span>
                   </span>
                   <IconoChevron className="size-4 shrink-0 text-tinta-tenue" />
@@ -192,7 +193,7 @@ export default function PanelAulas({ onAbrir }: { onAbrir: (codigo: string) => v
                     <span className="block truncate text-[15px] text-tinta">{a.nombreAula}</span>
                     <span className="block text-[12.5px] text-tinta-tenue">
                       {new Date(a.unido).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })} ·{' '}
-                      {a.rol === 'docente' ? 'la dirigiste · ver entregas y notas' : `con ${a.docente}`}
+                      {a.rol === 'docente' ? 'la dirigiste · ver quizzes y notas' : `quiz de ${a.docente}`}
                     </span>
                   </span>
                 </button>
@@ -221,8 +222,8 @@ export default function PanelAulas({ onAbrir }: { onAbrir: (codigo: string) => v
             ))}
           </ul>
           <p className="mt-2 px-1 text-[12px] leading-relaxed text-tinta-tenue">
-            Las aulas se borran del servidor a las 24 horas. Aquí quedan las notas y entregas que guardó este dispositivo;
-            los ejercicios con solución están en «De mis clases».
+            Las aulas se borran del servidor a las 24 horas. Aquí quedan los quizzes y notas que guardó este dispositivo;
+            los ejercicios con la solución publicada están en «De mis clases».
           </p>
         </section>
       )}

@@ -2,10 +2,14 @@
  * Aulas: lógica pura compartida por el navegador y el servidor.
  *
  * Un aula se crea sin cuentas: quien la crea es el docente (su dispositivo guarda una
- * clave secreta) y es el único que lanza ejercicios, ve las entregas y califica. Los
- * estudiantes entran con el código y su nombre. Todo caduca a las 24 horas.
+ * clave secreta). Cada aula es un quiz: el docente prepara un conjunto fijo de
+ * ejercicios y lo empieza (con tiempo o sin él); desde entonces no se añaden más. Cada
+ * estudiante entra con el código y su nombre, resuelve todos los ejercicios y envía el
+ * quiz una sola vez. El docente ve la nota de cada ejercicio según la corrección
+ * automática, el promedio como nota sugerida, y la ajusta o no antes de emitirla.
+ * Todo caduca a las 24 horas.
  */
-import type { Correccion, Dato, EjercicioAsiento, Fila, LineaSolucion } from './practica'
+import { corregir, type Correccion, type Dato, type EjercicioAsiento, type Fila, type LineaSolucion } from './practica'
 
 export const DURACION_MS = 24 * 60 * 60 * 1000
 export const LARGO_CODIGO = 6
@@ -15,6 +19,12 @@ export const MAX_COMENTARIO = 500
 export const MAX_ENUNCIADO = 1500
 export const MAX_FILAS = 40
 export const MAX_IMPORTE = 10_000_000_000_000
+/** Ejercicios de un quiz. */
+export const MAX_EJERCICIOS = 20
+/** Tiempo límite máximo de un quiz, en minutos. */
+export const MAX_LIMITE_MIN = 240
+/** Margen tras el tiempo límite para que llegue el envío automático. */
+export const MARGEN_ENVIO_MS = 2 * 60 * 1000
 
 /** Sin 0/O ni 1/I/L: el código se dicta en voz alta y se copia de la pizarra. */
 const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
@@ -74,7 +84,8 @@ export function validarFilas(entrada: unknown): Fila[] | null {
   for (const f of entrada) {
     if (!f || typeof f !== 'object') return null
     const { codigo, debe, haber } = f as Record<string, unknown>
-    const importe = (v: unknown) => (v === null || v === undefined ? null : Number.isInteger(v) && (v as number) > 0 && (v as number) <= MAX_IMPORTE ? (v as number) : NaN)
+    // Un importe 0 es un renglón sin importe, no un error.
+    const importe = (v: unknown) => (v === null || v === undefined || v === 0 ? null : Number.isInteger(v) && (v as number) > 0 && (v as number) <= MAX_IMPORTE ? (v as number) : NaN)
     const d = importe(debe)
     const h = importe(haber)
     if (typeof codigo !== 'string' || !/^\d{0,10}$/.test(codigo) || Number.isNaN(d) || Number.isNaN(h)) return null
@@ -95,6 +106,47 @@ export const notaSugerida = (c: Pick<Correccion, 'aciertos' | 'total' | 'estados
   const sobran = c.estados.filter((e) => e === 'sobra').length
   const total = c.total + sobran
   return total ? Math.round((c.aciertos / total) * 50) / 10 : 0
+}
+
+/** La nota de un ejercicio: la de su corrección automática. */
+export const notaDeEjercicio = (solucion: LineaSolucion[], filas: Fila[]) => notaSugerida(corregir(solucion, filas))
+
+/** Nota de cada ejercicio y su promedio: la nota sugerida del quiz. */
+export function notaDelQuiz(ejercicios: EjercicioDeAula[], respuestas: Respuestas) {
+  const porEjercicio: Record<string, number> = {}
+  for (const e of ejercicios) porEjercicio[e.id] = notaDeEjercicio(e.solucion ?? [], respuestas[e.id] ?? [])
+  const notas = Object.values(porEjercicio)
+  const promedio = notas.length ? Math.round((notas.reduce((s, n) => s + n, 0) / notas.length) * 10) / 10 : 0
+  return { porEjercicio, promedio }
+}
+
+/**
+ * Valida las respuestas de un quiz: solo de ejercicios del quiz. Un renglón que no vale
+ * (un código con letras, un importe con decimales) se descarta en vez de rechazar el
+ * quiz entero: el envío automático al acabarse el tiempo no puede perderse por uno.
+ */
+export function validarRespuestas(entrada: unknown, ids: string[]): Respuestas | null {
+  if (!entrada || typeof entrada !== 'object' || Array.isArray(entrada)) return null
+  const respuestas: Respuestas = {}
+  for (const [id, filas] of Object.entries(entrada as Record<string, unknown>)) {
+    if (!ids.includes(id) || !Array.isArray(filas)) return null
+    const validas = filas.slice(0, MAX_FILAS).flatMap((f) => validarFilas([f]) ?? [])
+    if (validas.length) respuestas[id] = validas
+  }
+  return respuestas
+}
+
+/** Las notas por ejercicio que emite el docente: de 0 a 5 y solo de ejercicios del quiz. */
+export function validarNotasPorEjercicio(entrada: unknown, ids: string[]): Record<string, number> | null {
+  if (entrada === undefined) return {}
+  if (!entrada || typeof entrada !== 'object' || Array.isArray(entrada)) return null
+  const notas: Record<string, number> = {}
+  for (const [id, n] of Object.entries(entrada as Record<string, unknown>)) {
+    const nota = validarNota(n)
+    if (!ids.includes(id) || nota === null) return null
+    notas[id] = nota
+  }
+  return notas
 }
 
 export const formatoNota = (nota: number) => nota.toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
@@ -122,7 +174,22 @@ export interface AulaResumen {
   entradaCerrada: boolean
   creada: number
   expira: number
+  /** Cuándo empezó el quiz; null mientras el docente lo prepara. */
+  iniciado: number | null
+  /** Minutos que tiene cada estudiante desde que abre el quiz; null sin límite. */
+  limiteMin: number | null
+  /** Las soluciones de todos los ejercicios ya se publicaron. */
+  solucionPublicada: boolean
 }
+
+/** En qué punto está el quiz. */
+export type EstadoQuiz = 'preparando' | 'en-curso' | 'cerrado'
+
+export const estadoQuiz = (a: Pick<AulaResumen, 'estado' | 'iniciado'>): EstadoQuiz =>
+  a.estado === 'cerrada' ? 'cerrado' : a.iniciado === null ? 'preparando' : 'en-curso'
+
+/** Lo que el estudiante escribió en cada ejercicio, por id. */
+export type Respuestas = Record<string, Fila[]>
 
 export interface MiembroVisible {
   id: string
@@ -148,9 +215,12 @@ export interface EjercicioDeAula {
 }
 
 export interface Calificacion {
+  /** La nota del quiz que emite el docente. */
   nota: number
   comentario: string
   fecha: number
+  /** La nota de cada ejercicio (la automática o la que ajustó el docente). */
+  porEjercicio?: Record<string, number>
 }
 
 export interface EntregaVisible {
@@ -162,13 +232,28 @@ export interface EntregaVisible {
   calificacion: Calificacion | null
 }
 
+/** El quiz que envió un estudiante. */
+export interface EntregaQuiz {
+  estudianteId: string
+  nombre: string
+  respuestas: Respuestas
+  enviada: number
+  segundos: number
+  calificacion: Calificacion | null
+}
+
 export interface VistaDocente {
   rol: 'docente'
+  modo: 'quiz'
   version: number
   ahora: number
   aula: AulaResumen
   miembros: MiembroVisible[]
-  ejercicios: (EjercicioDeAula & { entregas: EntregaVisible[]; recibidos: number })[]
+  /** Los ejercicios del quiz, con su solución. */
+  ejercicios: EjercicioDeAula[]
+  entregas: EntregaQuiz[]
+  /** Cuántos estudiantes abrieron ya el quiz. */
+  empezados: number
 }
 
 export interface VistaEstudiante {
@@ -178,8 +263,15 @@ export interface VistaEstudiante {
   aula: AulaResumen
   yo: MiembroVisible
   miembros: number
-  /** El ejercicio en curso, sin solución hasta que se publique. */
-  actual: (EjercicioDeAula & { recibido: number | null; entrega: EntregaVisible | null }) | null
+  /** Resumen barato para avisos: en qué punto está el quiz y si ya lo envió. */
+  quiz: { estado: EstadoQuiz; enviado: boolean }
+  /** Los ejercicios del quiz (vacío hasta que empieza), sin solución hasta que se publique. */
+  ejercicios: EjercicioDeAula[]
+  /** Cuándo abrió el quiz y cuándo se le acaba el tiempo (null sin límite). */
+  recibido: number | null
+  fin: number | null
+  /** Su quiz enviado, con la nota cuando el docente la emita. */
+  entrega: EntregaQuiz | null
   /** Ejercicios con la solución publicada, para guardarlos en «De mis clases». */
   publicados: (EjercicioDeAula & { entrega: EntregaVisible | null })[]
 }

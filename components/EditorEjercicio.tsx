@@ -14,21 +14,24 @@ const campo =
 /**
  * El docente escribe su propio ejercicio: el enunciado, la solución en la hoja y, si
  * quiere, una explicación. La solución la pone él; la IA (beta) solo propone un
- * borrador cuando se lo pide, que puede corregir antes de lanzarlo.
+ * borrador cuando se lo pide, que puede corregir antes de añadirlo al quiz.
  */
 export default function EditorEjercicio({
   catalogo,
   inicial,
   ocupado,
+  error,
   onCancelar,
-  onLanzar,
+  onAgregar,
 }: {
   catalogo: Catalogo
-  /** Para volver a lanzar uno guardado. */
+  /** Para volver a usar uno guardado. */
   inicial?: EjercicioPropio
   ocupado: boolean
+  /** El error al añadirlo (lo devuelve el servidor). */
+  error: string | null
   onCancelar: () => void
-  onLanzar: (ejercicio: EjercicioPropio) => void
+  onAgregar: (ejercicio: EjercicioPropio) => void
 }) {
   const [titulo, setTitulo] = useState(inicial?.titulo ?? '')
   const [enunciado, setEnunciado] = useState(inicial?.enunciado ?? '')
@@ -104,7 +107,7 @@ export default function EditorEjercicio({
       {errorIA && <p className="mt-2 px-2 text-[13px]" style={{ color: 'var(--color-baja-tinta)' }}>{errorIA}</p>}
       {notasIA.length > 0 && (
         <div className="mt-3 rounded-xl px-4 py-3 text-[13px] leading-relaxed" style={{ background: 'var(--color-nota)', color: 'var(--color-nota-tinta)' }}>
-          <p className="font-medium">Borrador de la IA: revísalo antes de lanzarlo.</p>
+          <p className="font-medium">Borrador de la IA: revísalo antes de añadirlo.</p>
           <ul className="mt-1 list-disc pl-4">
             {notasIA.map((n) => <li key={n}>{n}</li>)}
           </ul>
@@ -127,10 +130,10 @@ export default function EditorEjercicio({
         <button
           type="button"
           disabled={!listo || ocupado}
-          onClick={() => onLanzar({ titulo: tituloDe(titulo, enunciado.trim()), enunciado: enunciado.trim(), filas: escritas, explicacion: explicacion.trim() })}
+          onClick={() => onAgregar({ titulo: tituloDe(titulo, enunciado.trim()), enunciado: enunciado.trim(), filas: escritas, explicacion: explicacion.trim() })}
           className={botonPrimario}
         >
-          {ocupado ? 'Lanzando…' : 'Lanzar'}
+          {ocupado ? 'Añadiendo…' : 'Añadir al quiz'}
         </button>
       </div>
       {!listo && (
@@ -141,8 +144,11 @@ export default function EditorEjercicio({
               ? 'La solución necesita al menos dos renglones.'
               : incompletos
                 ? 'Cada renglón de la solución necesita código e importe.'
-                : 'La solución debe cuadrar para lanzarla.'}
+                : 'La solución debe cuadrar para añadirlo.'}
         </p>
+      )}
+      {error && (
+        <p aria-live="polite" className="mt-2 px-2 text-center text-[13px]" style={{ color: 'var(--color-error-tinta)' }}>{error}</p>
       )}
     </section>
   )

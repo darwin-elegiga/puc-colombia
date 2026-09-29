@@ -16,9 +16,11 @@ const QUIETO_TRAS = 20
  * el docente conserva entregas y notas, y el estudiante sus ejercicios publicados.
  */
 export function useAula(aula: MiAula | undefined) {
-  const [vista, setVista] = useState<VistaAula | null>(() =>
-    aula?.rol === 'docente' ? leerCopiaDocente(aula.codigo) : null,
-  )
+  const [vista, setVista] = useState<VistaAula | null>(() => {
+    const copia = aula?.rol === 'docente' ? leerCopiaDocente(aula.codigo) : null
+    // Las copias de antes del quiz tienen otra forma: no se muestran.
+    return copia?.modo === 'quiz' ? copia : null
+  })
   const [error, setError] = useState<ErrorRed | null>(null)
   /** Reloj del servidor menos el del dispositivo: el tiempo en pantalla no depende del móvil. */
   const [desfase, setDesfase] = useState(0)

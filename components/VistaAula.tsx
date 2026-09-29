@@ -97,7 +97,7 @@ export default function VistaAula({ codigo, catalogo, onVolver }: { codigo: stri
             <section className="px-2 py-8 text-center sm:px-0">
               <p className="text-[17px] text-tinta">{caducada ? 'Esta aula ya caducó.' : error?.message}</p>
               <p className="mt-2 text-[13.5px] leading-relaxed text-tinta-tenue">
-                Los ejercicios con la solución publicada siguen en «De mis clases», en Entrenar › El asiento.
+                Si el docente publicó las soluciones, las tienes en «De mis clases», en Entrenar › El asiento.
               </p>
               <button
                 type="button"

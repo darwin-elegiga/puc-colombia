@@ -4,8 +4,8 @@ import PanelAulas from './PanelAulas'
 import { IconoChevron } from './Iconos'
 
 /**
- * La vista de las aulas, desde el menú «…»: las aulas en curso, crear una, unirse con
- * código, las públicas abiertas y el historial de este dispositivo.
+ * La vista de las aulas (quizzes), desde el menú «…»: las aulas en curso, crear una,
+ * unirse con código, las públicas abiertas y el historial de este dispositivo.
  */
 export default function PantallaAulas({ onAbrir, onSalir }: { onAbrir: (codigo: string) => void; onSalir: () => void }) {
   return (
@@ -22,7 +22,7 @@ export default function PantallaAulas({ onAbrir, onSalir }: { onAbrir: (codigo: 
       </header>
       <div className="panel-scroll min-h-0 flex-1">
         <div className="mx-auto max-w-2xl px-5 py-6 lg:px-8 lg:py-10" style={{ paddingBottom: 'calc(var(--seguro-abajo) + 2rem)' }}>
-          <p className="rotulo">En grupo</p>
+          <p className="rotulo">Quizzes en grupo</p>
           <h1 className="editorial mt-2 text-[30px] text-tinta lg:text-5xl">Aulas</h1>
           <PanelAulas onAbrir={onAbrir} />
         </div>

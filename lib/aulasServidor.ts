@@ -7,23 +7,25 @@
  * Distribución de claves, pensada para que nadie pise lo que escribe otro:
  *  aula:{c}                  JSON con los datos del aula (solo la escribe el docente)
  *  aula:{c}:miembros         hash id → miembro
- *  aula:{c}:ejercicios       hash id → ejercicio lanzado (con la solución)
- *  aula:{c}:recibido:{ej}    hash estudiante → cuándo le llegó el ejercicio
- *  aula:{c}:entregas:{ej}    hash estudiante → su entrega (solo la escribe él)
- *  aula:{c}:notas:{ej}       hash estudiante → su nota (solo la escribe el docente)
+ *  aula:{c}:ejercicios       hash id → ejercicio del quiz (con la solución)
+ *  aula:{c}:recibido         hash estudiante → cuándo abrió el quiz (su tiempo empieza ahí)
+ *  aula:{c}:entregas         hash estudiante → su quiz enviado (solo lo escribe él, una vez)
+ *  aula:{c}:notas            hash estudiante → su nota (solo la escribe el docente)
  *  aula:{c}:version          cambios que le importan al docente (todos)
  *  aula:{c}:version:alumnos  cambios que les importan a todos los estudiantes
  *  aula:{c}:version:{id}     cambios de un estudiante (su entrega, su nota, su expulsión)
  *  aula:{c}:candado          candado de las acciones del docente que reescriben aula:{c}
  *  aula:{c}:ia               sugerencias de IA guardadas por «ejercicio:estudiante»
+ *  aula:{c}:ia:usos          contador de sugerencias de IA del aula
  *  aulas:publicas            conjunto ordenado por caducidad de las aulas públicas
  */
 import { createHash, randomBytes } from 'node:crypto'
 import {
-  DURACION_MS, MAX_COMENTARIO, MAX_NOMBRE_AULA, aEjercicioDeAula, codigoValido, generarCodigo, limpiarNombre,
-  nombreUnico, paraEstudiante, validarFilas, validarNota, validarPropio,
-  type AulaPublica, type AulaResumen, type Calificacion, type EjercicioDeAula, type EntregaVisible,
-  type MiembroVisible, type VistaAula,
+  DURACION_MS, MARGEN_ENVIO_MS, MAX_COMENTARIO, MAX_EJERCICIOS, MAX_LIMITE_MIN, MAX_NOMBRE_AULA, aEjercicioDeAula,
+  codigoValido, estadoQuiz, generarCodigo, limpiarNombre, nombreUnico, paraEstudiante, validarNota,
+  validarNotasPorEjercicio, validarPropio, validarRespuestas,
+  type AulaPublica, type AulaResumen, type Calificacion, type EjercicioDeAula, type EntregaQuiz,
+  type MiembroVisible, type Respuestas, type VistaAula,
 } from './aulas'
 import { ejercicioAsientoPorId, type Fila } from './practica'
 
@@ -46,14 +48,11 @@ export interface Almacen {
   /** Escribe solo si el campo no existe; devuelve si lo escribió. */
   hsetnx(clave: string, campo: string, valor: string, expiraEn: number): Promise<boolean>
   incr(clave: string, expiraEn: number): Promise<number>
-  /**
-   * Escribe `campo` en el hash `clave` solo si `campo` en el hash `condicion` vale
-   * `igual` (o no existe, con null). Atómico: nadie escribe entre la comprobación y la escritura.
-   */
-  hsetSi(clave: string, campo: string, valor: string, expiraEn: number, condicion: string, igual: string | null): Promise<boolean>
-  /** Candado con caducidad: true si se consiguió. */
-  bloquear(clave: string, ms: number): Promise<boolean>
-  soltar(clave: string): Promise<void>
+  hdel(clave: string, campo: string): Promise<void>
+  /** Candado con caducidad: guarda la `ficha` de quien lo toma y devuelve si lo consiguió. */
+  bloquear(clave: string, ficha: string, ms: number): Promise<boolean>
+  /** Lo suelta solo si sigue siendo suyo (si caducó y otro lo tomó, no se toca). */
+  soltar(clave: string, ficha: string): Promise<void>
   zadd(clave: string, puntaje: number, miembro: string): Promise<void>
   zrangePorPuntaje(clave: string, min: number, max: number): Promise<string[]>
   zremPorPuntaje(clave: string, min: number, max: number): Promise<void>
@@ -107,18 +106,15 @@ export function almacenEnMemoria(reloj: () => number = Date.now): Almacen {
       datos.set(clave, { valor: String(n), expira: expiraEn })
       return n
     },
-    async hsetSi(clave, campo, valor, expiraEn, condicion, igual) {
-      const actual = leer<Map<string, string>>(condicion)?.get(campo) ?? null
-      if (actual !== igual) return false
-      hash(clave, expiraEn).set(campo, valor)
-      return true
-    },
-    async bloquear(clave, ms) {
+    async hdel(clave, campo) { leer<Map<string, string>>(clave)?.delete(campo) },
+    async bloquear(clave, ficha, ms) {
       if (leer<string>(clave) !== undefined) return false
-      datos.set(clave, { valor: '1', expira: reloj() + ms })
+      datos.set(clave, { valor: ficha, expira: reloj() + ms })
       return true
     },
-    async soltar(clave) { datos.delete(clave) },
+    async soltar(clave, ficha) {
+      if (leer<string>(clave) === ficha) datos.delete(clave)
+    },
     async zadd(clave, puntaje, miembro) { zset(clave).set(miembro, puntaje) },
     async zrangePorPuntaje(clave, min, max) {
       return [...zset(clave)].filter(([, p]) => p >= min && p <= max).sort((a, b) => a[1] - b[1]).map(([m]) => m)
@@ -158,9 +154,7 @@ const nuevoSecreto = () => randomBytes(24).toString('base64url')
 
 interface Aula extends AulaResumen {
   huellaDocente: string
-  /** Ejercicio en curso: al que se envían las entregas. */
-  actual: string | null
-  /** Cuántos ejercicios se han lanzado, para numerarlos. */
+  /** Cuántos ejercicios se han añadido, para numerarlos. */
   lanzados: number
 }
 
@@ -169,7 +163,7 @@ interface Miembro extends MiembroVisible {
 }
 
 interface Entrega {
-  filas: Fila[]
+  respuestas: Respuestas
   enviada: number
   segundos: number
 }
@@ -178,9 +172,9 @@ const k = {
   aula: (c: string) => `aula:${c}`,
   miembros: (c: string) => `aula:${c}:miembros`,
   ejercicios: (c: string) => `aula:${c}:ejercicios`,
-  recibido: (c: string, e: string) => `aula:${c}:recibido:${e}`,
-  entregas: (c: string, e: string) => `aula:${c}:entregas:${e}`,
-  notas: (c: string, e: string) => `aula:${c}:notas:${e}`,
+  recibido: (c: string) => `aula:${c}:recibido`,
+  entregas: (c: string) => `aula:${c}:entregas`,
+  notas: (c: string) => `aula:${c}:notas`,
   version: (c: string) => `aula:${c}:version`,
   versionAlumnos: (c: string) => `aula:${c}:version:alumnos`,
   versionDe: (c: string, id: string) => `aula:${c}:version:${id}`,
@@ -196,8 +190,10 @@ const valores = <T>(hash: Record<string, string>): T[] => Object.values(hash).ma
 const resumen = (a: Aula): AulaResumen => ({
   codigo: a.codigo, nombre: a.nombre, docente: a.docente, publica: a.publica,
   estado: a.estado, entradaCerrada: a.entradaCerrada, creada: a.creada, expira: a.expira,
+  iniciado: a.iniciado, limiteMin: a.limiteMin, solucionPublicada: a.solucionPublicada,
 })
 const visible = (m: Miembro): MiembroVisible => ({ id: m.id, nombre: m.nombre, unido: m.unido, expulsado: m.expulsado })
+const texto = (v: unknown) => (typeof v === 'string' ? v : '')
 
 /* ─────────────────────────── Servicio ─────────────────────────── */
 
@@ -209,9 +205,11 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
     return aula
   }
 
+  const guardarAula = (aula: Aula) => almacen.set(k.aula(aula.codigo), JSON.stringify(aula), aula.expira)
+
   /**
    * Anota un cambio. El docente lo ve siempre; los estudiantes solo si les afecta a todos
-   * (`alumnos`) o a uno en concreto (`estudiante`). Así una entrega o una nota no hace que
+   * (`alumnos`) o a uno en concreto (`estudiante`). Así un envío o una nota no hace que
    * toda la clase pida el estado completo.
    */
   async function cambio(aula: Aula, a: { alumnos?: boolean; estudiante?: string } = {}) {
@@ -236,18 +234,18 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
 
   /** Las acciones del docente que leen y reescriben aula:{c} van de una en una. */
   async function conCandado<T>(codigo: string, accion: () => Promise<T>): Promise<T> {
+    const ficha = randomBytes(8).toString('hex')
     let conseguido = false
-    for (let i = 0; i < 20 && !(conseguido = await almacen.bloquear(k.candado(codigo), 5000)); i++) {
+    for (let i = 0; i < 20 && !(conseguido = await almacen.bloquear(k.candado(codigo), ficha, 10_000)); i++) {
       await new Promise((r) => setTimeout(r, 100))
     }
     if (!conseguido) throw new ErrorAula(409, 'Hay otra acción en curso en el aula. Vuelve a intentarlo.')
     try {
       return await accion()
     } finally {
-      await almacen.soltar(k.candado(codigo))
+      await almacen.soltar(k.candado(codigo), ficha)
     }
   }
-  const guardarAula = (aula: Aula) => almacen.set(k.aula(aula.codigo), JSON.stringify(aula), aula.expira)
 
   /** Comprueba la credencial y devuelve el rol; el miembro si es estudiante. */
   async function autenticar(aula: Aula, cred: Credencial | null) {
@@ -269,6 +267,19 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
     return aula
   }
 
+  /** El docente solo cambia los ejercicios antes de empezar el quiz. */
+  function preparando(aula: Aula) {
+    if (aula.estado !== 'abierta') throw new ErrorAula(409, 'El aula está cerrada.')
+    if (aula.iniciado !== null) throw new ErrorAula(409, 'El quiz ya empezó: ya no se pueden cambiar los ejercicios.')
+  }
+
+  const ejerciciosDe = async (codigo: string) =>
+    valores<EjercicioDeAula>(await almacen.hgetall(k.ejercicios(codigo))).sort((a, b) => a.lanzado - b.lanzado)
+
+  /** Hasta cuándo puede enviar un estudiante que abrió el quiz en `recibido` (null: sin límite). */
+  const finDe = (aula: Aula, recibido: number | null) =>
+    aula.limiteMin !== null && recibido !== null ? recibido + aula.limiteMin * 60_000 : null
+
   return {
     async crear(entrada: { nombre: unknown; docente: unknown; publica: unknown }) {
       const nombre = limpiarNombre(entrada.nombre, MAX_NOMBRE_AULA)
@@ -283,7 +294,7 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
       for (let i = 0; i < 5 && (await almacen.get(k.aula(codigo))); i++) codigo = generarCodigo()
       const aula: Aula = {
         codigo, nombre, docente, publica: entrada.publica === true, estado: 'abierta', entradaCerrada: false,
-        creada, expira, huellaDocente: huella(secreto), actual: null, lanzados: 0,
+        creada, expira, huellaDocente: huella(secreto), lanzados: 0, iniciado: null, limiteMin: null, solucionPublicada: false,
       }
       await guardarAula(aula)
       // También la de la clase: sin ella la versión del estudiante sería null (aula inexistente).
@@ -347,69 +358,72 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
       const aula = await cargar(codigo)
       const { rol, miembro } = await autenticar(aula, cred)
       const ahora = reloj()
-      const ejercicios = valores<EjercicioDeAula>(await almacen.hgetall(k.ejercicios(codigo))).sort((a, b) => a.lanzado - b.lanzado)
+      const ejercicios = await ejerciciosDe(codigo)
 
       if (rol === 'docente') {
         const miembros = valores<Miembro>(await almacen.hgetall(k.miembros(codigo))).sort((a, b) => a.unido - b.unido)
         const nombreDe = new Map(miembros.map((m) => [m.id, m.nombre]))
-        const entregasDe = async (ej: EjercicioDeAula): Promise<EntregaVisible[]> => {
-          const [entregas, notas] = await Promise.all([
-            almacen.hgetall(k.entregas(codigo, ej.id)),
-            almacen.hgetall(k.notas(codigo, ej.id)),
-          ])
-          return Object.entries(entregas)
-            .map(([id, texto]) => {
-              const e = JSON.parse(texto) as Entrega
-              return { estudianteId: id, nombre: nombreDe.get(id) ?? '—', ...e, calificacion: json<Calificacion>(notas[id] ?? null) }
-            })
-            .sort((a, b) => a.segundos - b.segundos)
-        }
+        const [entregas, notas] = await Promise.all([almacen.hgetall(k.entregas(codigo)), almacen.hgetall(k.notas(codigo))])
         return {
-          rol, version, ahora, aula: resumen(aula),
+          rol, modo: 'quiz', version, ahora, aula: resumen(aula),
           miembros: miembros.map(visible),
-          ejercicios: await Promise.all(
-            ejercicios.map(async (ej) => ({
-              ...ej,
-              entregas: await entregasDe(ej),
-              recibidos: await almacen.hlen(k.recibido(codigo, ej.id)),
-            })),
-          ),
+          ejercicios,
+          entregas: Object.entries(entregas)
+            .map(([id, t]) => ({
+              estudianteId: id, nombre: nombreDe.get(id) ?? '—', ...(JSON.parse(t) as Entrega),
+              calificacion: json<Calificacion>(notas[id] ?? null),
+            }))
+            .sort((a, b) => a.segundos - b.segundos),
+          empezados: aula.iniciado === null ? 0 : await almacen.hlen(k.recibido(codigo)),
         }
       }
 
-      // El estudiante solo lee lo suyo: su entrega y su nota, campo a campo (no todo el hash).
+      // El estudiante solo lee lo suyo: su hora de inicio, su envío y su nota, campo a campo.
       const yo = miembro!
-      const actual = ejercicios.find((e) => e.id === aula.actual) ?? null
       let recibido: number | null = null
-      if (actual) {
-        // Su tiempo empieza la primera vez que el ejercicio le llega, no cuando se lanzó.
-        const previo = await almacen.hget(k.recibido(codigo, actual.id), yo.id)
+      if (aula.iniciado !== null) {
+        const previo = await almacen.hget(k.recibido(codigo), yo.id)
         if (previo) recibido = Number(previo)
-        else {
-          // La primera vez: el docente ve subir «N lo están resolviendo».
-          if (await almacen.hsetnx(k.recibido(codigo, actual.id), yo.id, String(ahora), aula.expira)) await cambio(aula)
-          recibido = Number(await almacen.hget(k.recibido(codigo, actual.id), yo.id))
+        else if (aula.estado === 'abierta') {
+          // La primera vez que lo abre empieza su tiempo; el docente ve subir «lo están resolviendo».
+          if (await almacen.hsetnx(k.recibido(codigo), yo.id, String(ahora), aula.expira)) await cambio(aula)
+          recibido = Number(await almacen.hget(k.recibido(codigo), yo.id))
         }
       }
-      const miEntrega = async (ej: EjercicioDeAula): Promise<EntregaVisible | null> => {
-        const [e, n] = await Promise.all([almacen.hget(k.entregas(codigo, ej.id), yo.id), almacen.hget(k.notas(codigo, ej.id), yo.id)])
-        const entrega = json<Entrega>(e)
-        return entrega ? { estudianteId: yo.id, nombre: yo.nombre, ...entrega, calificacion: json<Calificacion>(n) } : null
-      }
+      const [e, n] = await Promise.all([almacen.hget(k.entregas(codigo), yo.id), almacen.hget(k.notas(codigo), yo.id)])
+      const guardada = json<Entrega>(e)
+      const entrega: EntregaQuiz | null = guardada
+        ? { estudianteId: yo.id, nombre: yo.nombre, ...guardada, calificacion: json<Calificacion>(n) }
+        : null
       return {
         rol, version, ahora, aula: resumen(aula),
         yo: visible(yo), miembros: await almacen.hlen(k.miembros(codigo)),
-        actual: actual ? { ...paraEstudiante(actual), recibido, entrega: await miEntrega(actual) } : null,
-        publicados: await Promise.all(
-          ejercicios.filter((e) => e.solucionPublicada).map(async (e) => ({ ...e, entrega: await miEntrega(e) })),
-        ),
+        quiz: { estado: estadoQuiz(aula), enviado: Boolean(entrega) },
+        ejercicios: aula.iniciado === null ? [] : ejercicios.map(paraEstudiante),
+        recibido,
+        fin: finDe(aula, recibido),
+        entrega,
+        publicados: aula.solucionPublicada
+          ? ejercicios.map((ej) => ({
+              ...ej,
+              entrega: entrega
+                ? {
+                    estudianteId: yo.id, nombre: yo.nombre, filas: entrega.respuestas[ej.id] ?? [],
+                    enviada: entrega.enviada, segundos: entrega.segundos, calificacion: entrega.calificacion,
+                  }
+                : null,
+            }))
+          : [],
       }
     },
 
-    /** Lanza uno de los ejercicios de la aplicación (por id) o uno escrito por el docente (propio). */
-    lanzar: (codigo: string, cred: Credencial | null, entrada: { ejercicio?: unknown; propio?: unknown }) => conCandado(codigo, async () => {
+    /** Añade al quiz uno de los ejercicios de la aplicación (por id) o uno escrito por el docente. */
+    agregar: (codigo: string, cred: Credencial | null, entrada: { ejercicio?: unknown; propio?: unknown }) => conCandado(codigo, async () => {
       const aula = await soloDocente(codigo, cred)
-      if (aula.estado !== 'abierta') throw new ErrorAula(409, 'El aula está cerrada.')
+      preparando(aula)
+      if ((await almacen.hlen(k.ejercicios(codigo))) >= MAX_EJERCICIOS) {
+        throw new ErrorAula(409, `Un quiz tiene como mucho ${MAX_EJERCICIOS} ejercicios.`)
+      }
       let ejercicio: EjercicioDeAula
       const id = `ej${aula.lanzados + 1}`
       if (entrada.propio !== undefined) {
@@ -429,77 +443,97 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
       }
       aula.lanzados += 1
       await almacen.hset(k.ejercicios(codigo), id, JSON.stringify(ejercicio), aula.expira)
-      aula.actual = id
       await guardarAula(aula)
-      await cambio(aula, { alumnos: true })
+      await cambio(aula)
       return { id }
     }),
 
-    async entregar(codigo: string, cred: Credencial | null, entrada: { ejercicio: unknown; filas: unknown }) {
+    quitar: (codigo: string, cred: Credencial | null, entrada: { ejercicio: unknown }) => conCandado(codigo, async () => {
+      const aula = await soloDocente(codigo, cred)
+      preparando(aula)
+      await almacen.hdel(k.ejercicios(codigo), texto(entrada.ejercicio))
+      await cambio(aula)
+    }),
+
+    /** Empieza el quiz: desde ahora los ejercicios quedan fijos y los estudiantes los ven. */
+    empezar: (codigo: string, cred: Credencial | null, entrada: { limiteMin: unknown }) => conCandado(codigo, async () => {
+      const aula = await soloDocente(codigo, cred)
+      preparando(aula)
+      if (!(await almacen.hlen(k.ejercicios(codigo)))) throw new ErrorAula(400, 'Añade al menos un ejercicio antes de empezar.')
+      const limite = entrada.limiteMin
+      if (limite !== null && limite !== undefined && !(Number.isInteger(limite) && (limite as number) >= 1 && (limite as number) <= MAX_LIMITE_MIN)) {
+        throw new ErrorAula(400, `El tiempo va de 1 a ${MAX_LIMITE_MIN} minutos, o sin límite.`)
+      }
+      aula.iniciado = reloj()
+      aula.limiteMin = (limite as number | null | undefined) ?? null
+      await guardarAula(aula)
+      await cambio(aula, { alumnos: true })
+    }),
+
+    /** El estudiante envía el quiz completo, una sola vez. */
+    async entregar(codigo: string, cred: Credencial | null, entrada: { respuestas: unknown }) {
       const aula = await cargar(codigo)
       const { rol, miembro } = await autenticar(aula, cred)
-      if (rol !== 'estudiante') throw new ErrorAula(403, 'El docente no envía entregas.')
+      if (rol !== 'estudiante') throw new ErrorAula(403, 'El docente no envía el quiz.')
       if (aula.estado !== 'abierta') throw new ErrorAula(409, 'El aula se cerró: ya no se aceptan envíos.')
-      if (entrada.ejercicio !== aula.actual) throw new ErrorAula(409, 'Ese ejercicio ya no está en curso.')
-      const filas = validarFilas(entrada.filas)
-      if (!filas || !filas.length) throw new ErrorAula(400, 'La entrega no tiene renglones válidos.')
-      const ej = aula.actual!
+      if (aula.iniciado === null) throw new ErrorAula(409, 'El quiz todavía no ha empezado.')
+      if (aula.solucionPublicada) throw new ErrorAula(409, 'El docente ya publicó las soluciones: no se aceptan más envíos.')
+      const ids = (await ejerciciosDe(codigo)).map((e) => e.id)
+      const respuestas = validarRespuestas(entrada.respuestas, ids)
+      if (!respuestas) throw new ErrorAula(400, 'El quiz tiene renglones que no son válidos.')
       const id = miembro!.id
       const ahora = reloj()
-      await almacen.hsetnx(k.recibido(codigo, ej), id, String(ahora), aula.expira)
-      const recibido = Number(await almacen.hget(k.recibido(codigo, ej), id))
-      const entrega: Entrega = { filas, enviada: ahora, segundos: Math.round((ahora - recibido) / 1000) }
-      // Solo si aún no tiene nota, en un paso: si el docente califica a la vez, gana la nota.
-      const escrita = await almacen.hsetSi(k.entregas(codigo, ej), id, JSON.stringify(entrega), aula.expira, k.notas(codigo, ej), null)
-      if (!escrita) throw new ErrorAula(409, 'El docente ya calificó tu entrega: no se puede cambiar.')
+      await almacen.hsetnx(k.recibido(codigo), id, String(ahora), aula.expira)
+      const recibido = Number(await almacen.hget(k.recibido(codigo), id))
+      const fin = finDe(aula, recibido)
+      if (fin !== null && ahora > fin + MARGEN_ENVIO_MS) throw new ErrorAula(409, 'Se acabó el tiempo del quiz.')
+      const segundos = Math.round((Math.min(ahora, fin ?? ahora) - recibido) / 1000)
+      const entrega: Entrega = { respuestas, enviada: ahora, segundos }
+      // Una sola vez: el primero que escribe gana.
+      if (!(await almacen.hsetnx(k.entregas(codigo), id, JSON.stringify(entrega), aula.expira))) {
+        throw new ErrorAula(409, 'Ya enviaste este quiz.')
+      }
       await cambio(aula, { estudiante: id })
-      return { segundos: entrega.segundos, enviada: entrega.enviada }
+      return { segundos, enviada: ahora }
     },
 
-    /**
-     * `enviada` es la entrega que el docente tiene delante: si el estudiante reenvió
-     * mientras la revisaba, no se califica la nueva a ciegas.
-     */
+    /** El docente emite (o corrige) la nota de un quiz enviado. */
     async calificar(
       codigo: string, cred: Credencial | null,
-      entrada: { ejercicio: unknown; estudiante: unknown; nota: unknown; comentario: unknown; enviada?: unknown },
+      entrada: { estudiante: unknown; nota: unknown; comentario: unknown; porEjercicio?: unknown },
     ) {
       const aula = await soloDocente(codigo, cred)
-      const ej = typeof entrada.ejercicio === 'string' ? entrada.ejercicio : ''
-      const est = typeof entrada.estudiante === 'string' ? entrada.estudiante : ''
-      const texto = await almacen.hget(k.entregas(codigo, ej), est)
-      if (!texto) throw new ErrorAula(404, 'No hay entrega que calificar.')
+      const est = texto(entrada.estudiante)
+      if (!(await almacen.hget(k.entregas(codigo), est))) throw new ErrorAula(404, 'Ese estudiante no ha enviado el quiz.')
       const nota = validarNota(entrada.nota)
       if (nota === null) throw new ErrorAula(400, 'La nota va de 0 a 5.')
-      const reenviada = new ErrorAula(409, 'El estudiante volvió a enviar su asiento: revisa la entrega nueva.')
-      if (entrada.enviada !== undefined && (JSON.parse(texto) as Entrega).enviada !== entrada.enviada) throw reenviada
+      const porEjercicio = validarNotasPorEjercicio(entrada.porEjercicio, (await ejerciciosDe(codigo)).map((e) => e.id))
+      if (!porEjercicio) throw new ErrorAula(400, 'La nota de cada ejercicio va de 0 a 5.')
       const comentario = typeof entrada.comentario === 'string' ? entrada.comentario.trim().slice(0, MAX_COMENTARIO) : ''
-      const calificacion: Calificacion = { nota, comentario, fecha: reloj() }
-      // Solo si la entrega sigue siendo la leída: un reenvío entre medias no se queda con esta nota.
-      if (!(await almacen.hsetSi(k.notas(codigo, ej), est, JSON.stringify(calificacion), aula.expira, k.entregas(codigo, ej), texto))) {
-        throw reenviada
-      }
+      const calificacion: Calificacion = { nota, comentario, fecha: reloj(), porEjercicio }
+      await almacen.hset(k.notas(codigo), est, JSON.stringify(calificacion), aula.expira)
       await cambio(aula, { estudiante: est })
       return calificacion
     },
 
     /**
-     * Lo que necesita la IA para sugerir una nota: solo para el docente del aula y con tope
-     * por aula. Si ya se sugirió para esta misma entrega, devuelve la guardada sin gastar IA.
+     * Lo que necesita la IA para sugerir la nota de un ejercicio: solo para el docente del
+     * aula y con tope por aula. Si ya se sugirió, devuelve la guardada sin gastar IA.
      */
     async entregaParaIA(codigo: string, cred: Credencial | null, entrada: { ejercicio: unknown; estudiante: unknown }) {
       const aula = await soloDocente(codigo, cred)
-      const ej = typeof entrada.ejercicio === 'string' ? entrada.ejercicio : ''
-      const est = typeof entrada.estudiante === 'string' ? entrada.estudiante : ''
+      const ej = texto(entrada.ejercicio)
+      const est = texto(entrada.estudiante)
       const ejercicio = json<EjercicioDeAula>(await almacen.hget(k.ejercicios(codigo), ej))
-      const entrega = json<Entrega>(await almacen.hget(k.entregas(codigo, ej), est))
+      const entrega = json<Entrega>(await almacen.hget(k.entregas(codigo), est))
       if (!ejercicio || !entrega) throw new ErrorAula(404, 'No hay entrega que calificar.')
+      const filas: Fila[] = entrega.respuestas[ej] ?? []
       const previa = json<{ enviada: number; sugerencia: unknown }>(await almacen.hget(k.ia(codigo), `${ej}:${est}`))
-      if (previa && previa.enviada === entrega.enviada) return { ejercicio, filas: entrega.filas, enviada: entrega.enviada, guardada: previa.sugerencia }
+      if (previa && previa.enviada === entrega.enviada) return { ejercicio, filas, enviada: entrega.enviada, guardada: previa.sugerencia }
       if ((await almacen.incr(k.usoIA(codigo), aula.expira)) > MAX_IA_POR_AULA) {
         throw new ErrorAula(429, `Esta aula ya usó sus ${MAX_IA_POR_AULA} sugerencias de IA.`)
       }
-      return { ejercicio, filas: entrega.filas, enviada: entrega.enviada, guardada: undefined }
+      return { ejercicio, filas, enviada: entrega.enviada, guardada: undefined }
     },
 
     /** Guarda la sugerencia de la IA para no pedirla otra vez por la misma entrega. */
@@ -509,15 +543,17 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
       await almacen.hset(k.ia(codigo), `${entrada.ejercicio}:${entrada.estudiante}`, valor, aula.expira)
     },
 
-    async publicarSolucion(codigo: string, cred: Credencial | null, entrada: { ejercicio: unknown }) {
+    /** Publica las soluciones de todos los ejercicios del quiz. */
+    publicarSolucion: (codigo: string, cred: Credencial | null) => conCandado(codigo, async () => {
       const aula = await soloDocente(codigo, cred)
-      const id = typeof entrada.ejercicio === 'string' ? entrada.ejercicio : ''
-      const ej = json<EjercicioDeAula>(await almacen.hget(k.ejercicios(codigo), id))
-      if (!ej) throw new ErrorAula(404, 'Ese ejercicio no existe en el aula.')
-      ej.solucionPublicada = true
-      await almacen.hset(k.ejercicios(codigo), id, JSON.stringify(ej), aula.expira)
+      if (aula.iniciado === null) throw new ErrorAula(409, 'El quiz todavía no ha empezado.')
+      for (const ej of await ejerciciosDe(codigo)) {
+        await almacen.hset(k.ejercicios(codigo), ej.id, JSON.stringify({ ...ej, solucionPublicada: true }), aula.expira)
+      }
+      aula.solucionPublicada = true
+      await guardarAula(aula)
       await cambio(aula, { alumnos: true })
-    },
+    }),
 
     cerrar: (codigo: string, cred: Credencial | null) => conCandado(codigo, async () => {
       const aula = await soloDocente(codigo, cred)
@@ -536,7 +572,7 @@ export function servicioAulas(almacen: Almacen, reloj: () => number = Date.now) 
 
     async expulsar(codigo: string, cred: Credencial | null, entrada: { estudiante: unknown }) {
       const aula = await soloDocente(codigo, cred)
-      const id = typeof entrada.estudiante === 'string' ? entrada.estudiante : ''
+      const id = texto(entrada.estudiante)
       const miembro = json<Miembro>(await almacen.hget(k.miembros(codigo), id))
       if (!miembro) throw new ErrorAula(404, 'Esa persona no está en el aula.')
       miembro.expulsado = true

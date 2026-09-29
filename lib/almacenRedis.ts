@@ -13,21 +13,7 @@ import { almacenEnMemoria, type Almacen } from './aulasServidor'
 
 const global = globalThis as typeof globalThis & { __almacenAulas?: Almacen }
 
-/**
- * hsetSi en Lua para que sea atómico. ARGV[4] vacío significa «el campo no debe existir»
- * (ningún valor guardado es texto vacío).
- */
-const HSET_SI = `
-local actual = redis.call('HGET', KEYS[2], ARGV[1])
-if ARGV[4] == '' then
-  if actual then return 0 end
-elseif actual ~= ARGV[4] then
-  return 0
-end
-redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
-redis.call('PEXPIREAT', KEYS[1], ARGV[3])
-return 1
-`
+const SOLTAR = `if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) end return 0`
 
 /** Upstash guarda y devuelve texto: el servicio serializa sus propios JSON. */
 function almacenUpstash(url: string, token: string): Almacen {
@@ -81,15 +67,15 @@ function almacenUpstash(url: string, token: string): Almacen {
       const [n] = await p.exec<[number, number]>()
       return n
     },
-    async hsetSi(clave, campo, valor, expiraEn, condicion, igual) {
-      const escrito = await redis.eval(HSET_SI, [clave, condicion], [campo, valor, String(expiraEn), igual ?? ''])
-      return Number(escrito) === 1
+    async hdel(clave, campo) {
+      await redis.hdel(clave, campo)
     },
-    async bloquear(clave, ms) {
-      return (await redis.set(clave, '1', { nx: true, px: ms })) !== null
+    async bloquear(clave, ficha, ms) {
+      return (await redis.set(clave, ficha, { nx: true, px: ms })) !== null
     },
-    async soltar(clave) {
-      await redis.del(clave)
+    async soltar(clave, ficha) {
+      // Comparar y borrar en un paso: si caducó y otro lo tomó, no se le quita.
+      await redis.eval(SOLTAR, [clave], [ficha])
     },
     async zadd(clave, puntaje, miembro) {
       await redis.zadd(clave, { score: puntaje, member: miembro })
