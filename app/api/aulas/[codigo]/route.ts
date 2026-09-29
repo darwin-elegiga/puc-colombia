@@ -7,6 +7,7 @@ import { leerCredencial } from '@/lib/aulasServidor'
 import { ipDe, leerCuerpo, obtenerServicio, responderError, sinConfigurar } from '@/lib/aulasApi'
 import { normalizarCodigo } from '@/lib/aulas'
 import { sugerirNotaIA } from '@/lib/calificacionIA'
+import { avisarCambioPublicas } from '@/lib/aulasPublicas'
 
 /** La IA puede tardar: margen para la función de Vercel. */
 export const maxDuration = 60
@@ -83,6 +84,11 @@ export async function POST(peticion: Request, { params }: Contexto) {
     }
     const resultado = await hecho()
     if (resultado instanceof Response) return resultado
+    // La lista de públicas (en caché) cambia al cerrar o abrir la entrada, o cuando alguien se une.
+    const accion = String(cuerpo.accion)
+    if (accion === 'cerrar' || accion === 'entrada' || (accion === 'unirse' && (resultado as { aula?: { publica?: boolean } }).aula?.publica)) {
+      avisarCambioPublicas()
+    }
     if (resultado === undefined && !['quitar', 'empezar', 'publicar', 'cerrar', 'entrada', 'expulsar'].includes(String(cuerpo.accion))) {
       return Response.json({ error: 'Acción desconocida.' }, { status: 400 })
     }
