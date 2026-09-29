@@ -301,12 +301,16 @@ export default function Explorador() {
     )
   }
 
-  if (destino?.tipo === 'entrenar' || destino?.tipo === 'ejercicio') {
+  if (destino?.tipo === 'entrenar' || destino?.tipo === 'ejercicio' || destino?.tipo === 'practica') {
     return (
       <Entrenador
         catalogo={catalogo}
+        modo={destino.tipo === 'practica' ? 'asiento' : 'columnas'}
         ejercicioId={destino.tipo === 'ejercicio' ? destino.id : null}
+        practicaId={destino.tipo === 'practica' ? destino.id ?? null : null}
+        onModo={(modo) => abrir(modo === 'asiento' ? { tipo: 'practica' } : { tipo: 'entrenar' })}
         onAbrir={(id) => abrir({ tipo: 'ejercicio', id })}
+        onAbrirPractica={(id) => abrir({ tipo: 'practica', id })}
         onVolverALista={cerrar}
         onSalir={() => abrir(null)}
       />

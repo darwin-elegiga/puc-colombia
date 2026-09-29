@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Dialogo from './Dialogo'
 import { Codigo, InsigniaNaturaleza } from './Insignias'
 import { buscar, type Catalogo } from '@/lib/catalogo'
@@ -30,6 +30,12 @@ export default function SelectorCuenta({
   onCerrar: () => void
 }) {
   const [consulta, setConsulta] = useState('')
+  const campo = useRef<HTMLInputElement>(null)
+
+  // Al abrir, el cursor va directo al buscador: se abre la hoja para escribir.
+  useEffect(() => {
+    if (abierto && !banco) requestAnimationFrame(() => campo.current?.focus())
+  }, [abierto, banco])
 
   const opciones = useMemo(() => {
     if (banco) return banco
@@ -48,6 +54,7 @@ export default function SelectorCuenta({
                 <IconoLupa className="size-[18px]" />
               </span>
               <input
+                ref={campo}
                 type="search"
                 value={consulta}
                 onChange={(e) => setConsulta(e.target.value)}
