@@ -64,7 +64,7 @@ export const ancestrosDe = (cat: Catalogo, codigo: string): Cuenta[] =>
   codigosAncestros(codigo).map((c) => cat.indice.get(c)).filter(Boolean) as Cuenta[]
 
 /** Si la cuenta no define dinámica propia, se hereda la del ancestro más cercano que la tenga. */
-function dinamicaDe(cat: Catalogo, cuenta: Cuenta) {
+export function dinamicaDe(cat: Catalogo, cuenta: Cuenta) {
   if (cuenta.dinamica) return cuenta.dinamica
   for (const c of [...codigosAncestros(cuenta.codigo)].reverse()) {
     const ancestro = cat.indice.get(c)
@@ -101,13 +101,13 @@ const VERBOS_DE_LADO = new Set(['pagar', 'pago', 'cobrar', 'cobro', 'recibir', '
  */
 function pesoPorLado(codigo: string, lado: 'pago' | 'cobro' | 'interno' | null): number {
   if (codigo[0] === '8' || codigo[0] === '9') return 0.9
-  // Ante un empate, la cuenta de 4 dígitos va antes que sus subcuentas y que el grupo.
-  if (codigo.length === 4) return pesoPorLado(`x${codigo}`, lado) * 1.04
-  const c = codigo.replace(/^x/, '')
-  if (lado === 'pago' && '567'.includes(c[0])) return 1.3
-  if (lado === 'cobro' && c[0] === '4') return 1.3
-  if (lado === 'cobro' && (c.startsWith('11') || c.startsWith('13'))) return 1.1
-  return 1
+  // Ante un empate, la cuenta de 4 dígitos va antes que sus subcuentas y que el grupo; y hay
+  // miles de subcuentas con nombres sueltos («IVA descontable», «Sueldos») que van detrás de su cuenta.
+  const nivel = codigo.length === 4 ? 1.04 : codigo.length >= 6 ? 0.92 : 1
+  if (lado === 'pago' && '567'.includes(codigo[0])) return 1.3 * nivel
+  if (lado === 'cobro' && codigo[0] === '4') return 1.3 * nivel
+  if (lado === 'cobro' && (codigo.startsWith('11') || codigo.startsWith('13'))) return 1.1 * nivel
+  return nivel
 }
 
 /**
@@ -156,7 +156,7 @@ export function buscar(
       .map((r) => ({ ...r, puntaje: r.puntaje * pesoPorLado(r.valor.codigo, lado) }))
       .sort((a, b) => b.puntaje - a.puntaje)
     completa = puntuadas.some((r) => r.cobertura >= 1)
-    encontradas = puntuadas.map((r) => r.valor)
+    encontradas = conSuCuenta(cat, puntuadas.map((r) => r.valor), coincideFiltros)
   }
 
   return {
@@ -172,6 +172,24 @@ export function buscar(
       hijos: (cat.hijosPor.get(c.codigo) ?? []).length,
     })),
   }
+}
+
+/**
+ * La búsqueda gira en torno a clases, grupos y cuentas: una subcuenta nunca sale sola,
+ * sino precedida de su cuenta de 4 dígitos, aunque esa cuenta no coincidiera por sí misma.
+ */
+function conSuCuenta(cat: Catalogo, encontradas: Cuenta[], admite: (c: Cuenta) => boolean): Cuenta[] {
+  const salida: Cuenta[] = []
+  const puestas = new Set<string>()
+  const poner = (c: Cuenta) => {
+    if (!puestas.has(c.codigo)) { puestas.add(c.codigo); salida.push(c) }
+  }
+  for (const c of encontradas) {
+    const madre = c.codigo.length > 4 ? cat.indice.get(c.codigo.slice(0, 4)) : undefined
+    if (madre && admite(madre)) poner(madre)
+    poner(c)
+  }
+  return salida
 }
 
 /** Primer párrafo de la descripción, recortado para las listas. */

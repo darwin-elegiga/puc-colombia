@@ -721,8 +721,8 @@ export default function Explorador() {
             <Dato etiqueta="Tuyas" valor={propias.length ? `${propias.length} guardadas en este dispositivo` : 'Ninguna todavía'} />
           </dl>
           <p className="text-[13.5px] leading-relaxed text-tinta-suave">
-            El PUC completo tiene varios miles de subcuentas: aquí están las de mayor uso, y el resto se agrega
-            desde la aplicación o importando un CSV. Las clases 7, 8 y 9 traen el detalle esencial.
+            Están todas las subcuentas que define el decreto, según puc.com.co; las de mayor uso traen además una
+            descripción breve. Los auxiliares propios de cada empresa se agregan desde la aplicación o importando un CSV.
           </p>
           <p className="text-[13.5px] leading-relaxed text-tinta-suave">
             Con la convergencia a NIIF el Decreto 2650 dejó de ser obligatorio para reconocimiento y medición.

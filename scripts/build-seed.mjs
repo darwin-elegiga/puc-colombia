@@ -729,6 +729,35 @@ for (const linea of LINEAS) {
   })
 }
 
+/* ───────────── SUBCUENTAS OFICIALES COMPLETAS (puc.com.co) ─────────────
+  scripts/subcuentas.json trae todas las subcuentas que el decreto define para cada
+  cuenta (se genera con scripts/descargar-subcuentas.mjs). Las del núcleo de arriba
+  conservan su descripción breve; el resto entra con el nombre oficial y, sin
+  descripción propia, la ficha muestra la de su cuenta.
+*/
+const RUTA_SUBCUENTAS = join(RAIZ, 'scripts/subcuentas.json')
+const SUBCUENTAS = existsSync(RUTA_SUBCUENTAS) ? JSON.parse(readFileSync(RUTA_SUBCUENTAS, 'utf8')).subcuentas : {}
+for (const [cuenta, lista] of Object.entries(SUBCUENTAS)) {
+  const madre = cuentas.find((c) => c.codigo === cuenta)
+  if (!madre) continue
+  for (const { codigo, nombre } of lista) {
+    if (vistos.has(codigo)) continue
+    vistos.add(codigo)
+    // «(DB)» o «(CR)» en el nombre manda; si no, hereda la de su cuenta (una depreciación sigue siendo crédito).
+    const marca = nombre.match(/\((DB|CR)\)\s*$/)?.[1]
+    const naturaleza = marca === 'DB' ? 'debito' : marca === 'CR' ? 'credito' : madre.naturaleza
+    cuentas.push({
+      codigo,
+      nombre,
+      nivel: 'subcuenta',
+      naturaleza,
+      naturalezaForzada: naturaleza !== NATURALEZA_POR_CLASE[codigo[0]],
+      descripcion: '',
+      origen: 'oficial',
+    })
+  }
+}
+
 // Verificación de integridad jerárquica: toda cuenta debe tener padre existente.
 const LONGITUD_PADRE = { 2: 1, 4: 2, 6: 4 }
 for (const c of cuentas) {
@@ -742,7 +771,7 @@ cuentas.sort((a, b) => a.codigo.localeCompare(b.codigo))
 
 const salida = {
   fuente: 'Decreto 2650 de 1993 y modificaciones — Plan Único de Cuentas para comerciantes (Colombia)',
-  nota: 'Catálogo de referencia con fines didácticos. Las 9 clases, los 52 grupos y las 344 cuentas de 4 dígitos están contrastadas una a una con el catálogo publicado en puc.com.co, y sus descripciones y dinámicas son las oficiales cuando el sitio las publica (textoOficial). Las subcuentas incluidas son un núcleo verificado de las de mayor uso. Amplíalo desde la aplicación o importando un CSV.',
+  nota: 'Catálogo de referencia con fines didácticos. Las 9 clases, los 52 grupos y las 344 cuentas de 4 dígitos están contrastadas una a una con el catálogo publicado en puc.com.co, y sus descripciones y dinámicas son las oficiales cuando el sitio las publica (textoOficial). Las subcuentas son todas las que el decreto define según puc.com.co; las de mayor uso traen además una descripción breve. Amplíalo desde la aplicación o importando un CSV.',
   generado: 'scripts/build-seed.mjs',
   cuentas,
 }

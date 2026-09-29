@@ -146,7 +146,9 @@ test('no hay códigos duplicados y toda cuenta tiene descripción', () => {
   for (const c of OFICIALES) {
     if (vistos.has(c.codigo)) duplicados.push(c.codigo)
     vistos.add(c.codigo)
-    if (!c.descripcion) sinDescripcion.push(c.codigo)
+    // Las subcuentas que solo traen el nombre oficial muestran la descripción de su cuenta.
+    const heredada = c.codigo.length === 6 && OFICIALES.find((m) => m.codigo === c.codigo.slice(0, 4))?.descripcion
+    if (!c.descripcion && !heredada) sinDescripcion.push(c.codigo)
   }
   assert.deepEqual(duplicados, [])
   assert.deepEqual(sinDescripcion, [])
@@ -239,10 +241,11 @@ test('cada operación tiene un id único, una categoría conocida y un asiento c
   assert.deepEqual(nombres.filter((n, i) => nombres.indexOf(n) !== i), [], 'nombres repetidos')
 })
 
-test('toda cuenta y subcuenta del catálogo aparece en al menos una operación', () => {
+test('toda cuenta y toda subcuenta descrita del catálogo aparece en al menos una operación', () => {
   const usados = MOVIMIENTOS.flatMap((m) => m.asiento.map((r) => r.codigo))
+  // Las subcuentas que solo traen el nombre oficial (casi dos mil) se cubren a través de su cuenta.
   const sinOperacion = (OFICIALES as Cuenta[])
-    .filter((c) => c.codigo.length >= 4)
+    .filter((c) => c.codigo.length === 4 || (c.codigo.length === 6 && c.descripcion))
     .filter((c) => !usados.some((u) => u === c.codigo || u.startsWith(c.codigo)))
     .map((c) => `${c.codigo} ${c.nombre}`)
   assert.deepEqual(sinOperacion, [])
