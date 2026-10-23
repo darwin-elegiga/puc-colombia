@@ -156,11 +156,32 @@ Para instalarla, el menú de la aplicación tiene la opción **Instalar en el te
 | Ejercicios | `data/ejercicios.ts` | Solo lectura |
 | Tus cuentas | `localStorage` del navegador | No salen del dispositivo |
 | Tu progreso en los ejercicios | `localStorage` del navegador | No sale del dispositivo |
+| Métricas de uso | Upstash Redis: contadores por día y entradas (90 días) | Anónimas; ver abajo |
 
 En Vercel el sistema de archivos del servidor es de solo lectura, así que las cuentas propias se
 guardan en el navegador. **Exporta el CSV** si quieres conservarlas o llevarlas a otro dispositivo.
 Si más adelante necesitas que varias personas compartan el mismo catálogo ampliado, el punto de
 cambio es `lib/almacenamiento.ts`: es la única pieza que toca el almacenamiento.
+
+## Métricas de uso
+
+El panel privado **`/metricas`** muestra el flujo entre pantallas (un diagrama de origen → destino,
+con «Entrada» como la primera pantalla de cada sesión), el dispositivo (tipo, sistema operativo,
+navegador, app instalada o no) y las métricas: sesiones, pantallas vistas, pantallas por sesión,
+tiempo por sesión y por pantalla, y sesiones por día, para los últimos 7, 30 o 90 días. También
+lista **cada entrada**: la hora, el dispositivo y si ese navegador ya había entrado (y qué vez es),
+con el reparto por hora del día y cuántos vuelven.
+
+- Se entra con un PIN de 4 dígitos: `METRICAS_PIN` en las variables de entorno, `0000` si no está.
+  Tras 5 PIN fallidos la IP espera un cuarto de hora.
+- `components/RegistroMetricas.tsx` manda un evento al abrir la app y en cada cambio de pantalla
+  (`/api/metricas`). Solo viaja el *tipo* de pantalla, nunca la cuenta, la búsqueda ni el ejercicio.
+- Para reconocer a quien vuelve, el navegador guarda en `localStorage` un identificador aleatorio
+  que no dice quién es; el servidor cuenta cuántas veces entra (se olvida tras un año sin volver) y
+  en la lista solo muestra sus 6 primeros caracteres. Cada entrada se guarda 90 días.
+- El resto de eventos solo suman a los contadores del día (`lib/metricas.ts`): no se guarda la IP
+  ni el recorrido de cada persona. Se respeta *Global Privacy Control* y *Do Not Track*.
+- Usa el mismo Upstash que las aulas; sin él las métricas se ignoran en silencio.
 
 ## Alcance del catálogo
 

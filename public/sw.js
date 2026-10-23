@@ -37,6 +37,8 @@ self.addEventListener('fetch', (evento) => {
 
   const url = new URL(peticion.url)
   if (url.origin !== self.location.origin) return
+  // El panel de métricas siempre va a la red: sus datos cambian y no debe guardarse como la portada.
+  if (url.pathname.startsWith('/metricas') || url.pathname.startsWith('/api/metricas')) return
 
   // Documentos: red primero para recibir actualizaciones, caché si no hay señal.
   if (peticion.mode === 'navigate') {

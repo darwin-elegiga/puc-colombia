@@ -1,5 +1,6 @@
 import Explorador from '@/components/Explorador'
 import AvisoAulas from '@/components/AvisoAulas'
+import RegistroMetricas from '@/components/RegistroMetricas'
 
 export default function Pagina() {
   return (
@@ -7,6 +8,7 @@ export default function Pagina() {
       <Explorador />
       {/* La burbuja del aula activa (o la invitación a una pública) sobre todas las pantallas del catálogo. */}
       <AvisoAulas />
+      <RegistroMetricas />
     </>
   )
 }

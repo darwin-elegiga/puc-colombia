@@ -48,6 +48,8 @@ export interface Almacen {
   /** Escribe solo si el campo no existe; devuelve si lo escribió. */
   hsetnx(clave: string, campo: string, valor: string, expiraEn: number): Promise<boolean>
   incr(clave: string, expiraEn: number): Promise<number>
+  /** Suma a varios campos de un hash en un solo viaje. */
+  hincrby(clave: string, sumas: Record<string, number>, expiraEn: number): Promise<void>
   hdel(clave: string, campo: string): Promise<void>
   /** Candado con caducidad: guarda la `ficha` de quien lo toma y devuelve si lo consiguió. */
   bloquear(clave: string, ficha: string, ms: number): Promise<boolean>
@@ -106,6 +108,10 @@ export function almacenEnMemoria(reloj: () => number = Date.now): Almacen {
       const n = Number(leer<string>(clave) ?? 0) + 1
       datos.set(clave, { valor: String(n), expira: expiraEn })
       return n
+    },
+    async hincrby(clave, sumas, expiraEn) {
+      const h = hash(clave, expiraEn)
+      for (const [campo, n] of Object.entries(sumas)) h.set(campo, String(Number(h.get(campo) ?? 0) + n))
     },
     async hdel(clave, campo) { leer<Map<string, string>>(clave)?.delete(campo) },
     async bloquear(clave, ficha, ms) {

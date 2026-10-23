@@ -67,6 +67,12 @@ function almacenUpstash(url: string, token: string): Almacen {
       const [n] = await p.exec<[number, number]>()
       return n
     },
+    async hincrby(clave, sumas, expiraEn) {
+      const p = redis.pipeline()
+      for (const [campo, n] of Object.entries(sumas)) p.hincrby(clave, campo, n)
+      p.pexpireat(clave, expiraEn)
+      await p.exec()
+    },
     async hdel(clave, campo) {
       await redis.hdel(clave, campo)
     },
