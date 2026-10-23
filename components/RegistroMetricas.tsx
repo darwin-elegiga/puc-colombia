@@ -2,12 +2,10 @@
 
 import { useEffect } from 'react'
 import { useDestino } from '@/lib/navegacion'
-import { leerDispositivo, VISITANTE_VALIDO, type Evento, type Pantalla } from '@/lib/metricas'
+import { CLAVE_VISITANTE, leerDispositivo, VISITANTE_VALIDO, type Dispositivo, type Evento, type Pantalla } from '@/lib/metricas'
 
 /** Marca de la pestaña: si ya existe, recargar no cuenta como sesión nueva. */
 const CLAVE_SESION = 'puc-metricas-sesion'
-/** Identificador aleatorio de este navegador, para saber si vuelve a entrar. No dice quién es. */
-const CLAVE_VISITANTE = 'puc-metricas-visitante'
 
 function visitante(): string | null {
   try {
@@ -26,6 +24,8 @@ function visitante(): string | null {
 /** Pantalla actual y desde cuándo está visible (null mientras la app está en segundo plano). */
 let actual: Pantalla | null = null
 let visibleDesde: number | null = null
+/** Cada evento dice de qué dispositivo viene, para poder filtrar el panel por él. */
+let dispositivo: Dispositivo | null = null
 
 function enviar(evento: Evento) {
   const cuerpo = JSON.stringify(evento)
@@ -73,19 +73,13 @@ export default function RegistroMetricas() {
       } catch {
         // Sin sessionStorage cada carga cuenta como sesión.
       }
-      if (nueva) {
-        const instalada = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
-        enviar({
-          tipo: 'inicio',
-          pantalla,
-          dispositivo: leerDispositivo(navigator.userAgent, navigator.maxTouchPoints > 1, instalada),
-          visitante: visitante(),
-        })
-      }
+      const instalada = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
+      dispositivo = leerDispositivo(navigator.userAgent, navigator.maxTouchPoints > 1, instalada)
+      if (nueva) enviar({ tipo: 'inicio', pantalla, dispositivo, visitante: visitante() })
       return
     }
     if (actual === pantalla) return
-    enviar({ tipo: 'paso', de: actual, a: pantalla, ms: tomarTiempo(ahora) })
+    enviar({ tipo: 'paso', de: actual, a: pantalla, ms: tomarTiempo(ahora), dispositivo })
     actual = pantalla
   }, [pantalla])
 
@@ -101,7 +95,7 @@ export default function RegistroMetricas() {
       if (actual === null || visibleDesde === null) return
       const ms = ahora - visibleDesde
       visibleDesde = null
-      if (ms > 0) enviar({ tipo: 'tiempo', pantalla: actual, ms })
+      if (ms > 0) enviar({ tipo: 'tiempo', pantalla: actual, ms, dispositivo })
     }
     document.addEventListener('visibilitychange', alCambiarVisibilidad)
     return () => document.removeEventListener('visibilitychange', alCambiarVisibilidad)

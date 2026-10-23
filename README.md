@@ -172,6 +172,13 @@ tiempo por sesión y por pantalla, y sesiones por día, para los últimos 7, 30 
 lista **cada entrada**: la hora, el dispositivo y si ese navegador ya había entrado (y qué vez es),
 con el reparto por hora del día y cuántos vuelven.
 
+Todo el panel se puede **filtrar por fechas** (7, 30 o 90 días, o un rango desde–hasta dentro de los 90
+días guardados) y **por dispositivo** (tipo, sistema, navegador e instalación). Cada dispositivo se
+identifica con una etiqueta fija (`#a3f2c1`): al tocarla se ve su ficha, con cuántas veces ha entrado
+y todas sus entradas, y el panel marca como «este dispositivo» el navegador desde el que se consulta.
+Cada contador lleva delante el dispositivo que lo generó (`movil|Android|Chrome|instalada#vista:cuenta`),
+y así el flujo, las pantallas y las horas también se filtran.
+
 - Se entra con un PIN de 4 dígitos: `METRICAS_PIN` en las variables de entorno, `0000` si no está.
   Tras 5 PIN fallidos la IP espera un cuarto de hora.
 - `components/RegistroMetricas.tsx` manda un evento al abrir la app y en cada cambio de pantalla

@@ -6,7 +6,8 @@
 import { timingSafeEqual } from 'node:crypto'
 import type { Almacen } from './aulasServidor'
 import {
-  diaColombia, horaColombia, incrementos, resumir, ultimosDias, type Entrada, type Evento, type ResumenMetricas,
+  conSegmento, diaColombia, etiquetaVisitante, diasEntre, horaColombia, incrementos, inicioDia, resumir, ultimosDias,
+  type Entrada, type Evento, type FiltroDispositivo, type ResumenMetricas,
 } from './metricas'
 
 /** Cuánto se guarda cada día y cada entrada: lo que puede pedir el panel. */
@@ -15,7 +16,16 @@ const DIA_MS = 86_400_000
 /** Un navegador que no vuelve en un año se olvida: si vuelve después, cuenta como nuevo. */
 const VISITANTE_MS = 365 * DIA_MS
 /** Entradas que devuelve el panel como mucho. */
-export const MAX_ENTRADAS = 500
+export const MAX_ENTRADAS = 1000
+
+export interface ConsultaMetricas {
+  /** Días AAAA-MM-DD, ambos incluidos. */
+  desde: string
+  hasta: string
+  filtro: FiltroDispositivo
+  /** Etiqueta de 6 caracteres de un visitante: solo sus entradas. */
+  visitante: string | null
+}
 
 /** Eventos por IP y minuto: de sobra para alguien navegando, poco para inflar las cifras. */
 const MAX_EVENTOS_MINUTO = 120
@@ -42,7 +52,7 @@ export function servicioMetricas(almacen: Almacen, reloj: () => number = Date.no
       t: ahora,
       pantalla: evento.pantalla,
       dispositivo: evento.dispositivo,
-      visitante: evento.visitante?.slice(0, 6) ?? null,
+      visitante: evento.visitante ? etiquetaVisitante(evento.visitante) : null,
       visita,
     }
     await almacen.zadd(CLAVE_ENTRADAS, ahora, JSON.stringify(entrada))
@@ -58,7 +68,8 @@ export function servicioMetricas(almacen: Almacen, reloj: () => number = Date.no
       if ((await contar(`metricas:${ip}`, 60_000)) > MAX_EVENTOS_MINUTO) return false
       const ahora = reloj()
       const extra = evento.tipo === 'inicio' ? await anotarEntrada(evento, ahora) : {}
-      await almacen.hincrby(claveDia(diaColombia(ahora)), { ...incrementos(evento), ...extra }, ahora + (DIAS_GUARDADOS + 1) * DIA_MS)
+      const campos = conSegmento(evento.dispositivo, { ...incrementos(evento), ...extra })
+      await almacen.hincrby(claveDia(diaColombia(ahora)), campos, ahora + (DIAS_GUARDADOS + 1) * DIA_MS)
       return true
     },
 
@@ -71,17 +82,23 @@ export function servicioMetricas(almacen: Almacen, reloj: () => number = Date.no
       await contar(`pin:${ip}`, VENTANA_PIN_MS)
     },
 
-    async resumen(dias: number): Promise<ResumenMetricas> {
-      const lista = ultimosDias(reloj(), Math.min(DIAS_GUARDADOS, Math.max(1, Math.round(dias))))
-      // Colombia no cambia de hora: el día empieza siempre a las 00:00 -05:00.
-      const desde = Date.parse(`${lista[0]}T00:00:00-05:00`)
+    /** Los días guardados entre `desde` y `hasta`; fuera de lo guardado o al revés, se corrige. */
+    dias(desde: string, hasta: string): string[] {
+      const guardados = ultimosDias(reloj(), DIAS_GUARDADOS)
+      const primero = guardados[0]
+      const ultimo = guardados.at(-1)!
+      const a = desde < primero ? primero : desde > ultimo ? ultimo : desde
+      const b = hasta > ultimo ? ultimo : hasta < a ? a : hasta
+      return diasEntre(a, b)
+    },
+
+    async resumen({ desde, hasta, filtro, visitante }: ConsultaMetricas): Promise<ResumenMetricas> {
+      const lista = this.dias(desde, hasta)
       const [campos, crudas] = await Promise.all([
         Promise.all(lista.map((dia) => almacen.hgetall(claveDia(dia)))),
-        almacen.zrangePorPuntaje(CLAVE_ENTRADAS, desde, reloj() + DIA_MS),
+        almacen.zrangePorPuntaje(CLAVE_ENTRADAS, inicioDia(lista[0]), inicioDia(lista.at(-1)!) + DIA_MS - 1),
       ])
       const entradas = crudas
-        .slice(-MAX_ENTRADAS)
-        .reverse()
         .flatMap((texto) => {
           try {
             return [JSON.parse(texto) as Entrada]
@@ -89,7 +106,10 @@ export function servicioMetricas(almacen: Almacen, reloj: () => number = Date.no
             return []
           }
         })
-      return resumir(lista.map((dia, i) => ({ dia, campos: campos[i] })), entradas)
+        .filter((e) => !visitante || e.visitante === visitante)
+        .reverse()
+      const resumen = resumir(lista.map((dia, i) => ({ dia, campos: campos[i] })), entradas, filtro)
+      return { ...resumen, entradas: resumen.entradas.slice(0, MAX_ENTRADAS) }
     },
   }
 }

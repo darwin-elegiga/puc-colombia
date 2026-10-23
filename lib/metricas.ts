@@ -102,9 +102,9 @@ export type Evento =
   /** Empieza una sesión (una pestaña) en una pantalla. */
   | { tipo: 'inicio'; pantalla: Pantalla; dispositivo: Dispositivo; visitante: string | null }
   /** Pasa de una pantalla a otra tras `ms` visibles en la primera. */
-  | { tipo: 'paso'; de: Pantalla; a: Pantalla; ms: number }
+  | { tipo: 'paso'; de: Pantalla; a: Pantalla; ms: number; dispositivo: Dispositivo | null }
   /** La app pasa a segundo plano: el tiempo visible acumulado en la pantalla actual. */
-  | { tipo: 'tiempo'; pantalla: Pantalla; ms: number }
+  | { tipo: 'tiempo'; pantalla: Pantalla; ms: number; dispositivo: Dispositivo | null }
 
 const esUna = <T extends string>(lista: readonly T[], valor: unknown): valor is T =>
   typeof valor === 'string' && (lista as readonly string[]).includes(valor)
@@ -112,56 +112,62 @@ const esUna = <T extends string>(lista: readonly T[], valor: unknown): valor is 
 const msValido = (valor: unknown) =>
   typeof valor === 'number' && Number.isFinite(valor) ? Math.min(MAX_MS_PANTALLA, Math.max(0, Math.round(valor))) : 0
 
-/** Identificador aleatorio que el navegador guarda para reconocer a quien vuelve. */
+function dispositivoValido(crudo: unknown): Dispositivo | null {
+  if (!crudo || typeof crudo !== 'object') return null
+  const d = crudo as Record<string, unknown>
+  if (!esUna(TIPOS_DISPOSITIVO, d.tipo) || !esUna(SISTEMAS, d.so) || !esUna(NAVEGADORES, d.navegador) || !esUna(MODOS, d.modo)) {
+    return null
+  }
+  return { tipo: d.tipo, so: d.so, navegador: d.navegador, modo: d.modo }
+}
+
+/** Identificador aleatorio que el navegador guarda para reconocer a quien vuelve. No dice quién es. */
 export const VISITANTE_VALIDO = /^[a-z0-9]{16,32}$/
+export const CLAVE_VISITANTE = 'puc-metricas-visitante'
+/** Lo que se ve del identificador en el panel: basta para distinguir un dispositivo de otro. */
+export const etiquetaVisitante = (id: string) => id.slice(0, 6)
 
 /** Valida un evento recibido: solo valores de las listas, para que nadie invente contadores. */
 export function validarEvento(crudo: unknown): Evento | null {
   if (!crudo || typeof crudo !== 'object') return null
   const e = crudo as Record<string, unknown>
+  // Los pasos de una versión anterior de la app llegan sin dispositivo: se aceptan igual.
+  const dispositivo = dispositivoValido(e.dispositivo)
   if (e.tipo === 'inicio') {
-    const d = e.dispositivo as Record<string, unknown> | null
-    if (!esUna(PANTALLAS, e.pantalla) || !d || typeof d !== 'object') return null
-    if (!esUna(TIPOS_DISPOSITIVO, d.tipo) || !esUna(SISTEMAS, d.so) || !esUna(NAVEGADORES, d.navegador) || !esUna(MODOS, d.modo)) {
-      return null
-    }
+    if (!esUna(PANTALLAS, e.pantalla) || !dispositivo) return null
     const visitante = typeof e.visitante === 'string' && VISITANTE_VALIDO.test(e.visitante) ? e.visitante : null
-    return { tipo: 'inicio', pantalla: e.pantalla, dispositivo: { tipo: d.tipo, so: d.so, navegador: d.navegador, modo: d.modo }, visitante }
+    return { tipo: 'inicio', pantalla: e.pantalla, dispositivo, visitante }
   }
   if (e.tipo === 'paso') {
     if (!esUna(PANTALLAS, e.de) || !esUna(PANTALLAS, e.a)) return null
-    return { tipo: 'paso', de: e.de, a: e.a, ms: msValido(e.ms) }
+    return { tipo: 'paso', de: e.de, a: e.a, ms: msValido(e.ms), dispositivo }
   }
   if (e.tipo === 'tiempo') {
     if (!esUna(PANTALLAS, e.pantalla)) return null
     const ms = msValido(e.ms)
-    return ms > 0 ? { tipo: 'tiempo', pantalla: e.pantalla, ms } : null
+    return ms > 0 ? { tipo: 'tiempo', pantalla: e.pantalla, ms, dispositivo } : null
   }
   return null
 }
 
 /**
- * Los campos del contador del día que suma cada evento:
+ * Cada contador lleva delante el dispositivo que lo generó, «tipo|so|navegador|modo#campo»,
+ * para poder filtrar todo el panel por dispositivo. Sin dispositivo, el campo va sin prefijo.
+ */
+export const segmento = (d: Dispositivo) => `${d.tipo}|${d.so}|${d.navegador}|${d.modo}`
+
+/**
+ * Los campos del contador del día que suma cada evento (sin el prefijo del dispositivo):
  *  - sesiones
  *  - vista:{pantalla}          veces que se abrió
  *  - ms:{pantalla}             tiempo visible acumulado
  *  - paso:{de}>{a}             transiciones (de «entrada» en el primer paso)
- *  - disp:{tipo}, so:{…}, nav:{…}, modo:{…}   una vez por sesión
+ * El servidor añade al empezar cada sesión hora:{0-23} y nuevos o recurrentes.
  */
 export function incrementos(evento: Evento): Record<string, number> {
   switch (evento.tipo) {
-    case 'inicio': {
-      const d = evento.dispositivo
-      return {
-        sesiones: 1,
-        [`vista:${evento.pantalla}`]: 1,
-        [`paso:${ENTRADA}>${evento.pantalla}`]: 1,
-        [`disp:${d.tipo}`]: 1,
-        [`so:${d.so}`]: 1,
-        [`nav:${d.navegador}`]: 1,
-        [`modo:${d.modo}`]: 1,
-      }
-    }
+    case 'inicio':
+      return { sesiones: 1, [`vista:${evento.pantalla}`]: 1, [`paso:${ENTRADA}>${evento.pantalla}`]: 1 }
     case 'paso': {
       const suma: Record<string, number> = { [`vista:${evento.a}`]: 1, [`paso:${evento.de}>${evento.a}`]: 1 }
       if (evento.ms > 0) suma[`ms:${evento.de}`] = evento.ms
@@ -170,6 +176,46 @@ export function incrementos(evento: Evento): Record<string, number> {
     case 'tiempo':
       return { [`ms:${evento.pantalla}`]: evento.ms }
   }
+}
+
+/** Pone el prefijo del dispositivo a cada campo. */
+export function conSegmento(dispositivo: Dispositivo | null, campos: Record<string, number>): Record<string, number> {
+  if (!dispositivo) return campos
+  const seg = segmento(dispositivo)
+  return Object.fromEntries(Object.entries(campos).map(([campo, n]) => [`${seg}#${campo}`, n]))
+}
+
+/** Filtro del panel: cada parte del dispositivo que se fija; lo que falta es «todos». */
+export type FiltroDispositivo = Partial<Dispositivo>
+
+/** Lee el filtro de los parámetros de la URL, descartando valores que no existen. */
+export function leerFiltro(parametros: URLSearchParams): FiltroDispositivo {
+  const filtro: FiltroDispositivo = {}
+  const tipo = parametros.get('tipo')
+  const so = parametros.get('so')
+  const navegador = parametros.get('navegador')
+  const modo = parametros.get('modo')
+  if (esUna(TIPOS_DISPOSITIVO, tipo)) filtro.tipo = tipo
+  if (esUna(SISTEMAS, so)) filtro.so = so
+  if (esUna(NAVEGADORES, navegador)) filtro.navegador = navegador
+  if (esUna(MODOS, modo)) filtro.modo = modo
+  return filtro
+}
+
+const hayFiltro = (filtro: FiltroDispositivo) => Object.values(filtro).some(Boolean)
+
+export function cumpleFiltro(d: Dispositivo, filtro: FiltroDispositivo): boolean {
+  return (
+    (!filtro.tipo || d.tipo === filtro.tipo) &&
+    (!filtro.so || d.so === filtro.so) &&
+    (!filtro.navegador || d.navegador === filtro.navegador) &&
+    (!filtro.modo || d.modo === filtro.modo)
+  )
+}
+
+function desdeSegmento(seg: string): Dispositivo | null {
+  const [tipo, so, navegador, modo] = seg.split('|')
+  return dispositivoValido({ tipo, so, navegador, modo })
 }
 
 export interface Conteo {
@@ -212,16 +258,25 @@ export interface Entrada {
 const ordenar = (mapa: Map<string, number>): Conteo[] =>
   [...mapa].map(([clave, n]) => ({ clave, n })).sort((a, b) => b.n - a.n)
 
-/** Junta los contadores de varios días (de más antiguo a más reciente) en el resumen del panel. */
-export function resumir(dias: { dia: string; campos: Record<string, string> }[], entradas: Entrada[] = []): ResumenMetricas {
+/**
+ * Junta los contadores de varios días (de más antiguo a más reciente) en el resumen del panel,
+ * contando solo los del dispositivo que pide el filtro.
+ */
+export function resumir(
+  dias: { dia: string; campos: Record<string, string> }[],
+  entradas: Entrada[] = [],
+  filtro: FiltroDispositivo = {},
+): ResumenMetricas {
   const vistas = new Map<string, number>()
   const ms = new Map<string, number>()
   const pasos = new Map<string, number>()
   const disp = { tipo: new Map<string, number>(), so: new Map<string, number>(), navegador: new Map<string, number>(), modo: new Map<string, number>() }
   const prefijos: Record<string, Map<string, number>> = {
+    // disp:, so:, nav: y modo: solo los tienen los contadores antiguos, sin prefijo de dispositivo.
     'vista:': vistas, 'ms:': ms, 'paso:': pasos, 'disp:': disp.tipo, 'so:': disp.so, 'nav:': disp.navegador, 'modo:': disp.modo,
   }
   const sumar = (mapa: Map<string, number>, clave: string, n: number) => mapa.set(clave, (mapa.get(clave) ?? 0) + n)
+  const filtrando = hayFiltro(filtro)
 
   let sesiones = 0
   let nuevos = 0
@@ -231,11 +286,22 @@ export function resumir(dias: { dia: string; campos: Record<string, string> }[],
   for (const { dia, campos } of dias) {
     let sesionesDia = 0
     let vistasDia = 0
-    for (const [campo, texto] of Object.entries(campos)) {
+    for (const [crudo, texto] of Object.entries(campos)) {
       const n = Number(texto)
       if (!Number.isFinite(n)) continue
+      const almohadilla = crudo.indexOf('#')
+      const dispositivo = almohadilla < 0 ? null : desdeSegmento(crudo.slice(0, almohadilla))
+      // Lo que no dice de qué dispositivo viene solo cuenta sin filtro.
+      if (filtrando && (!dispositivo || !cumpleFiltro(dispositivo, filtro))) continue
+      const campo = crudo.slice(almohadilla + 1)
       if (campo === 'sesiones') {
         sesionesDia += n
+        if (dispositivo) {
+          sumar(disp.tipo, dispositivo.tipo, n)
+          sumar(disp.so, dispositivo.so, n)
+          sumar(disp.navegador, dispositivo.navegador, n)
+          sumar(disp.modo, dispositivo.modo, n)
+        }
         continue
       }
       if (campo === 'nuevos' || campo === 'recurrentes') {
@@ -279,7 +345,7 @@ export function resumir(dias: { dia: string; campos: Record<string, string> }[],
     nuevos,
     recurrentes,
     porHora,
-    entradas,
+    entradas: entradas.filter((e) => cumpleFiltro(e.dispositivo, filtro)),
   }
 }
 
@@ -291,6 +357,19 @@ export function horaColombia(instante: number): number {
 /** El día en Colombia (AAAA-MM-DD), que es donde se usa la app. */
 export function diaColombia(instante: number): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(instante)
+}
+
+/** Colombia no cambia de hora: cada día empieza a las 00:00 -05:00. */
+export const inicioDia = (dia: string) => Date.parse(`${dia}T00:00:00-05:00`)
+
+export const DIA_VALIDO = /^\d{4}-\d{2}-\d{2}$/
+
+/** Los días de `desde` a `hasta`, ambos incluidos y del más antiguo al más reciente. */
+export function diasEntre(desde: string, hasta: string): string[] {
+  const dias: string[] = []
+  // Mediodía: lejos de los bordes del día aunque se sumen días de 24 h.
+  for (let t = inicioDia(desde) + 12 * 3_600_000; t <= inicioDia(hasta) + 12 * 3_600_000; t += 86_400_000) dias.push(diaColombia(t))
+  return dias
 }
 
 /** Los últimos `n` días hasta `hoy`, del más antiguo al más reciente. */

@@ -1,10 +1,13 @@
 /**
  * POST /api/metricas          un evento de uso anónimo (lib/metricas.ts) → 204
- * GET  /api/metricas?dias=N   el resumen para el panel /metricas; pide el PIN en x-pin.
+ * GET  /api/metricas          el resumen para el panel /metricas; pide el PIN en x-pin.
+ *      ?desde=AAAA-MM-DD&hasta=AAAA-MM-DD   el periodo (o ?dias=N, los últimos N días)
+ *      &tipo=&so=&navegador=&modo=          solo ese dispositivo
+ *      &visitante=abc123                    solo las entradas de ese navegador
  */
 import { crearAlmacen } from '@/lib/almacenRedis'
 import { ipDe } from '@/lib/aulasApi'
-import { validarEvento } from '@/lib/metricas'
+import { DIA_VALIDO, diaColombia, leerFiltro, validarEvento } from '@/lib/metricas'
 import { pinCorrecto, servicioMetricas } from '@/lib/metricasServidor'
 
 let servicio: ReturnType<typeof servicioMetricas> | null | undefined
@@ -47,8 +50,19 @@ export async function GET(peticion: Request) {
       await s.fallo(ip)
       return Response.json({ error: 'PIN incorrecto.' }, { status: 401, headers: sinCache })
     }
-    const dias = Number(new URL(peticion.url).searchParams.get('dias')) || 7
-    return Response.json(await s.resumen(dias), { headers: sinCache })
+    const parametros = new URL(peticion.url).searchParams
+    const hoy = Date.now()
+    const dias = Math.max(1, Number(parametros.get('dias')) || 7)
+    const desde = parametros.get('desde') ?? ''
+    const hasta = parametros.get('hasta') ?? ''
+    const visitante = parametros.get('visitante') ?? ''
+    const resumen = await s.resumen({
+      desde: DIA_VALIDO.test(desde) ? desde : diaColombia(hoy - (dias - 1) * 86_400_000),
+      hasta: DIA_VALIDO.test(hasta) ? hasta : diaColombia(hoy),
+      filtro: leerFiltro(parametros),
+      visitante: /^[a-z0-9]{6}$/.test(visitante) ? visitante : null,
+    })
+    return Response.json(resumen, { headers: sinCache })
   } catch (error) {
     console.error('[metricas]', error)
     return Response.json({ error: 'Algo falló en el servidor. Vuelve a intentarlo.' }, { status: 500, headers: sinCache })

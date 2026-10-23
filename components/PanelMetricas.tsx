@@ -2,15 +2,22 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import Cargando from './Cargando'
-import { NOMBRE_DISPOSITIVO, NOMBRE_PANTALLA, type Conteo, type Entrada, type ResumenMetricas } from '@/lib/metricas'
+import {
+  CLAVE_VISITANTE, MODOS, NAVEGADORES, NOMBRE_DISPOSITIVO, NOMBRE_PANTALLA, SISTEMAS, TIPOS_DISPOSITIVO, diaColombia,
+  etiquetaVisitante, type Conteo, type Dispositivo, type Entrada, type FiltroDispositivo, type ResumenMetricas,
+} from '@/lib/metricas'
 
 /** El PIN se recuerda solo mientras la pestaña siga abierta. */
 const CLAVE_PIN = 'puc-metricas-pin'
 const RANGOS = [7, 30, 90] as const
+/** Lo que guarda el servidor: no se puede pedir nada más antiguo. */
+const DIAS_GUARDADOS = 90
 
 const nombre = (pantalla: string) => NOMBRE_PANTALLA[pantalla as keyof typeof NOMBRE_PANTALLA] ?? pantalla
 const numero = (n: number) => n.toLocaleString('es-CO')
 const porcentaje = (parte: number, total: number) => (total ? `${Math.round((parte / total) * 100)} %` : '—')
+const describir = (d: Dispositivo) =>
+  `${NOMBRE_DISPOSITIVO[d.tipo]} · ${d.so} · ${d.navegador}${d.modo === 'instalada' ? ' · app instalada' : ''}`
 
 function duracion(ms: number) {
   const s = Math.round(ms / 1000)
@@ -37,22 +44,60 @@ function guardarPin(pin: string | null) {
   }
 }
 
+/** La etiqueta de este navegador, si también ha usado la app: para marcarlo como «este dispositivo». */
+function leerMiVisitante() {
+  try {
+    const id = localStorage.getItem(CLAVE_VISITANTE)
+    return id ? etiquetaVisitante(id) : null
+  } catch {
+    return null
+  }
+}
+
+interface Consulta {
+  /** Uno de los rangos rápidos o «fechas» para elegir desde y hasta. */
+  periodo: (typeof RANGOS)[number] | 'fechas'
+  desde: string
+  hasta: string
+  filtro: FiltroDispositivo
+  /** Etiqueta de un dispositivo concreto: el panel muestra solo su ficha y sus entradas. */
+  visitante: string | null
+}
+
+const hoy = () => diaColombia(Date.now())
+const haceDias = (n: number) => diaColombia(Date.now() - (n - 1) * 86_400_000)
+
+function parametros(c: Consulta) {
+  const p = new URLSearchParams()
+  if (c.periodo === 'fechas') {
+    p.set('desde', c.desde)
+    p.set('hasta', c.hasta)
+  } else {
+    p.set('dias', String(c.periodo))
+  }
+  for (const [clave, valor] of Object.entries(c.filtro)) if (valor) p.set(clave, valor)
+  if (c.visitante) p.set('visitante', c.visitante)
+  return p.toString()
+}
+
 /**
- * Panel privado de uso: el flujo entre pantallas, el dispositivo y las métricas, agregados
- * por día y sin datos de nadie en concreto. Se entra con un PIN de 4 dígitos.
+ * Panel privado de uso: el flujo entre pantallas, el dispositivo y las métricas, con filtros
+ * por fechas y por dispositivo, y cada entrada con su hora y si ese dispositivo vuelve.
+ * Se entra con un PIN de 4 dígitos.
  */
 export default function PanelMetricas() {
   const [pin, setPin] = useState<string | null>(null)
-  const [dias, setDias] = useState<(typeof RANGOS)[number]>(7)
+  const [consulta, setConsulta] = useState<Consulta>({ periodo: 7, desde: haceDias(7), hasta: hoy(), filtro: {}, visitante: null })
   const [datos, setDatos] = useState<ResumenMetricas | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
+  const [miVisitante, setMiVisitante] = useState<string | null>(null)
 
-  const cargar = useCallback(async (conPin: string, enDias: number) => {
+  const cargar = useCallback(async (conPin: string, c: Consulta) => {
     setCargando(true)
     setError(null)
     try {
-      const respuesta = await fetch(`/api/metricas?dias=${enDias}`, { headers: { 'x-pin': conPin }, cache: 'no-store' })
+      const respuesta = await fetch(`/api/metricas?${parametros(c)}`, { headers: { 'x-pin': conPin }, cache: 'no-store' })
       const cuerpo = await respuesta.json().catch(() => ({}))
       if (!respuesta.ok) {
         if (respuesta.status === 401) {
@@ -73,14 +118,19 @@ export default function PanelMetricas() {
   }, [])
 
   useEffect(() => {
+    // localStorage y sessionStorage solo existen tras montar.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMiVisitante(leerMiVisitante())
     const guardado = leerPin()
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- el PIN vive en sessionStorage, solo disponible tras montar
-    if (guardado) void cargar(guardado, 7)
+    if (guardado) void cargar(guardado, { periodo: 7, desde: haceDias(7), hasta: hoy(), filtro: {}, visitante: null })
   }, [cargar])
 
-  const cambiarRango = (siguiente: (typeof RANGOS)[number]) => {
-    setDias(siguiente)
-    if (pin) void cargar(pin, siguiente)
+  /** Cambia la consulta y, si es válida, la pide al servidor. */
+  const cambiar = (parcial: Partial<Consulta>) => {
+    const siguiente = { ...consulta, ...parcial }
+    setConsulta(siguiente)
+    const fechasValidas = siguiente.periodo !== 'fechas' || (siguiente.desde && siguiente.hasta && siguiente.desde <= siguiente.hasta)
+    if (pin && fechasValidas) void cargar(pin, siguiente)
   }
 
   return (
@@ -110,32 +160,158 @@ export default function PanelMetricas() {
         </div>
 
         {!pin || !datos ? (
-          <EntradaPin onEntrar={(p) => cargar(p, dias)} cargando={cargando} error={error} />
+          <EntradaPin onEntrar={(p) => cargar(p, consulta)} cargando={cargando} error={error} />
         ) : (
           <>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <div role="group" aria-label="Periodo" className="inline-flex rounded-lg border border-borde bg-superficie p-0.5">
-                {RANGOS.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    aria-pressed={dias === r}
-                    onClick={() => cambiarRango(r)}
-                    className={`rounded-md px-3 py-1.5 text-[14px] ${dias === r ? 'bg-tinta text-white' : 'text-tinta-suave'}`}
-                  >
-                    {r} días
-                  </button>
-                ))}
-              </div>
-              <span className="text-[13px] text-tinta-tenue">
-                {cargando ? <Cargando texto="Actualizando…" /> : `Del ${datos.desde} al ${datos.hasta} (hora de Colombia)`}
-              </span>
-            </div>
+            <Filtros consulta={consulta} onCambiar={cambiar} />
+            <p className="mt-3 h-5 text-[13px] text-tinta-tenue">
+              {cargando ? <Cargando texto="Actualizando…" /> : `Del ${datos.desde} al ${datos.hasta} (hora de Colombia)`}
+            </p>
             {error && <p className="mt-3 rounded-lg bg-error px-3 py-2 text-[14px] text-error-tinta">{error}</p>}
-            <Resumen datos={datos} />
+            {consulta.visitante ? (
+              <FichaVisitante
+                etiqueta={consulta.visitante}
+                entradas={datos.entradas}
+                esMio={consulta.visitante === miVisitante}
+                onCerrar={() => cambiar({ visitante: null })}
+              />
+            ) : (
+              <Resumen datos={datos} miVisitante={miVisitante} onVisitante={(visitante) => cambiar({ visitante })} />
+            )}
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+const OPCIONES_FILTRO: { clave: keyof Dispositivo; titulo: string; valores: readonly string[] }[] = [
+  { clave: 'tipo', titulo: 'Tipo', valores: TIPOS_DISPOSITIVO },
+  { clave: 'so', titulo: 'Sistema', valores: SISTEMAS },
+  { clave: 'navegador', titulo: 'Navegador', valores: NAVEGADORES },
+  { clave: 'modo', titulo: 'Instalación', valores: MODOS },
+]
+
+function Filtros({ consulta, onCambiar }: { consulta: Consulta; onCambiar: (parcial: Partial<Consulta>) => void }) {
+  const hayFiltro = Object.values(consulta.filtro).some(Boolean)
+  const campo = 'rounded-lg border border-borde bg-superficie px-2.5 py-2 text-[14px] text-tinta outline-none focus:border-tinta'
+  return (
+    <div className="mt-6 space-y-3">
+      <div className="flex flex-wrap items-end gap-2">
+        <div role="group" aria-label="Periodo" className="inline-flex rounded-lg border border-borde bg-superficie p-0.5">
+          {[...RANGOS, 'fechas' as const].map((r) => (
+            <button
+              key={r}
+              type="button"
+              aria-pressed={consulta.periodo === r}
+              onClick={() =>
+                onCambiar(r === 'fechas' ? { periodo: r } : { periodo: r, desde: haceDias(r), hasta: hoy() })
+              }
+              className={`rounded-md px-3 py-1.5 text-[14px] ${consulta.periodo === r ? 'bg-tinta text-white' : 'text-tinta-suave'}`}
+            >
+              {r === 'fechas' ? 'Fechas' : `${r} días`}
+            </button>
+          ))}
+        </div>
+        {consulta.periodo === 'fechas' && (
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="text-[12px] text-tinta-suave">
+              Desde
+              <input
+                type="date"
+                value={consulta.desde}
+                min={haceDias(DIAS_GUARDADOS)}
+                max={consulta.hasta || hoy()}
+                onChange={(e) => onCambiar({ desde: e.target.value })}
+                className={`${campo} mt-1 block`}
+              />
+            </label>
+            <label className="text-[12px] text-tinta-suave">
+              Hasta
+              <input
+                type="date"
+                value={consulta.hasta}
+                min={consulta.desde || haceDias(DIAS_GUARDADOS)}
+                max={hoy()}
+                onChange={(e) => onCambiar({ hasta: e.target.value })}
+                className={`${campo} mt-1 block`}
+              />
+            </label>
+          </div>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {OPCIONES_FILTRO.map(({ clave, titulo, valores }) => (
+          <label key={clave} className="text-[12px] text-tinta-suave">
+            {titulo}
+            <select
+              value={consulta.filtro[clave] ?? ''}
+              onChange={(e) => onCambiar({ filtro: { ...consulta.filtro, [clave]: e.target.value || undefined } })}
+              className={`${campo} mt-1 block w-full`}
+            >
+              <option value="">Todos</option>
+              {valores.map((v) => (
+                <option key={v} value={v}>
+                  {NOMBRE_DISPOSITIVO[v] ?? v}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+      </div>
+      {hayFiltro && (
+        <button type="button" onClick={() => onCambiar({ filtro: {} })} className="text-[13px] text-tinta-suave underline underline-offset-2">
+          Quitar el filtro de dispositivo
+        </button>
+      )}
+    </div>
+  )
+}
+
+/** Lo que se sabe de un dispositivo concreto en el periodo: cuántas veces entró, cuándo y desde qué. */
+function FichaVisitante({ etiqueta, entradas, esMio, onCerrar }: { etiqueta: string; entradas: Entrada[]; esMio: boolean; onCerrar: () => void }) {
+  const ultima = entradas[0]
+  const primera = entradas.at(-1)
+  const visitas = Math.max(0, ...entradas.map((e) => e.visita ?? 0))
+  return (
+    <>
+      <section className="mt-6 rounded-xl border border-borde bg-superficie p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[13px] text-tinta-suave">Dispositivo</p>
+            <p className="mt-0.5 font-mono text-[22px] text-tinta">
+              #{etiqueta}
+              {esMio && <span className="ml-2 align-middle font-sans text-[12px] text-propia-tinta">este dispositivo</span>}
+            </p>
+            {ultima && <p className="text-[14px] text-tinta-suave">{describir(ultima.dispositivo)}</p>}
+          </div>
+          <button type="button" onClick={onCerrar} className="tactil shrink-0 rounded-lg border border-borde px-3 text-[14px] text-tinta-suave pulsable">
+            Ver todos
+          </button>
+        </div>
+        {entradas.length ? (
+          <dl className="mt-4 grid grid-cols-2 gap-3 text-[14px] sm:grid-cols-4">
+            <Dato titulo="Entradas en el periodo" valor={numero(entradas.length)} />
+            <Dato titulo="Visitas en total" valor={visitas ? numero(visitas) : '—'} />
+            <Dato titulo="Primera del periodo" valor={primera ? fechaHora.format(primera.t) : '—'} />
+            <Dato titulo="Última" valor={ultima ? fechaHora.format(ultima.t) : '—'} />
+          </dl>
+        ) : (
+          <p className="mt-3 text-[14px] text-tinta-suave">No entró en este periodo con el filtro elegido.</p>
+        )}
+      </section>
+      <Seccion titulo="Sus entradas">
+        <ListaEntradas entradas={entradas} miVisitante={esMio ? etiqueta : null} />
+      </Seccion>
+    </>
+  )
+}
+
+function Dato({ titulo, valor }: { titulo: string; valor: string }) {
+  return (
+    <div>
+      <dt className="text-[12px] text-tinta-tenue">{titulo}</dt>
+      <dd className="text-tinta tabular-nums">{valor}</dd>
     </div>
   )
 }
@@ -183,7 +359,7 @@ function EntradaPin({ onEntrar, cargando, error }: { onEntrar: (pin: string) => 
   )
 }
 
-function Resumen({ datos }: { datos: ResumenMetricas }) {
+function Resumen({ datos, miVisitante, onVisitante }: { datos: ResumenMetricas; miVisitante: string | null; onVisitante: (etiqueta: string) => void }) {
   if (datos.sesiones === 0 && datos.vistas === 0) {
     return (
       <p className="mt-8 rounded-xl border border-borde bg-superficie px-4 py-6 text-center text-[15px] text-tinta-suave">
@@ -204,7 +380,11 @@ function Resumen({ datos }: { datos: ResumenMetricas }) {
       </section>
 
       <Seccion titulo="Entradas" nota="Cada vez que alguien abre la app: hora, dispositivo y si ese navegador ya había entrado.">
-        <ListaEntradas entradas={datos.entradas} />
+        <ListaEntradas entradas={datos.entradas} miVisitante={miVisitante} onVisitante={onVisitante} />
+      </Seccion>
+
+      <Seccion titulo="Dispositivos que vuelven" nota="Cada dispositivo se reconoce por su etiqueta. Tócalo para ver todas sus entradas.">
+        <DispositivosQueVuelven entradas={datos.entradas} miVisitante={miVisitante} onVisitante={onVisitante} />
       </Seccion>
 
       <Seccion titulo="Entradas por hora" nota="Hora de Colombia.">
@@ -261,7 +441,9 @@ const fechaHora = new Intl.DateTimeFormat('es-CO', {
 /** Entradas que se muestran antes de pedir más. */
 const PAGINA_ENTRADAS = 25
 
-function ListaEntradas({ entradas }: { entradas: Entrada[] }) {
+function ListaEntradas({
+  entradas, miVisitante, onVisitante,
+}: { entradas: Entrada[]; miVisitante: string | null; onVisitante?: (etiqueta: string) => void }) {
   const [visibles, setVisibles] = useState(PAGINA_ENTRADAS)
   if (!entradas.length) return <p className="text-[14px] text-tinta-suave">Sin entradas en este periodo.</p>
   return (
@@ -273,10 +455,7 @@ function ListaEntradas({ entradas }: { entradas: Entrada[] }) {
             <li key={`${e.t}-${e.visitante}`} className="flex items-start justify-between gap-3 py-2.5 text-[14px]">
               <div className="min-w-0">
                 <p className="text-tinta tabular-nums">{fechaHora.format(e.t)}</p>
-                <p className="text-[13px] text-tinta-suave">
-                  {NOMBRE_DISPOSITIVO[d.tipo]} · {d.so} · {d.navegador}
-                  {d.modo === 'instalada' ? ' · app instalada' : ''}
-                </p>
+                <p className="text-[13px] text-tinta-suave">{describir(d)}</p>
               </div>
               <div className="shrink-0 text-right">
                 {e.visita === null ? (
@@ -286,7 +465,9 @@ function ListaEntradas({ entradas }: { entradas: Entrada[] }) {
                 ) : (
                   <span className="rounded-full bg-propia px-2 py-0.5 text-[12px] text-propia-tinta">Vuelve · {e.visita}.ª vez</span>
                 )}
-                {e.visitante && <p className="mt-1 font-mono text-[11px] text-tinta-tenue">#{e.visitante}</p>}
+                {e.visitante && (
+                  <EtiquetaVisitante etiqueta={e.visitante} esMio={e.visitante === miVisitante} onVisitante={onVisitante} />
+                )}
               </div>
             </li>
           )
@@ -302,6 +483,72 @@ function ListaEntradas({ entradas }: { entradas: Entrada[] }) {
         </button>
       )}
     </div>
+  )
+}
+
+/** La etiqueta de un dispositivo; si se puede, lleva a su ficha. */
+function EtiquetaVisitante({ etiqueta, esMio, onVisitante }: { etiqueta: string; esMio: boolean; onVisitante?: (etiqueta: string) => void }) {
+  const texto = (
+    <>
+      #{etiqueta}
+      {esMio && <span className="ml-1 font-sans text-propia-tinta">· este</span>}
+    </>
+  )
+  if (!onVisitante) return <p className="mt-1 font-mono text-[11px] text-tinta-tenue">{texto}</p>
+  return (
+    <button
+      type="button"
+      onClick={() => onVisitante(etiqueta)}
+      aria-label={`Ver las entradas del dispositivo ${etiqueta}`}
+      className="mt-1 block w-full text-right font-mono text-[11px] text-tinta-suave underline decoration-borde-fuerte underline-offset-2"
+    >
+      {texto}
+    </button>
+  )
+}
+
+/** Los dispositivos con más de una visita, agrupados por su etiqueta, del más reciente al más antiguo. */
+function DispositivosQueVuelven({
+  entradas, miVisitante, onVisitante,
+}: { entradas: Entrada[]; miVisitante: string | null; onVisitante: (etiqueta: string) => void }) {
+  const grupos = new Map<string, { etiqueta: string; dispositivo: Dispositivo; entradas: number; visitas: number; ultima: number }>()
+  // Las entradas llegan de la más reciente a la más antigua: la primera de cada grupo es la última visita.
+  for (const e of entradas) {
+    if (!e.visitante) continue
+    const g = grupos.get(e.visitante)
+    if (g) {
+      g.entradas += 1
+      g.visitas = Math.max(g.visitas, e.visita ?? 0)
+    } else {
+      grupos.set(e.visitante, { etiqueta: e.visitante, dispositivo: e.dispositivo, entradas: 1, visitas: e.visita ?? 0, ultima: e.t })
+    }
+  }
+  const vuelven = [...grupos.values()].filter((g) => g.visitas > 1 || g.entradas > 1)
+  if (!vuelven.length) return <p className="text-[14px] text-tinta-suave">Ningún dispositivo ha vuelto a entrar en este periodo.</p>
+  return (
+    <ul className="divide-y divide-borde">
+      {vuelven.map((g) => (
+        <li key={g.etiqueta}>
+          <button
+            type="button"
+            onClick={() => onVisitante(g.etiqueta)}
+            className="flex w-full items-start justify-between gap-3 py-2.5 text-left text-[14px] pulsable"
+          >
+            <div className="min-w-0">
+              <p className="font-mono text-tinta">
+                #{g.etiqueta}
+                {g.etiqueta === miVisitante && <span className="ml-2 font-sans text-[12px] text-propia-tinta">este dispositivo</span>}
+              </p>
+              <p className="text-[13px] text-tinta-suave">{describir(g.dispositivo)}</p>
+            </div>
+            <div className="shrink-0 text-right tabular-nums">
+              <p className="text-tinta">{numero(g.visitas || g.entradas)} visitas</p>
+              <p className="text-[12px] text-tinta-tenue">última: {fechaHora.format(g.ultima)}</p>
+            </div>
+          </button>
+        </li>
+      ))}
+    </ul>
   )
 }
 

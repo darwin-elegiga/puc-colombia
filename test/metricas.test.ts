@@ -1,6 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { diaColombia, leerDispositivo, MAX_MS_PANTALLA, ultimosDias, validarEvento } from '../lib/metricas'
+import { diaColombia, diasEntre, leerDispositivo, MAX_MS_PANTALLA, ultimosDias, validarEvento } from '../lib/metricas'
+
+/** La consulta de los últimos 7 días hasta `ahora`, sin filtros. */
+const semana = (ahora: number) => ({ desde: diaColombia(ahora - 6 * 86_400_000), hasta: diaColombia(ahora), filtro: {}, visitante: null })
 import { almacenEnMemoria } from '../lib/aulasServidor'
 import { servicioMetricas } from '../lib/metricasServidor'
 
@@ -27,7 +30,7 @@ test('solo acepta eventos con valores conocidos', () => {
   assert.equal(validarEvento({ tipo: 'inicio', pantalla: 'inicio', dispositivo: { tipo: 'nevera', so: 'iOS', navegador: 'Safari', modo: 'instalada' } }), null)
   assert.equal(validarEvento({ tipo: 'tiempo', pantalla: 'cuenta', ms: 0 }), null)
   assert.equal(validarEvento('basura'), null)
-  assert.deepEqual(validarEvento({ tipo: 'paso', de: 'inicio', a: 'cuenta', ms: 1e12, extra: 1 }), { tipo: 'paso', de: 'inicio', a: 'cuenta', ms: MAX_MS_PANTALLA })
+  assert.deepEqual(validarEvento({ tipo: 'paso', de: 'inicio', a: 'cuenta', ms: 1e12, extra: 1 }), { tipo: 'paso', de: 'inicio', a: 'cuenta', ms: MAX_MS_PANTALLA, dispositivo: null })
 })
 
 test('los días van en hora de Colombia', () => {
@@ -41,13 +44,13 @@ test('suma una sesión con su recorrido, su dispositivo y su tiempo', async () =
   const s = servicioMetricas(almacenEnMemoria(() => ahora), () => ahora)
   const dispositivo = leerDispositivo(UA.iphone, true, false)
   await s.registrar({ tipo: 'inicio', pantalla: 'inicio', dispositivo, visitante: null }, '1.1.1.1')
-  await s.registrar({ tipo: 'paso', de: 'inicio', a: 'cuenta', ms: 4000 }, '1.1.1.1')
-  await s.registrar({ tipo: 'paso', de: 'cuenta', a: 'inicio', ms: 6000 }, '1.1.1.1')
-  await s.registrar({ tipo: 'tiempo', pantalla: 'inicio', ms: 2000 }, '1.1.1.1')
+  await s.registrar({ tipo: 'paso', de: 'inicio', a: 'cuenta', ms: 4000, dispositivo }, '1.1.1.1')
+  await s.registrar({ tipo: 'paso', de: 'cuenta', a: 'inicio', ms: 6000, dispositivo }, '1.1.1.1')
+  await s.registrar({ tipo: 'tiempo', pantalla: 'inicio', ms: 2000, dispositivo }, '1.1.1.1')
   ahora += 86_400_000
   await s.registrar({ tipo: 'inicio', pantalla: 'cuenta', dispositivo: leerDispositivo(UA.windowsEdge, false, false), visitante: null }, '2.2.2.2')
 
-  const r = await s.resumen(7)
+  const r = await s.resumen(semana(ahora))
   assert.equal(r.sesiones, 2)
   assert.equal(r.vistas, 4)
   assert.equal(r.ms, 12000)
@@ -61,7 +64,7 @@ test('suma una sesión con su recorrido, su dispositivo y su tiempo', async () =
 
 test('limita los eventos por IP y los intentos de PIN', async () => {
   const s = servicioMetricas(almacenEnMemoria())
-  const paso = { tipo: 'paso', de: 'inicio', a: 'cuenta', ms: 0 } as const
+  const paso = { tipo: 'paso', de: 'inicio', a: 'cuenta', ms: 0, dispositivo: null } as const
   for (let i = 0; i < 120; i++) assert.equal(await s.registrar(paso, '3.3.3.3'), true)
   assert.equal(await s.registrar(paso, '3.3.3.3'), false)
   assert.equal(await s.registrar(paso, '4.4.4.4'), true)
@@ -87,7 +90,8 @@ test('anota cada entrada con su hora, su dispositivo y si el navegador vuelve', 
   await s.registrar({ tipo: 'inicio', pantalla: 'inicio', dispositivo: iphone, visitante: ana }, '1.1.1.1')
   await s.registrar({ tipo: 'inicio', pantalla: 'inicio', dispositivo: pc, visitante: null }, '3.3.3.3')
 
-  const r = await s.resumen(1)
+  const hoy = diaColombia(ahora)
+  const r = await s.resumen({ desde: hoy, hasta: hoy, filtro: {}, visitante: null })
   assert.equal(r.nuevos, 2)
   assert.equal(r.recurrentes, 1)
   assert.equal(r.porHora[14], 1)
@@ -105,4 +109,47 @@ test('rechaza identificadores de visitante con otra forma', () => {
   const d = { tipo: 'movil', so: 'iOS', navegador: 'Safari', modo: 'instalada' }
   const e = validarEvento({ tipo: 'inicio', pantalla: 'inicio', dispositivo: d, visitante: 'metricas:otra-clave' })
   assert.equal(e?.tipo === 'inicio' && e.visitante, null)
+})
+
+test('filtra todo el panel por dispositivo y las entradas por fechas y por visitante', async () => {
+  let ahora = Date.UTC(2026, 9, 20, 15)
+  const s = servicioMetricas(almacenEnMemoria(() => ahora), () => ahora)
+  const iphone = leerDispositivo(UA.iphone, true, true)
+  const pc = leerDispositivo(UA.windowsEdge, false, false)
+  const ana = 'a'.repeat(24)
+  await s.registrar({ tipo: 'inicio', pantalla: 'inicio', dispositivo: iphone, visitante: ana }, '1.1.1.1')
+  await s.registrar({ tipo: 'paso', de: 'inicio', a: 'cuenta', ms: 3000, dispositivo: iphone }, '1.1.1.1')
+  ahora += 2 * 86_400_000
+  await s.registrar({ tipo: 'inicio', pantalla: 'inicio', dispositivo: pc, visitante: 'b'.repeat(24) }, '2.2.2.2')
+  await s.registrar({ tipo: 'paso', de: 'inicio', a: 'clases', ms: 1000, dispositivo: pc }, '2.2.2.2')
+  await s.registrar({ tipo: 'inicio', pantalla: 'inicio', dispositivo: iphone, visitante: ana }, '1.1.1.1')
+
+  const todo = await s.resumen(semana(ahora))
+  assert.equal(todo.sesiones, 3)
+  assert.deepEqual(todo.dispositivo.tipo, [{ clave: 'movil', n: 2 }, { clave: 'escritorio', n: 1 }])
+
+  const moviles = await s.resumen({ ...semana(ahora), filtro: { tipo: 'movil' } })
+  assert.equal(moviles.sesiones, 2)
+  assert.equal(moviles.recurrentes, 1)
+  assert.deepEqual(moviles.pasos.map((p) => `${p.de}>${p.a}`).sort(), ['entrada>inicio', 'inicio>cuenta'])
+  assert.equal(moviles.entradas.length, 2)
+  assert.ok(moviles.entradas.every((e) => e.dispositivo.tipo === 'movil'))
+
+  const edge = await s.resumen({ ...semana(ahora), filtro: { navegador: 'Edge', modo: 'navegador' } })
+  assert.equal(edge.sesiones, 1)
+  assert.deepEqual(edge.pantallas.map((p) => p.pantalla).sort(), ['clases', 'inicio'])
+
+  // Solo el primer día: la entrada del 20 de octubre.
+  const dia20 = await s.resumen({ desde: '2026-10-20', hasta: '2026-10-20', filtro: {}, visitante: null })
+  assert.equal(dia20.sesiones, 1)
+  assert.equal(dia20.entradas.length, 1)
+  assert.deepEqual(dia20.porDia.map((d) => d.dia), ['2026-10-20'])
+
+  const deAna = await s.resumen({ ...semana(ahora), visitante: 'aaaaaa' })
+  assert.deepEqual(deAna.entradas.map((e) => e.visita), [2, 1])
+})
+
+test('cuenta los días de un rango, también al cruzar de mes', () => {
+  assert.deepEqual(diasEntre('2026-09-29', '2026-10-02'), ['2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02'])
+  assert.deepEqual(diasEntre('2026-10-05', '2026-10-05'), ['2026-10-05'])
 })
